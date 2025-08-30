@@ -1,0 +1,369 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../app/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Enums
+enum UserRole {
+  CLIENT
+  ARTISAN
+  ADMIN
+}
+
+enum UserStatus {
+  PENDING // Email not verified
+  ACTIVE // Email verified and active
+  SUSPENDED // Temporarily suspended
+  BANNED // Permanently banned
+}
+
+enum ArtisanStatus {
+  PENDING // Application pending review
+  VERIFIED // Certificate verified
+  REJECTED // Application rejected
+}
+
+enum SubscriptionStatus {
+  INACTIVE
+  ACTIVE
+  EXPIRED
+  SUSPENDED
+}
+
+enum SubscriptionPlan {
+  MONTHLY
+  ANNUAL
+}
+
+enum ConversationStatus {
+  ACTIVE
+  ARCHIVED
+  BLOCKED
+}
+
+enum MessageStatus {
+  SENT
+  DELIVERED
+  READ
+}
+
+enum PaymentStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  REFUNDED
+}
+
+enum PaymentMethod {
+  MPESA
+  CARD
+  BANK_TRANSFER
+}
+
+// Core User Model
+model User {
+  id        String     @id @default(cuid())
+  clerkId   String     @unique // Clerk user ID
+  email     String     @unique
+  firstName String
+  lastName  String
+  phone     String?
+  role      UserRole   @default(CLIENT)
+  status    UserStatus @default(PENDING)
+
+  // Timestamps
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  lastLoginAt     DateTime?
+  emailVerifiedAt DateTime?
+
+  // Relationships
+  profile              Profile?
+  sentMessages         Message[]      @relation("MessageSender")
+  receivedMessages     Message[]      @relation("MessageReceiver")
+  clientConversations  Conversation[] @relation("ClientConversations")
+  artisanConversations Conversation[] @relation("ArtisanConversations")
+  reviews              Review[]       @relation("ClientReviews")
+
+  @@map("users")
+}
+
+// Extended Profile Information
+model Profile {
+  id     String @id @default(cuid())
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Basic Information
+  bio          String?
+  profileImage String? // URL to profile image
+  coverImage   String? // URL to cover image
+  website      String?
+
+  // Location Information (for map display)
+  latitude  Float?
+  longitude Float?
+  address   String?
+  city      String?
+  county    String?
+  country   String  @default("Kenya")
+
+  // Artisan-specific fields
+  profession    String? // Required for artisans
+  experience    Int? // Years of experience
+  hourlyRate    Float? // Hourly rate in KES
+  isAvailable   Boolean        @default(false) // Toggle for map visibility
+  artisanStatus ArtisanStatus?
+
+  // Certificate and verification
+  certificateUrl        String? // URL to uploaded certificate
+  certificateUploadedAt DateTime?
+  verifiedAt            DateTime?
+  verifiedBy            String? // Admin user ID who verified
+
+  // Ratings and reviews
+  averageRating Float @default(0.0)
+  totalReviews  Int   @default(0)
+
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relationships
+  portfolioItems  PortfolioItem[]
+  subscription    Subscription?
+  reviews         Review[]
+  specializations Specialization[]
+
+  @@map("profiles")
+}
+
+// Portfolio/Work Items for Artisans
+model PortfolioItem {
+  id        String  @id @default(cuid())
+  profileId String
+  profile   Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  title       String
+  description String?
+  imageUrl    String // Main image URL
+  imageUrls   String[] // Additional images
+  category    String? // e.g., "Woodworking", "Metalwork"
+  tags        String[] // Searchable tags
+
+  // Project details
+  completedAt DateTime?
+  duration    String? // e.g., "2 weeks"
+  cost        Float? // Project cost in KES
+
+  // Visibility
+  isPublic   Boolean @default(true)
+  isFeatured Boolean @default(false)
+
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("portfolio_items")
+}
+
+// Artisan Specializations/Skills
+model Specialization {
+  id        String  @id @default(cuid())
+  profileId String
+  profile   Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  name       String
+  category   String? // Main category
+  skillLevel Int     @default(1) // 1-5 skill level
+  yearsExp   Int? // Years of experience in this skill
+
+  createdAt DateTime @default(now())
+
+  @@unique([profileId, name])
+  @@map("specializations")
+}
+
+// Subscription Management
+model Subscription {
+  id        String  @id @default(cuid())
+  profileId String  @unique
+  profile   Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  plan   SubscriptionPlan
+  status SubscriptionStatus @default(INACTIVE)
+
+  // Billing Information
+  startDate DateTime
+  endDate   DateTime
+  amount    Float // Amount in KES
+  currency  String   @default("KES")
+
+  // M-Pesa Information
+  mpesaRequestId     String?
+  mpesaCheckoutId    String?
+  mpesaTransactionId String?
+
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relationships
+  payments Payment[]
+
+  @@map("subscriptions")
+}
+
+// Payment Tracking
+model Payment {
+  id             String       @id @default(cuid())
+  subscriptionId String
+  subscription   Subscription @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
+
+  amount   Float
+  currency String        @default("KES")
+  method   PaymentMethod
+  status   PaymentStatus @default(PENDING)
+
+  // M-Pesa specific fields
+  mpesaRequestId     String?
+  mpesaCheckoutId    String?
+  mpesaTransactionId String?
+  mpesaReceiptNumber String?
+  phoneNumber        String?
+
+  // Metadata
+  description   String?
+  failureReason String?
+
+  // Timestamps
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  paidAt    DateTime?
+
+  @@map("payments")
+}
+
+// Messaging System
+model Conversation {
+  id        String @id @default(cuid())
+  clientId  String
+  artisanId String
+
+  client  User @relation("ClientConversations", fields: [clientId], references: [id], onDelete: Cascade)
+  artisan User @relation("ArtisanConversations", fields: [artisanId], references: [id], onDelete: Cascade)
+
+  status  ConversationStatus @default(ACTIVE)
+  subject String?
+
+  // Timestamps
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  lastMessageAt DateTime?
+
+  // Relationships
+  messages Message[]
+
+  @@unique([clientId, artisanId])
+  @@map("conversations")
+}
+
+model Message {
+  id             String @id @default(cuid())
+  conversationId String
+  senderId       String
+  receiverId     String
+
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  sender       User         @relation("MessageSender", fields: [senderId], references: [id], onDelete: Cascade)
+  receiver     User         @relation("MessageReceiver", fields: [receiverId], references: [id], onDelete: Cascade)
+
+  content String
+  status  MessageStatus @default(SENT)
+
+  // File attachments
+  attachmentUrls String[]
+
+  // Timestamps
+  createdAt DateTime  @default(now())
+  readAt    DateTime?
+
+  @@map("messages")
+}
+
+// Reviews and Ratings
+model Review {
+  id        String @id @default(cuid())
+  profileId String // Artisan being reviewed
+  clientId  String // Client leaving the review
+
+  profile Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  client  User    @relation("ClientReviews", fields: [clientId], references: [id], onDelete: Cascade)
+
+  rating  Int // 1-5 stars
+  comment String?
+
+  // Project details
+  projectTitle String?
+  projectCost  Float?
+
+  // Moderation
+  isApproved Boolean @default(false)
+  isHidden   Boolean @default(false)
+
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([profileId, clientId])
+  @@map("reviews")
+}
+
+// Admin Activity Logs
+model ActivityLog {
+  id String @id @default(cuid())
+
+  // Actor information
+  adminId    String
+  adminEmail String
+
+  // Action details
+  action     String // e.g., "USER_VERIFIED", "SUBSCRIPTION_UPDATED"
+  targetType String // e.g., "USER", "SUBSCRIPTION", "PAYMENT"
+  targetId   String
+
+  // Context
+  description String?
+  metadata    Json? // Additional data about the action
+  ipAddress   String?
+  userAgent   String?
+
+  // Timestamps
+  createdAt DateTime @default(now())
+
+  @@map("activity_logs")
+}
+
+// System Settings
+model Setting {
+  id    String @id @default(cuid())
+  key   String @unique
+  value String
+  type  String @default("string") // string, number, boolean, json
+
+  description String?
+  isPublic    Boolean @default(false) // Can be accessed by frontend
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("settings")
+}
