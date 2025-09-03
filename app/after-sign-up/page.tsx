@@ -1,9 +1,10 @@
 import { auth, clerkClient } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 
-export default async function AfterSignUp({ searchParams }: { searchParams: { role?: string } }) {
+export default async function AfterSignUp({ searchParams }: { searchParams: Promise<{ role?: string }> }) {
   const { userId } = await auth();
-  const role = searchParams.role || "client";
+  const params = await searchParams;
+  const role = params.role || "client";
   
   if (userId) {
     const client = await clerkClient();
