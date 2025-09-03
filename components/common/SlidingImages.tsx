@@ -10,7 +10,7 @@ import { useFadeInAnimation } from '../../lib/animations';
 const artisanImages = [
     {
         color: "#f3f4f6",
-        src: "/file.svg",
+        src: "/images/Carpenter.jpeg",
         alt: "Carpenter crafting furniture",
         category: "Carpenter",
         rating: 4.9,
@@ -18,7 +18,7 @@ const artisanImages = [
     },
     {
         color: "#fef3c7",
-        src: "/globe.svg", 
+        src: "/images/Electrician.jpeg",
         alt: "Electrician working",
         category: "Electrician",
         rating: 4.8,
@@ -26,7 +26,7 @@ const artisanImages = [
     },
     {
         color: "#e0e7ff",
-        src: "/window.svg",
+        src: "/images/Painter.jpeg",
         alt: "Painter creating art",
         category: "Painter",
         rating: 4.9,
@@ -34,7 +34,7 @@ const artisanImages = [
     },
     {
         color: "#f0fdf4",
-        src: "/vercel.svg",
+        src: "/images/Welder.jpeg",
         alt: "Welder at work",
         category: "Welder",
         rating: 5.0,
@@ -45,7 +45,7 @@ const artisanImages = [
 const artisanImages2 = [
     {
         color: "#fef2f2",
-        src: "/next.svg",
+        src: "/images/Plumber.jpeg",
         alt: "Plumber fixing pipes",
         category: "Plumber",
         rating: 4.7,
@@ -53,7 +53,7 @@ const artisanImages2 = [
     },
     {
         color: "#f5f3ff",
-        src: "/file.svg",
+        src: "/images/Tailor.jpeg",
         alt: "Tailor sewing clothes",
         category: "Tailor",
         rating: 4.9,
@@ -61,7 +61,7 @@ const artisanImages2 = [
     },
     {
         color: "#fffbeb",
-        src: "/globe.svg",
+        src: "/images/Mason.jpeg",
         alt: "Mason building wall",
         category: "Mason",
         rating: 4.8,
@@ -69,7 +69,7 @@ const artisanImages2 = [
     },
     {
         color: "#f0fdfa",
-        src: "/window.svg",
+        src: "/images/Mechanic.jpeg",
         alt: "Mechanic repairing car",
         category: "Mechanic",
         rating: 4.9,

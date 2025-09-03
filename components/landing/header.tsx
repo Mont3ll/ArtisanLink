@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState, useRef, useEffect } from "react";
 import { Menu, X } from "lucide-react";
+import { useAuth } from "@clerk/nextjs";
 import gsap from "gsap";
 import RoundedButton from "../common/RoundedButton";
 import Magnetic from "../common/Magnetic";
@@ -10,6 +11,7 @@ import Curve from "../common/Curve";
 
 export default function Header() {
   const [open, setOpen] = useState(false);
+  const { isSignedIn } = useAuth();
   const mobileMenuRef = useRef<HTMLDivElement>(null);
   const navItemsRef = useRef<(HTMLElement | null)[]>([]);
 
@@ -17,7 +19,11 @@ export default function Header() {
     { title: "Features", href: "#features" },
     { title: "Pricing", href: "#pricing" },
     { title: "FAQ", href: "#faq" },
-    { title: "Dashboard", href: "/dashboard" },
+    ...(isSignedIn ? [] : [{ title: "Get Started", href: "/sign-up" }]),
+    { 
+      title: isSignedIn ? "Dashboard" : "Sign In", 
+      href: isSignedIn ? "/dashboard" : "/sign-in" 
+    },
   ];
 
   useEffect(() => {
@@ -70,31 +76,63 @@ export default function Header() {
     <header className="border-b bg-white/80 backdrop-blur-md sticky top-0 z-40">
       <div className="max-w-7xl mx-auto px-6 md:px-8 lg:px-12">
         <div className="flex items-center justify-between h-16">
+          {/* Logo */}
           <Magnetic>
             <Link href="/" className="font-bold text-xl text-slate-900" aria-label="Home">
               ArtisanLink
             </Link>
           </Magnetic>
 
-          <nav aria-label="Primary" className="hidden md:flex items-center gap-6">
-            <Magnetic>
-              <a href="#features" className="text-sm text-slate-600 hover:text-slate-900 transition-colors">
-                Features
-              </a>
-            </Magnetic>
-            <Magnetic>
-              <a href="#pricing" className="text-sm text-slate-600 hover:text-slate-900 transition-colors">
-                Pricing
-              </a>
-            </Magnetic>
+          {/* Centered Navigation */}
+          <nav aria-label="Primary" className="hidden md:flex items-center justify-center flex-1">
+            <div className="flex items-center gap-8">
+              <Magnetic>
+                <div className="nav-element relative flex flex-col items-center py-3 px-4 cursor-pointer group">
+                  <a href="#features" className="text-sm text-slate-600 hover:text-slate-900 transition-colors">
+                    Features
+                  </a>
+                  <div className="nav-indicator absolute w-1 h-1 bg-slate-900 rounded-full bottom-0 transform scale-0 group-hover:scale-100 transition-transform duration-200 ease-out"></div>
+                </div>
+              </Magnetic>
+              <Magnetic>
+                <div className="nav-element relative flex flex-col items-center py-3 px-4 cursor-pointer group">
+                  <a href="#pricing" className="text-sm text-slate-600 hover:text-slate-900 transition-colors">
+                    Pricing
+                  </a>
+                  <div className="nav-indicator absolute w-1 h-1 bg-slate-900 rounded-full bottom-0 transform scale-0 group-hover:scale-100 transition-transform duration-200 ease-out"></div>
+                </div>
+              </Magnetic>
+              <Magnetic>
+                <div className="nav-element relative flex flex-col items-center py-3 px-4 cursor-pointer group">
+                  <a href="#faq" className="text-sm text-slate-600 hover:text-slate-900 transition-colors">
+                    FAQ
+                  </a>
+                  <div className="nav-indicator absolute w-1 h-1 bg-slate-900 rounded-full bottom-0 transform scale-0 group-hover:scale-100 transition-transform duration-200 ease-out"></div>
+                </div>
+              </Magnetic>
+            </div>
+          </nav>
+
+          {/* Right Side Authentication */}
+          <div className="hidden md:flex items-center gap-4">
+            {!isSignedIn && (
+              <Magnetic>
+                <Link 
+                  href="/sign-up" 
+                  className="text-sm text-slate-600 hover:text-slate-900 transition-colors px-4 py-2"
+                >
+                  Get Started
+                </Link>
+              </Magnetic>
+            )}
             <RoundedButton 
-              href="/dashboard" 
+              href={isSignedIn ? "/dashboard" : "/sign-in"}
               backgroundColor="#1e293b"
               className="text-slate-900 font-medium"
             >
-              Dashboard
+              {isSignedIn ? "Dashboard" : "Sign In"}
             </RoundedButton>
-          </nav>
+          </div>
 
           {/* Mobile menu toggle */}
           <div className="md:hidden">

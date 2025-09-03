@@ -1,137 +1,154 @@
 "use client";
 
-import { useState } from "react";
-import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
-import { UserButton } from "@clerk/nextjs";
-import { 
-  Home, 
-  Briefcase, 
-  Upload, 
-  MessageSquare, 
-  Calendar, 
-  Star, 
-  DollarSign, 
-  Settings,
-  Menu,
-  X,
-  Hammer,
-  Eye,
-  Users
-} from "lucide-react";
+import * as React from "react"
+import {
+  IconCalendar,
+  IconDashboard,
+  IconMessage,
+  IconUsers,
+  IconStar,
+  IconCurrencyDollar,
+  IconChartBar,
+  IconSettings,
+  IconHelp,
+  IconSearch,
+  IconInnerShadowTop,
+  IconBriefcase,
+  IconFileDescription,
+  IconEye,
+} from "@tabler/icons-react"
+import { useUser } from "@clerk/nextjs"
 
-const navigation = [
-  { name: "Dashboard", href: "/artisan-dashboard", icon: Home },
-  { name: "My Projects", href: "/artisan-dashboard/projects", icon: Briefcase },
-  { name: "Portfolio", href: "/artisan-dashboard/portfolio", icon: Upload },
-  { name: "Messages", href: "/artisan-dashboard/messages", icon: MessageSquare },
-  { name: "Inquiries", href: "/artisan-dashboard/inquiries", icon: Users },
-  { name: "Calendar", href: "/artisan-dashboard/calendar", icon: Calendar },
-  { name: "Reviews", href: "/artisan-dashboard/reviews", icon: Star },
-  { name: "Earnings", href: "/artisan-dashboard/earnings", icon: DollarSign },
-  { name: "Profile Views", href: "/artisan-dashboard/analytics", icon: Eye },
-  { name: "Settings", href: "/artisan-dashboard/settings", icon: Settings },
-];
+import { NavMain } from "@/components/shared/nav-main";
+import { NavDocuments } from "@/components/shared/nav-documents";
+import { NavSecondary } from "@/components/shared/nav-secondary";
+import { NavUser } from "@/components/shared/nav-user";
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarFooter,
+  SidebarHeader,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+} from "@/components/ui/sidebar";
 
-export default function ArtisanSidebar() {
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const pathname = usePathname();
+// Artisan navigation data
+const data = {
+  navMain: [
+    {
+      title: "Dashboard",
+      url: "/artisan-dashboard",
+      icon: IconDashboard,
+    },
+    {
+      title: "My Projects",
+      url: "/artisan-dashboard/projects",
+      icon: IconBriefcase,
+    },
+    {
+      title: "Portfolio",
+      url: "/artisan-dashboard/portfolio",
+      icon: IconFileDescription,
+    },
+    {
+      title: "Messages",
+      url: "/artisan-dashboard/messages",
+      icon: IconMessage,
+    },
+    {
+      title: "Inquiries",
+      url: "/artisan-dashboard/inquiries",
+      icon: IconUsers,
+    },
+    {
+      title: "Calendar",
+      url: "/artisan-dashboard/calendar",
+      icon: IconCalendar,
+    },
+    {
+      title: "Reviews",
+      url: "/artisan-dashboard/reviews",
+      icon: IconStar,
+    },
+    {
+      title: "Earnings",
+      url: "/artisan-dashboard/earnings",
+      icon: IconCurrencyDollar,
+    },
+  ],
+  navSecondary: [
+    {
+      title: "Settings",
+      url: "/artisan-dashboard/settings",
+      icon: IconSettings,
+    },
+    {
+      title: "Get Help",
+      url: "/artisan-dashboard/help",
+      icon: IconHelp,
+    },
+    {
+      title: "Search",
+      url: "/artisan-dashboard/search",
+      icon: IconSearch,
+    },
+  ],
+  documents: [
+    {
+      name: "Profile Analytics",
+      url: "/artisan-dashboard/analytics",
+      icon: IconChartBar,
+    },
+    {
+      name: "Profile Views",
+      url: "/artisan-dashboard/views", 
+      icon: IconEye,
+    },
+    {
+      name: "Certificates",
+      url: "/artisan-dashboard/certificates",
+      icon: IconFileDescription,
+    },
+  ],
+}
+
+export function ArtisanSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  const { user } = useUser()
+
+  const userData = {
+    name: user?.fullName || "Artisan",
+    email: user?.primaryEmailAddress?.emailAddress || "artisan@artisanlink.ke",
+    avatar: user?.imageUrl || "/avatars/artisan.jpg",
+  }
 
   return (
-    <>
-      {/* Mobile menu button */}
-      <div className="lg:hidden fixed top-4 left-4 z-50">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-        >
-          {isMobileMenuOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
-        </Button>
-      </div>
-
-      {/* Overlay for mobile */}
-      {isMobileMenuOpen && (
-        <div 
-          className="lg:hidden fixed inset-0 bg-black bg-opacity-50 z-40"
-          onClick={() => setIsMobileMenuOpen(false)}
-        />
-      )}
-
-      {/* Sidebar */}
-      <div className={cn(
-        "fixed top-0 left-0 z-40 h-full w-64 bg-white border-r border-gray-200 transition-transform duration-300 ease-in-out",
-        "lg:translate-x-0",
-        isMobileMenuOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
-      )}>
-        <div className="flex flex-col h-full">
-          {/* Logo */}
-          <div className="flex items-center gap-3 px-6 py-4 border-b border-gray-200">
-            <div className="w-8 h-8 bg-orange-600 rounded-lg flex items-center justify-center">
-              <Hammer className="w-5 h-5 text-white" />
-            </div>
-            <div>
-              <h1 className="font-bold text-lg text-gray-900">ArtisanLink</h1>
-              <p className="text-xs text-gray-500">Artisan Portal</p>
-            </div>
-          </div>
-
-          {/* Navigation */}
-          <nav className="flex-1 px-4 py-6 space-y-2">
-            {navigation.map((item) => {
-              const Icon = item.icon;
-              const isActive = pathname === item.href;
-              
-              return (
-                <Link
-                  key={item.name}
-                  href={item.href}
-                  onClick={() => setIsMobileMenuOpen(false)}
-                  className={cn(
-                    "flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors",
-                    isActive
-                      ? "bg-orange-50 text-orange-700 border border-orange-200"
-                      : "text-gray-700 hover:bg-gray-50 hover:text-gray-900"
-                  )}
-                >
-                  <Icon className="w-5 h-5" />
-                  {item.name}
-                </Link>
-              );
-            })}
-          </nav>
-
-          {/* Subscription Status */}
-          <div className="px-4 py-3 border-t border-gray-200">
-            <div className="bg-green-50 border border-green-200 rounded-lg p-3">
-              <div className="flex items-center gap-2">
-                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                <span className="text-sm font-medium text-green-700">Subscription Active</span>
-              </div>
-              <p className="text-xs text-green-600 mt-1">Expires: Dec 31, 2024</p>
-            </div>
-          </div>
-
-          {/* User Profile */}
-          <div className="border-t border-gray-200 p-4">
-            <div className="flex items-center gap-3">
-              <UserButton 
-                appearance={{
-                  elements: {
-                    avatarBox: "w-8 h-8"
-                  }
-                }}
-              />
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-gray-900 truncate">Artisan Account</p>
-                <p className="text-xs text-gray-500">Manage your business</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </>
+    <Sidebar collapsible="offcanvas" {...props}>
+      <SidebarHeader>
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton
+              asChild
+              className="data-[slot=sidebar-menu-button]:!p-1.5"
+            >
+              <a href="/artisan-dashboard">
+                <IconInnerShadowTop className="!size-5" />
+                <span className="text-base font-semibold">ArtisanLink Studio</span>
+              </a>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
+      </SidebarHeader>
+      <SidebarContent>
+        <NavMain items={data.navMain} />
+        <NavDocuments items={data.documents} />
+        <NavSecondary items={data.navSecondary} className="mt-auto" />
+      </SidebarContent>
+      <SidebarFooter>
+        <NavUser user={userData} />
+      </SidebarFooter>
+    </Sidebar>
   );
 }
+
+export default ArtisanSidebar;

@@ -407,4 +407,30 @@ body {
   .magnetic {
     transition: transform 0.3s ease;
   }
+
+  /* Navigation indicator styles */
+  .nav-element {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    z-index: 1;
+  }
+
+  .nav-indicator {
+    position: absolute;
+    bottom: -2px;
+    left: 50%;
+    transform: translateX(-50%) scale(0);
+    transition: transform 0.2s cubic-bezier(0.76, 0, 0.24, 1);
+  }
+
+  .nav-element:hover .nav-indicator {
+    transform: translateX(-50%) scale(1);
+  }
+
+  /* Enhanced hover animation for nav elements */
+  .nav-element:hover a {
+    color: rgb(15 23 42); /* slate-900 */
+  }
 }

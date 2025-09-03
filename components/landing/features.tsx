@@ -3,6 +3,8 @@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "../ui/card";
 import { MapPin, ShieldCheck, MessageSquare, CreditCard, CheckCircle, Star } from "lucide-react";
 import { useEffect, useRef } from "react";
+import { useAuth } from "@clerk/nextjs";
+import Link from "next/link";
 import { 
   useStaggeredReveal, 
   useFadeInAnimation, 
@@ -59,6 +61,7 @@ const stats = [
 
 export default function Features() {
   const containerRef = useRef<HTMLDivElement>(null);
+  const { isSignedIn } = useAuth();
   
   // Apply animations
   useFadeInAnimation(".features-header");
@@ -191,10 +194,13 @@ export default function Features() {
           <p className="text-slate-600 mb-8 max-w-2xl mx-auto">
             Join thousands of satisfied clients who have found their perfect artisan match through our platform.
           </p>
-          <button className="inline-flex items-center px-8 py-4 bg-gradient-cta text-white font-semibold rounded-full hover:scale-105 transition-all duration-300 glow-primary hover:glow-secondary magnetic">
-            Get Started Today
+          <Link 
+            href={isSignedIn ? "/dashboard" : "/sign-up"}
+            className="inline-flex items-center px-8 py-4 bg-gradient-cta text-white font-semibold rounded-full hover:scale-105 transition-all duration-300 glow-primary hover:glow-secondary magnetic"
+          >
+            {isSignedIn ? "Go to Dashboard" : "Get Started Today"}
             <CheckCircle className="ml-2 h-5 w-5" />
-          </button>
+          </Link>
         </div>
       </div>
     </section>

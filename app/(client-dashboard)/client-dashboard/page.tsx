@@ -1,9 +1,10 @@
 import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
+import { ChartAreaInteractive } from "@/components/shared/chart-area-interactive";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { MapPin, Search, MessageSquare, Calendar, Star, Users, Clock, Hammer } from "lucide-react";
+import { MapPin, Search, MessageSquare, Calendar, Star, Users, Hammer } from "lucide-react";
 
 // Mock data for demonstration - replace with actual database queries
 const mockData = {
@@ -78,12 +79,12 @@ export default async function ClientDashboardPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="flex-1 space-y-4">
       {/* Header */}
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Welcome back!</h1>
-          <p className="text-gray-600">Find and hire skilled artisans for your projects</p>
+          <h1 className="text-3xl font-bold tracking-tight">Welcome back!</h1>
+          <p className="text-muted-foreground">Find and hire skilled artisans for your projects</p>
         </div>
         <Button className="w-fit">
           <Search className="w-4 h-4 mr-2" />
@@ -92,7 +93,7 @@ export default async function ClientDashboardPage() {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Projects</CardTitle>
@@ -107,7 +108,7 @@ export default async function ClientDashboardPage() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Active Projects</CardTitle>
-            <Clock className="h-4 w-4 text-muted-foreground" />
+            <Calendar className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{mockData.stats.activeProjects}</div>
@@ -138,8 +139,64 @@ export default async function ClientDashboardPage() {
         </Card>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Active Projects */}
+      {/* Charts and Quick Actions */}
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
+        <Card className="col-span-4">
+          <CardHeader>
+            <CardTitle>Project Activity</CardTitle>
+            <CardDescription>Your project trends and hiring patterns</CardDescription>
+          </CardHeader>
+          <CardContent className="pl-2">
+            <ChartAreaInteractive />
+          </CardContent>
+        </Card>
+        <Card className="col-span-3">
+          <CardHeader>
+            <CardTitle>Quick Actions</CardTitle>
+            <CardDescription>Common tasks to get you started</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 gap-4">
+              <Button variant="outline" className="h-16 flex items-center gap-3 justify-start">
+                <MapPin className="w-5 h-5" />
+                Find Nearby Artisans
+              </Button>
+              <Button variant="outline" className="h-16 flex items-center gap-3 justify-start">
+                <Calendar className="w-5 h-5" />
+                Schedule Service
+              </Button>
+              <Button variant="outline" className="h-16 flex items-center gap-3 justify-start">
+                <MessageSquare className="w-5 h-5" />
+                Message History
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Recent Searches */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Recent Searches</CardTitle>
+          <CardDescription>Your recent artisan searches</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-3">
+            {mockData.recentSearches.map((search) => (
+              <div key={search.id} className="flex items-center justify-between p-3 border rounded-lg">
+                <div className="flex items-center gap-3">
+                  <Search className="w-4 h-4 text-muted-foreground" />
+                  <span className="font-medium">{search.query}</span>
+                </div>
+                <span className="text-sm text-muted-foreground">{search.timestamp}</span>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Projects and Saved Artisans */}
+      <div className="grid gap-4 md:grid-cols-2">
         <Card>
           <CardHeader>
             <CardTitle>Active Projects</CardTitle>
@@ -150,8 +207,8 @@ export default async function ClientDashboardPage() {
               <div key={project.id} className="flex items-center justify-between p-4 border rounded-lg">
                 <div className="space-y-1">
                   <p className="font-medium">{project.service}</p>
-                  <p className="text-sm text-gray-600">by {project.artisan}</p>
-                  <div className="flex items-center gap-2 text-sm text-gray-500">
+                  <p className="text-sm text-muted-foreground">by {project.artisan}</p>
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
                     <MapPin className="w-3 h-3" />
                     {project.location}
                     <Calendar className="w-3 h-3 ml-2" />
@@ -169,7 +226,6 @@ export default async function ClientDashboardPage() {
           </CardContent>
         </Card>
 
-        {/* Saved Artisans */}
         <Card>
           <CardHeader>
             <CardTitle>Saved Artisans</CardTitle>
@@ -184,8 +240,8 @@ export default async function ClientDashboardPage() {
                   </div>
                   <div>
                     <p className="font-medium">{artisan.name}</p>
-                    <p className="text-sm text-gray-600">{artisan.profession}</p>
-                    <div className="flex items-center gap-2 text-sm text-gray-500">
+                    <p className="text-sm text-muted-foreground">{artisan.profession}</p>
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
                       <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
                       {artisan.rating}
                       <MapPin className="w-3 h-3 ml-1" />
@@ -205,51 +261,6 @@ export default async function ClientDashboardPage() {
           </CardContent>
         </Card>
       </div>
-
-      {/* Recent Searches */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Recent Searches</CardTitle>
-          <CardDescription>Your recent artisan searches</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-3">
-            {mockData.recentSearches.map((search) => (
-              <div key={search.id} className="flex items-center justify-between p-3 border rounded-lg">
-                <div className="flex items-center gap-3">
-                  <Search className="w-4 h-4 text-gray-400" />
-                  <span className="font-medium">{search.query}</span>
-                </div>
-                <span className="text-sm text-gray-500">{search.timestamp}</span>
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Quick Actions */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Quick Actions</CardTitle>
-          <CardDescription>Common tasks to get you started</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <Button variant="outline" className="h-20 flex-col gap-2">
-              <MapPin className="w-6 h-6" />
-              Find Nearby Artisans
-            </Button>
-            <Button variant="outline" className="h-20 flex-col gap-2">
-              <Calendar className="w-6 h-6" />
-              Schedule Service
-            </Button>
-            <Button variant="outline" className="h-20 flex-col gap-2">
-              <MessageSquare className="w-6 h-6" />
-              Message History
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
     </div>
   );
 }

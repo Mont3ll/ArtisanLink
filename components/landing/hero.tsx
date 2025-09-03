@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { useEffect, useRef } from "react";
+import { useAuth } from "@clerk/nextjs";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { ShieldCheck, MapPin } from "lucide-react";
@@ -10,6 +11,7 @@ import Magnetic from "../common/Magnetic";
 
 export default function Hero() {
   const root = useRef<HTMLElement | null>(null);
+  const { isSignedIn } = useAuth();
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -85,11 +87,11 @@ export default function Hero() {
           <div className="hero-animate mt-8 flex gap-4 items-center">
             <Magnetic>
               <RoundedButton 
-                href="#pricing" 
+                href={isSignedIn ? "/dashboard" : "/sign-up"} 
                 backgroundColor="#1e293b"
                 className="text-slate-900 font-semibold hover:scale-105 transition-all duration-300 glow-primary"
               >
-                Get started
+                {isSignedIn ? "Go to Dashboard" : "Get started"}
               </RoundedButton>
             </Magnetic>
             <Magnetic>
@@ -123,7 +125,7 @@ export default function Hero() {
           <div className="rounded-2xl shadow-2xl bg-gradient-to-br from-amber-50 to-amber-100 p-8 hover:scale-105 transition-all duration-500 glass-card-light hover:glow-amber">
             <div className="bg-white rounded-lg p-6 shadow-sm">
               <Image 
-                src="/file.svg" 
+                src="/images/Hero.jpeg" 
                 alt="Artisans gallery showcase" 
                 width={640} 
                 height={420} 
