@@ -14,18 +14,11 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
-import { Loader2, Hammer, Users, Settings } from 'lucide-react';
+import { Loader2, Hammer, Users } from 'lucide-react';
 import { SiGoogle } from 'react-icons/si';
-import { useRouter } from 'next/navigation';
 
 export default function SignUpPage() {
   const [role, setRole] = useState('client');
-  const router = useRouter();
-
-  // Handle post-signup navigation with role
-  const handleSignUpComplete = () => {
-    router.push(`/after-sign-up?role=${role}`);
-  };
 
   return (
     <div className="grid w-full grow items-center px-4 sm:justify-center min-h-svh">

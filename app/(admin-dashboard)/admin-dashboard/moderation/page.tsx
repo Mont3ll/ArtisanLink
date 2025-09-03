@@ -67,6 +67,7 @@ export default function ModerationPage() {
   const getTypeIcon = (type: string) => {
     switch (type) {
       case 'inappropriate_content':
+        // eslint-disable-next-line jsx-a11y/alt-text
         return <Image className="h-4 w-4" />
       case 'spam':
         return <MessageSquare className="h-4 w-4" />
@@ -192,6 +193,7 @@ export default function ModerationPage() {
                 <div key={content.id} className="flex items-start justify-between p-4 border rounded-lg">
                   <div className="flex items-start gap-4">
                     <div className="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center">
+                      {/* eslint-disable-next-line jsx-a11y/alt-text */}
                       <Image className="h-5 w-5 text-orange-600" />
                     </div>
                     <div className="flex-1">
