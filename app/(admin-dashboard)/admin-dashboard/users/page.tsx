@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from "react"
+import { useState, useMemo } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -19,86 +19,34 @@ import {
   Edit,
   Trash2,
   Download,
-  Loader2
 } from "lucide-react"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-
-interface User {
-  id: string
-  firstName: string
-  lastName: string
-  email: string
-  role: 'CLIENT' | 'ARTISAN' | 'ADMIN'
-  status: 'PENDING' | 'ACTIVE' | 'SUSPENDED' | 'BANNED'
-  createdAt: string
-  lastLoginAt?: string
-  profile?: {
-    city?: string
-    profession?: string
-    artisanStatus?: 'PENDING' | 'VERIFIED' | 'REJECTED'
-    isAvailable?: boolean
-    averageRating?: number
-    totalReviews?: number
-  }
-}
-
-interface UserStats {
-  totalUsers: number
-  totalClients: number
-  totalArtisans: number
-  activeUsers: number
-  pendingUsers: number
-  suspendedUsers: number
-  newUsersThisMonth: number
-  growthRate: number
-}
+import { useUsers, useUserStats, type User } from "@/lib/hooks/use-users"
+import { DataNumber, StatCardWithSkeleton, UserRowSkeleton } from "@/components/loading"
 
 export default function UsersPage() {
-  const [users, setUsers] = useState<User[]>([])
-  const [stats, setStats] = useState<UserStats | null>(null)
-  const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState("")
   const [roleFilter, setRoleFilter] = useState<string>("all")
   const [statusFilter, setStatusFilter] = useState<string>("all")
 
-  useEffect(() => {
-    fetchData()
-  }, [])
+  // React Query hooks - data fetches independently
+  const { data: users = [], isLoading: usersLoading } = useUsers()
+  const { data: stats, isLoading: statsLoading } = useUserStats()
 
-  const fetchData = async () => {
-    try {
-      setLoading(true)
-      const [usersRes, statsRes] = await Promise.all([
-        fetch('/api/admin/users/all'),
-        fetch('/api/admin/users/stats')
-      ])
+  // Filter users based on search and filters
+  const filteredUsers = useMemo(() => {
+    return users.filter((user: User) => {
+      const matchesSearch = 
+        user.firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        user.lastName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        user.email.toLowerCase().includes(searchTerm.toLowerCase())
+      
+      const matchesRole = roleFilter === "all" || user.role === roleFilter
+      const matchesStatus = statusFilter === "all" || user.status === statusFilter
 
-      if (usersRes.ok && statsRes.ok) {
-        const [usersData, statsData] = await Promise.all([
-          usersRes.json(),
-          statsRes.json()
-        ])
-        setUsers(usersData)
-        setStats(statsData)
-      }
-    } catch (error) {
-      console.error('Error fetching users:', error)
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const filteredUsers = users.filter(user => {
-    const matchesSearch = 
-      user.firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.lastName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.email.toLowerCase().includes(searchTerm.toLowerCase())
-    
-    const matchesRole = roleFilter === "all" || user.role === roleFilter
-    const matchesStatus = statusFilter === "all" || user.status === statusFilter
-
-    return matchesSearch && matchesRole && matchesStatus
-  })
+      return matchesSearch && matchesRole && matchesStatus
+    })
+  }, [users, searchTerm, roleFilter, statusFilter])
 
   const getInitials = (firstName: string, lastName: string) => {
     return `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase()
@@ -108,20 +56,12 @@ export default function UsersPage() {
     return new Date(dateString).toLocaleDateString()
   }
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-96">
-        <Loader2 className="h-8 w-8 animate-spin" />
-      </div>
-    )
-  }
-
   return (
     <div className="px-4 lg:px-6 space-y-6">
-      {/* Header */}
+      {/* Header - Always visible */}
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold">User Management</h1>
+          <h1 className="text-3xl font-bold tracking-tight">User Management</h1>
           <p className="text-muted-foreground">Manage all platform users, clients, and artisans</p>
         </div>
         <Button>
@@ -130,58 +70,67 @@ export default function UsersPage() {
         </Button>
       </div>
 
-      {/* Stats Cards */}
-      {stats && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Users</CardTitle>
-              <Users className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats.totalUsers.toLocaleString()}</div>
-              <p className="text-xs text-muted-foreground">
-                +{stats.growthRate}% from last month
-              </p>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Clients</CardTitle>
-              <UserCheck className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats.totalClients.toLocaleString()}</div>
-              <p className="text-xs text-muted-foreground">Active clients</p>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Artisans</CardTitle>
-              <Hammer className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats.totalArtisans.toLocaleString()}</div>
-              <p className="text-xs text-muted-foreground">Registered artisans</p>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Pending Users</CardTitle>
-              <UserX className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats.pendingUsers}</div>
-              <p className="text-xs text-muted-foreground">Awaiting approval</p>
-            </CardContent>
-          </Card>
-        </div>
-      )}
+      {/* Stats Cards - Static labels visible, values show skeleton */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <StatCardWithSkeleton
+          title="Total Users"
+          icon={<Users className="h-4 w-4 text-muted-foreground" />}
+          isLoading={statsLoading}
+        >
+          <DataNumber 
+            value={stats?.totalUsers} 
+            isLoading={statsLoading}
+            format={(v) => Number(v).toLocaleString()}
+            className="text-2xl font-bold"
+          />
+          <p className="text-xs text-muted-foreground">
+            +{stats?.growthRate ?? 0}% from last month
+          </p>
+        </StatCardWithSkeleton>
+        
+        <StatCardWithSkeleton
+          title="Clients"
+          icon={<UserCheck className="h-4 w-4 text-muted-foreground" />}
+          isLoading={statsLoading}
+        >
+          <DataNumber 
+            value={stats?.totalClients} 
+            isLoading={statsLoading}
+            format={(v) => Number(v).toLocaleString()}
+            className="text-2xl font-bold"
+          />
+          <p className="text-xs text-muted-foreground">Active clients</p>
+        </StatCardWithSkeleton>
+        
+        <StatCardWithSkeleton
+          title="Artisans"
+          icon={<Hammer className="h-4 w-4 text-muted-foreground" />}
+          isLoading={statsLoading}
+        >
+          <DataNumber 
+            value={stats?.totalArtisans} 
+            isLoading={statsLoading}
+            format={(v) => Number(v).toLocaleString()}
+            className="text-2xl font-bold"
+          />
+          <p className="text-xs text-muted-foreground">Registered artisans</p>
+        </StatCardWithSkeleton>
+        
+        <StatCardWithSkeleton
+          title="Pending Users"
+          icon={<UserX className="h-4 w-4 text-muted-foreground" />}
+          isLoading={statsLoading}
+        >
+          <DataNumber 
+            value={stats?.pendingUsers} 
+            isLoading={statsLoading}
+            className="text-2xl font-bold"
+          />
+          <p className="text-xs text-muted-foreground">Awaiting approval</p>
+        </StatCardWithSkeleton>
+      </div>
 
-      {/* Filters and Search */}
+      {/* Filters and Search - Always visible and interactive */}
       <Card>
         <CardHeader>
           <CardTitle>User Directory</CardTitle>
@@ -225,7 +174,7 @@ export default function UsersPage() {
             </Select>
           </div>
 
-          {/* Users Table */}
+          {/* Users Table - Header always visible, rows show skeleton */}
           <div className="rounded-md border">
             <Table>
               <TableHeader>
@@ -240,92 +189,99 @@ export default function UsersPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredUsers.map((user) => (
-                  <TableRow key={user.id}>
-                    <TableCell>
-                      <div className="flex items-center space-x-3">
-                        <Avatar>
-                          <AvatarImage src="" />
-                          <AvatarFallback>{getInitials(user.firstName, user.lastName)}</AvatarFallback>
-                        </Avatar>
-                        <div>
-                          <div className="font-medium">{user.firstName} {user.lastName}</div>
-                          <div className="text-sm text-muted-foreground">{user.email}</div>
-                          {user.profile?.profession && (
-                            <div className="text-xs text-muted-foreground">{user.profile.profession}</div>
-                          )}
-                        </div>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant={user.role === 'ADMIN' ? 'default' : 'secondary'}>
-                        {user.role}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <Badge 
-                        variant={
-                          user.status === 'ACTIVE' ? 'default' :
-                          user.status === 'PENDING' ? 'secondary' :
-                          user.status === 'SUSPENDED' ? 'destructive' : 'outline'
-                        }
-                      >
-                        {user.status}
-                      </Badge>
-                      {user.role === 'ARTISAN' && user.profile?.artisanStatus && (
-                        <Badge variant="outline" className="ml-1">
-                          {user.profile.artisanStatus}
-                        </Badge>
-                      )}
-                    </TableCell>
-                    <TableCell>{user.profile?.city || 'Not specified'}</TableCell>
-                    <TableCell>{formatDate(user.createdAt)}</TableCell>
-                    <TableCell>{user.lastLoginAt ? formatDate(user.lastLoginAt) : 'Never'}</TableCell>
-                    <TableCell className="text-right">
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" className="h-8 w-8 p-0">
-                            <MoreHorizontal className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem>
-                            <Eye className="mr-2 h-4 w-4" />
-                            View Details
-                          </DropdownMenuItem>
-                          <DropdownMenuItem>
-                            <Edit className="mr-2 h-4 w-4" />
-                            Edit User
-                          </DropdownMenuItem>
-                          {user.status === 'ACTIVE' ? (
-                            <DropdownMenuItem className="text-orange-600">
-                              <UserX className="mr-2 h-4 w-4" />
-                              Suspend User
-                            </DropdownMenuItem>
-                          ) : (
-                            <DropdownMenuItem className="text-green-600">
-                              <UserCheck className="mr-2 h-4 w-4" />
-                              Activate User
-                            </DropdownMenuItem>
-                          )}
-                          <DropdownMenuItem className="text-red-600">
-                            <Trash2 className="mr-2 h-4 w-4" />
-                            Delete User
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
+                {usersLoading ? (
+                  // Show skeleton rows while loading
+                  Array.from({ length: 5 }).map((_, i) => (
+                    <UserRowSkeleton key={i} columns={7} />
+                  ))
+                ) : filteredUsers.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={7} className="text-center py-8">
+                      <p className="text-muted-foreground">No users found matching your criteria.</p>
                     </TableCell>
                   </TableRow>
-                ))}
+                ) : (
+                  filteredUsers.map((user: User) => (
+                    <TableRow key={user.id}>
+                      <TableCell>
+                        <div className="flex items-center space-x-3">
+                          <Avatar>
+                            <AvatarImage src="" />
+                            <AvatarFallback>{getInitials(user.firstName, user.lastName)}</AvatarFallback>
+                          </Avatar>
+                          <div>
+                            <div className="font-medium">{user.firstName} {user.lastName}</div>
+                            <div className="text-sm text-muted-foreground">{user.email}</div>
+                            {user.profile?.profession && (
+                              <div className="text-xs text-muted-foreground">{user.profile.profession}</div>
+                            )}
+                          </div>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant={user.role === 'ADMIN' ? 'default' : 'secondary'}>
+                          {user.role}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <Badge 
+                          variant={
+                            user.status === 'ACTIVE' ? 'default' :
+                            user.status === 'PENDING' ? 'secondary' :
+                            user.status === 'SUSPENDED' ? 'destructive' : 'outline'
+                          }
+                        >
+                          {user.status}
+                        </Badge>
+                        {user.role === 'ARTISAN' && user.profile?.artisanStatus && (
+                          <Badge variant="outline" className="ml-1">
+                            {user.profile.artisanStatus}
+                          </Badge>
+                        )}
+                      </TableCell>
+                      <TableCell>{user.profile?.city || 'Not specified'}</TableCell>
+                      <TableCell>{formatDate(user.createdAt)}</TableCell>
+                      <TableCell>{user.lastLoginAt ? formatDate(user.lastLoginAt) : 'Never'}</TableCell>
+                      <TableCell className="text-right">
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" className="h-8 w-8 p-0">
+                              <MoreHorizontal className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem>
+                              <Eye className="mr-2 h-4 w-4" />
+                              View Details
+                            </DropdownMenuItem>
+                            <DropdownMenuItem>
+                              <Edit className="mr-2 h-4 w-4" />
+                              Edit User
+                            </DropdownMenuItem>
+                            {user.status === 'ACTIVE' ? (
+                              <DropdownMenuItem className="text-orange-600">
+                                <UserX className="mr-2 h-4 w-4" />
+                                Suspend User
+                              </DropdownMenuItem>
+                            ) : (
+                              <DropdownMenuItem className="text-green-600">
+                                <UserCheck className="mr-2 h-4 w-4" />
+                                Activate User
+                              </DropdownMenuItem>
+                            )}
+                            <DropdownMenuItem className="text-red-600">
+                              <Trash2 className="mr-2 h-4 w-4" />
+                              Delete User
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
               </TableBody>
             </Table>
           </div>
-
-          {filteredUsers.length === 0 && (
-            <div className="text-center py-8">
-              <p className="text-muted-foreground">No users found matching your criteria.</p>
-            </div>
-          )}
         </CardContent>
       </Card>
     </div>

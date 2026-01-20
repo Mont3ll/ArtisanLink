@@ -7,16 +7,12 @@ import { Skeleton } from "@/components/ui/skeleton"
 
 export default function AdminDashboardPageContent() {
   return (
-    <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
-      <div className="px-4 lg:px-6">
-        <AdminDashboardHeader />
-      </div>
+    <div className="px-4 lg:px-6 space-y-6">
+      <AdminDashboardHeader />
 
       <SectionCards />
       
-      <div className="px-4 lg:px-6">
-        <ChartAreaInteractive />
-      </div>
+      <ChartAreaInteractive />
 
       <Suspense fallback={<DashboardLoadingSkeleton />}>
         <AdminDashboardContent />
@@ -27,12 +23,10 @@ export default function AdminDashboardPageContent() {
 
 function DashboardLoadingSkeleton() {
   return (
-    <div className="px-4 lg:px-6 space-y-4">
-      <div className="space-y-4">
-        {Array.from({ length: 3 }).map((_, i) => (
-          <Skeleton key={i} className="h-48 w-full" />
-        ))}
-      </div>
+    <div className="space-y-4">
+      {Array.from({ length: 3 }).map((_, i) => (
+        <Skeleton key={i} className="h-48 w-full" />
+      ))}
     </div>
   )
 }

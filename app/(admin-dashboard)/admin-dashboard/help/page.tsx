@@ -21,8 +21,8 @@ export default function HelpPage() {
     <div className="px-4 lg:px-6 space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Help & Support</h1>
-          <p className="text-gray-600 mt-2">Find answers and get assistance with platform administration</p>
+          <h1 className="text-3xl font-bold tracking-tight">Help & Support</h1>
+          <p className="text-muted-foreground">Find answers and get assistance with platform administration</p>
         </div>
         <Button className="flex items-center gap-2">
           <MessageCircle className="h-4 w-4" />
@@ -69,7 +69,7 @@ export default function HelpPage() {
                 </div>
               </CardHeader>
               <CardContent>
-                <p className="text-sm text-gray-600 mb-4">
+                <p className="text-sm text-muted-foreground mb-4">
                   Comprehensive guide covering all administrative functions and best practices.
                 </p>
                 <Button variant="outline" className="w-full">
@@ -90,7 +90,7 @@ export default function HelpPage() {
                 </div>
               </CardHeader>
               <CardContent>
-                <p className="text-sm text-gray-600 mb-4">
+                <p className="text-sm text-muted-foreground mb-4">
                   Learn how to manage user accounts, roles, and platform access.
                 </p>
                 <Button variant="outline" className="w-full">
@@ -111,7 +111,7 @@ export default function HelpPage() {
                 </div>
               </CardHeader>
               <CardContent>
-                <p className="text-sm text-gray-600 mb-4">
+                <p className="text-sm text-muted-foreground mb-4">
                   Guide to interpreting analytics data and generating reports.
                 </p>
                 <Button variant="outline" className="w-full">
@@ -136,7 +136,7 @@ export default function HelpPage() {
                 </div>
               </CardHeader>
               <CardContent>
-                <p className="text-sm text-gray-600 mb-4">
+                <p className="text-sm text-muted-foreground mb-4">
                   Complete overview of the admin dashboard and core features.
                 </p>
                 <div className="flex gap-2">
@@ -162,7 +162,7 @@ export default function HelpPage() {
                 </div>
               </CardHeader>
               <CardContent>
-                <p className="text-sm text-gray-600 mb-4">
+                <p className="text-sm text-muted-foreground mb-4">
                   Step-by-step guide to verifying artisan accounts and profiles.
                 </p>
                 <div className="flex gap-2">
@@ -188,7 +188,7 @@ export default function HelpPage() {
                 </div>
               </CardHeader>
               <CardContent>
-                <p className="text-sm text-gray-600 mb-4">
+                <p className="text-sm text-muted-foreground mb-4">
                   Monitor platform health and performance metrics effectively.
                 </p>
                 <div className="flex gap-2">
@@ -214,7 +214,7 @@ export default function HelpPage() {
                 </div>
               </CardHeader>
               <CardContent>
-                <p className="text-sm text-gray-600 mb-4">
+                <p className="text-sm text-muted-foreground mb-4">
                   Configure platform settings and customize user experience.
                 </p>
                 <div className="flex gap-2">
@@ -241,19 +241,19 @@ export default function HelpPage() {
               <CardContent className="space-y-4">
                 <div className="border-l-4 border-blue-500 pl-4">
                   <h4 className="font-medium">How do I reset a user&apos;s password?</h4>
-                  <p className="text-sm text-gray-600 mt-1">
+                  <p className="text-sm text-muted-foreground mt-1">
                     Navigate to User Management, find the user, and click the reset password option.
                   </p>
                 </div>
                 <div className="border-l-4 border-green-500 pl-4">
                   <h4 className="font-medium">How do I approve artisan verifications?</h4>
-                  <p className="text-sm text-gray-600 mt-1">
+                  <p className="text-sm text-muted-foreground mt-1">
                     Go to Artisan Verification, review submitted documents, and approve or reject.
                   </p>
                 </div>
                 <div className="border-l-4 border-purple-500 pl-4">
                   <h4 className="font-medium">How do I generate system reports?</h4>
-                  <p className="text-sm text-gray-600 mt-1">
+                  <p className="text-sm text-muted-foreground mt-1">
                     Use the Reports section to create custom reports with various filters and timeframes.
                   </p>
                 </div>
@@ -273,7 +273,7 @@ export default function HelpPage() {
                   <Book className="h-8 w-8 text-blue-600" />
                   <div className="flex-1">
                     <h4 className="font-medium">Knowledge Base</h4>
-                    <p className="text-sm text-gray-600">Searchable articles and guides</p>
+                    <p className="text-sm text-muted-foreground">Searchable articles and guides</p>
                   </div>
                   <Button variant="outline" size="sm">Access</Button>
                 </div>
@@ -281,7 +281,7 @@ export default function HelpPage() {
                   <MessageCircle className="h-8 w-8 text-green-600" />
                   <div className="flex-1">
                     <h4 className="font-medium">Community Forum</h4>
-                    <p className="text-sm text-gray-600">Connect with other admins</p>
+                    <p className="text-sm text-muted-foreground">Connect with other admins</p>
                   </div>
                   <Button variant="outline" size="sm">Visit</Button>
                 </div>
@@ -289,7 +289,7 @@ export default function HelpPage() {
                   <Download className="h-8 w-8 text-purple-600" />
                   <div className="flex-1">
                     <h4 className="font-medium">Downloads</h4>
-                    <p className="text-sm text-gray-600">Documentation and templates</p>
+                    <p className="text-sm text-muted-foreground">Documentation and templates</p>
                   </div>
                   <Button variant="outline" size="sm">Browse</Button>
                 </div>
@@ -310,24 +310,24 @@ export default function HelpPage() {
                   <Mail className="h-6 w-6 text-blue-600" />
                   <div>
                     <h4 className="font-medium">Email Support</h4>
-                    <p className="text-sm text-gray-600">admin-support@artisanlink.ke</p>
-                    <p className="text-xs text-gray-500">Response within 24 hours</p>
+                    <p className="text-sm text-muted-foreground">admin-support@artisanlink.ke</p>
+                    <p className="text-xs text-muted-foreground">Response within 24 hours</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-3 p-4 border rounded-lg">
                   <Phone className="h-6 w-6 text-green-600" />
                   <div>
                     <h4 className="font-medium">Phone Support</h4>
-                    <p className="text-sm text-gray-600">+254 700 123 456</p>
-                    <p className="text-xs text-gray-500">Mon-Fri, 9AM-6PM EAT</p>
+                    <p className="text-sm text-muted-foreground">+254 700 123 456</p>
+                    <p className="text-xs text-muted-foreground">Mon-Fri, 9AM-6PM EAT</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-3 p-4 border rounded-lg">
                   <MessageCircle className="h-6 w-6 text-purple-600" />
                   <div>
                     <h4 className="font-medium">Live Chat</h4>
-                    <p className="text-sm text-gray-600">Available during business hours</p>
-                    <p className="text-xs text-gray-500">Average response: 5 minutes</p>
+                    <p className="text-sm text-muted-foreground">Available during business hours</p>
+                    <p className="text-xs text-muted-foreground">Average response: 5 minutes</p>
                   </div>
                 </div>
               </CardContent>
@@ -340,24 +340,24 @@ export default function HelpPage() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="flex items-center gap-3">
-                  <Clock className="h-5 w-5 text-gray-600" />
+                  <Clock className="h-5 w-5 text-muted-foreground" />
                   <div>
                     <h4 className="font-medium">Business Hours</h4>
-                    <p className="text-sm text-gray-600">Monday - Friday: 9:00 AM - 6:00 PM EAT</p>
+                    <p className="text-sm text-muted-foreground">Monday - Friday: 9:00 AM - 6:00 PM EAT</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-3">
-                  <Clock className="h-5 w-5 text-gray-600" />
+                  <Clock className="h-5 w-5 text-muted-foreground" />
                   <div>
                     <h4 className="font-medium">Emergency Support</h4>
-                    <p className="text-sm text-gray-600">24/7 for critical system issues</p>
+                    <p className="text-sm text-muted-foreground">24/7 for critical system issues</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-3">
-                  <Clock className="h-5 w-5 text-gray-600" />
+                  <Clock className="h-5 w-5 text-muted-foreground" />
                   <div>
                     <h4 className="font-medium">Response Times</h4>
-                    <p className="text-sm text-gray-600">Email: 24 hours | Chat: 5 minutes</p>
+                    <p className="text-sm text-muted-foreground">Email: 24 hours | Chat: 5 minutes</p>
                   </div>
                 </div>
               </CardContent>

@@ -1,8 +1,6 @@
 import { NextResponse } from 'next/server'
 import { auth } from '@clerk/nextjs/server'
-import { PrismaClient } from '@/app/generated/prisma'
-
-const prisma = new PrismaClient()
+import { prisma } from '@/lib/prisma'
 
 export async function GET() {
   try {
@@ -22,6 +20,12 @@ export async function GET() {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
+    // Calculate date ranges for month-over-month comparison
+    const now = new Date()
+    const currentMonthStart = new Date(now.getFullYear(), now.getMonth(), 1)
+    const lastMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1)
+    const lastMonthEnd = new Date(now.getFullYear(), now.getMonth(), 0)
+
     // Get user statistics
     const [
       totalUsers,
@@ -30,7 +34,8 @@ export async function GET() {
       activeUsers,
       pendingUsers,
       suspendedUsers,
-      newUsersThisMonth
+      newUsersThisMonth,
+      newUsersLastMonth
     ] = await Promise.all([
       prisma.user.count(),
       prisma.user.count({ where: { role: 'CLIENT' } }),
@@ -40,15 +45,28 @@ export async function GET() {
       prisma.user.count({ where: { status: 'SUSPENDED' } }),
       prisma.user.count({
         where: {
+          createdAt: { gte: currentMonthStart }
+        }
+      }),
+      prisma.user.count({
+        where: {
           createdAt: {
-            gte: new Date(new Date().getFullYear(), new Date().getMonth(), 1)
+            gte: lastMonthStart,
+            lte: lastMonthEnd
           }
         }
       })
     ])
 
-    // Calculate growth rate (mock calculation for now)
-    const growthRate = 12.5
+    // Calculate real growth rate
+    const calculateGrowth = (current: number, previous: number): number => {
+      if (previous === 0) {
+        return current > 0 ? 100 : 0
+      }
+      return Number((((current - previous) / previous) * 100).toFixed(1))
+    }
+
+    const growthRate = calculateGrowth(newUsersThisMonth, newUsersLastMonth)
 
     const stats = {
       totalUsers,
@@ -58,7 +76,14 @@ export async function GET() {
       pendingUsers,
       suspendedUsers,
       newUsersThisMonth,
-      growthRate
+      newUsersLastMonth,
+      growthRate,
+      // Breakdown percentages
+      breakdown: {
+        clientsPercent: totalUsers > 0 ? Number(((totalClients / totalUsers) * 100).toFixed(1)) : 0,
+        artisansPercent: totalUsers > 0 ? Number(((totalArtisans / totalUsers) * 100).toFixed(1)) : 0,
+        activePercent: totalUsers > 0 ? Number(((activeUsers / totalUsers) * 100).toFixed(1)) : 0
+      }
     }
 
     return NextResponse.json(stats)
@@ -68,7 +93,5 @@ export async function GET() {
       { error: 'Internal server error' },
       { status: 500 }
     )
-  } finally {
-    await prisma.$disconnect()
   }
 }

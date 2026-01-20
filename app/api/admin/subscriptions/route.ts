@@ -1,8 +1,6 @@
 import { NextResponse } from 'next/server'
 import { auth } from '@clerk/nextjs/server'
-import { PrismaClient } from '@/app/generated/prisma'
-
-const prisma = new PrismaClient()
+import { prisma } from '@/lib/prisma'
 
 export async function GET() {
   try {
@@ -54,13 +52,14 @@ export async function GET() {
     })
 
     // Calculate metrics
-    const totalRevenue = subscriptionStats.reduce((sum, stat) => sum + (stat._sum.amount || 0), 0)
+    type SubStat = { status: string; plan: string; _count: { id: number }; _sum: { amount: number | null } }
+    const totalRevenue = subscriptionStats.reduce((sum: number, stat: SubStat) => sum + (stat._sum.amount || 0), 0)
     const activeSubscriptions = subscriptionStats
-      .filter(stat => stat.status === 'ACTIVE')
-      .reduce((sum, stat) => sum + stat._count.id, 0)
+      .filter((stat: SubStat) => stat.status === 'ACTIVE')
+      .reduce((sum: number, stat: SubStat) => sum + stat._count.id, 0)
 
     return NextResponse.json({
-      stats: subscriptionStats.map(stat => ({
+      stats: subscriptionStats.map((stat: SubStat) => ({
         status: stat.status,
         plan: stat.plan,
         count: stat._count.id,
@@ -70,7 +69,7 @@ export async function GET() {
       metrics: {
         totalRevenue,
         activeSubscriptions,
-        totalSubscriptions: subscriptionStats.reduce((sum, stat) => sum + stat._count.id, 0)
+        totalSubscriptions: subscriptionStats.reduce((sum: number, stat: SubStat) => sum + stat._count.id, 0)
       }
     })
   } catch (error) {
@@ -79,7 +78,5 @@ export async function GET() {
       { error: 'Internal server error' },
       { status: 500 }
     )
-  } finally {
-    await prisma.$disconnect()
   }
 }
