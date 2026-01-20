@@ -1,8 +1,6 @@
 import { NextResponse } from 'next/server'
 import { auth } from '@clerk/nextjs/server'
-import { PrismaClient } from '@/app/generated/prisma'
-
-const prisma = new PrismaClient()
+import { prisma } from '@/lib/prisma'
 
 export async function GET() {
   try {
@@ -42,7 +40,7 @@ export async function GET() {
           orderBy: {
             lastMessageAt: 'desc'
           },
-          take: 5
+          take: 10
         },
         reviews: {
           include: {
@@ -60,7 +58,7 @@ export async function GET() {
           orderBy: {
             createdAt: 'desc'
           },
-          take: 5
+          take: 10
         }
       }
     })
@@ -106,41 +104,78 @@ export async function GET() {
       }
     })
 
+    // Get total conversation count
+    const totalConversations = await prisma.conversation.count({
+      where: {
+        clientId: user.id
+      }
+    })
+
     const stats = {
-      activeProjects: user.clientConversations.length,
-      completedProjects: user.reviews.length,
-      savedArtisans: 0, // Mock for now
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      activeConversations: user.clientConversations.filter((c: any) => c.status === 'ACTIVE').length,
+      totalConversations,
+      reviewsGiven: user.reviews.length,
       unreadMessages,
-      totalSpent: user.reviews.reduce((sum, review) => sum + (review.projectCost || 0), 0)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      totalSpent: user.reviews.reduce((sum: number, review: any) => sum + (review.projectCost || 0), 0)
     }
 
-    const recentActivity = [
-      {
-        id: 1,
-        type: 'message',
-        title: 'New message from artisan',
-        description: user.clientConversations[0] ? 
-          `${user.clientConversations[0].artisan.firstName} sent you a message` :
-          'No recent messages',
-        timestamp: user.clientConversations[0]?.lastMessageAt?.toISOString() || new Date().toISOString(),
-        icon: 'message'
-      },
-      {
-        id: 2,
-        type: 'recommendation',
-        title: 'New artisan recommendation',
-        description: recommendedArtisans[0] ? 
-          `Check out ${recommendedArtisans[0].firstName} - ${recommendedArtisans[0].profile?.profession}` :
-          'Discover skilled artisans',
-        timestamp: new Date(Date.now() - 1 * 60 * 60 * 1000).toISOString(),
-        icon: 'user'
+    // Build real recent activity from actual data
+    const recentActivity: Array<{
+      id: string
+      type: 'message' | 'review' | 'conversation'
+      title: string
+      description: string
+      timestamp: string
+      icon: string
+    }> = []
+
+    // Add recent conversations/messages to activity
+    for (const conversation of user.clientConversations) {
+      const lastMessage = conversation.messages[0]
+      if (lastMessage) {
+        recentActivity.push({
+          id: `message-${lastMessage.id}`,
+          type: 'message',
+          title: 'Message from artisan',
+          description: `${conversation.artisan.firstName} ${conversation.artisan.lastName}: ${lastMessage.content.substring(0, 50)}${lastMessage.content.length > 50 ? '...' : ''}`,
+          timestamp: lastMessage.createdAt.toISOString(),
+          icon: 'message'
+        })
+      } else {
+        recentActivity.push({
+          id: `conversation-${conversation.id}`,
+          type: 'conversation',
+          title: 'Conversation started',
+          description: `You started a conversation with ${conversation.artisan.firstName} ${conversation.artisan.lastName}`,
+          timestamp: conversation.createdAt.toISOString(),
+          icon: 'message'
+        })
       }
-    ]
+    }
+
+    // Add reviews to activity
+    for (const review of user.reviews) {
+      recentActivity.push({
+        id: `review-${review.id}`,
+        type: 'review',
+        title: 'Review submitted',
+        description: `You left a ${review.rating}-star review for ${review.profile.user.firstName} ${review.profile.user.lastName}`,
+        timestamp: review.createdAt.toISOString(),
+        icon: 'star'
+      })
+    }
+
+    // Sort by timestamp and take top 10
+    recentActivity.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
+    const topActivity = recentActivity.slice(0, 10)
 
     return NextResponse.json({
       stats,
-      recentActivity,
-      recommendedArtisans: recommendedArtisans.map(artisan => ({
+      recentActivity: topActivity,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      recommendedArtisans: recommendedArtisans.map((artisan: any) => ({
         id: artisan.id,
         name: `${artisan.firstName} ${artisan.lastName}`,
         profession: artisan.profile?.profession,
@@ -150,8 +185,8 @@ export async function GET() {
         hourlyRate: artisan.profile?.hourlyRate,
         featuredWork: artisan.profile?.portfolioItems[0]
       })),
-      conversations: user.clientConversations,
-      reviews: user.reviews
+      conversations: user.clientConversations.slice(0, 5),
+      reviews: user.reviews.slice(0, 5)
     })
   } catch (error) {
     console.error('Error fetching client stats:', error)
@@ -159,7 +194,5 @@ export async function GET() {
       { error: 'Internal server error' },
       { status: 500 }
     )
-  } finally {
-    await prisma.$disconnect()
   }
 }

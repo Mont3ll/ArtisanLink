@@ -1,8 +1,6 @@
 import { NextResponse } from 'next/server'
 import { auth } from '@clerk/nextjs/server'
-import { PrismaClient } from '@/app/generated/prisma'
-
-const prisma = new PrismaClient()
+import { prisma } from '@/lib/prisma'
 
 export async function GET() {
   try {
@@ -66,7 +64,7 @@ export async function GET() {
     })
 
     return NextResponse.json({
-      userGrowth: userGrowth.map(item => ({
+      userGrowth: userGrowth.map((item: { role: string; _count: { id: number } }) => ({
         role: item.role,
         count: item._count.id
       })),
@@ -88,7 +86,5 @@ export async function GET() {
       { error: 'Internal server error' },
       { status: 500 }
     )
-  } finally {
-    await prisma.$disconnect()
   }
 }

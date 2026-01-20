@@ -217,15 +217,15 @@ export function AdminDashboardContent() {
               </div>
               <div className="flex-1 space-y-1">
                 <p className="text-sm font-medium">New artisan registration</p>
-                <div className="flex items-center gap-2 text-xs text-gray-500">
-                  <span>Recent registrations</span>
-                  <Badge variant="outline" className="text-xs">artisan</Badge>
-                  <div className="flex items-center gap-1">
-                    <MapPin className="w-3 h-3" />
-                    Kenya
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                    <span>Recent registrations</span>
+                    <Badge variant="outline" className="text-xs">artisan</Badge>
+                    <div className="flex items-center gap-1">
+                      <MapPin className="w-3 h-3" />
+                      Kenya
+                    </div>
                   </div>
-                </div>
-                <p className="text-xs text-gray-400">Today</p>
+                  <p className="text-xs text-muted-foreground">Today</p>
               </div>
             </div>
             <div className="flex items-start gap-3 p-4 border rounded-lg">
@@ -234,11 +234,11 @@ export function AdminDashboardContent() {
               </div>
               <div className="flex-1 space-y-1">
                 <p className="text-sm font-medium">Pending verifications</p>
-                <div className="flex items-center gap-2 text-xs text-gray-500">
-                  <span>{stats.pendingVerifications} pending</span>
-                  <Badge variant="outline" className="text-xs">verification</Badge>
-                </div>
-                <p className="text-xs text-gray-400">Awaiting review</p>
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                    <span>{stats.pendingVerifications} pending</span>
+                    <Badge variant="outline" className="text-xs">verification</Badge>
+                  </div>
+                  <p className="text-xs text-muted-foreground">Awaiting review</p>
               </div>
             </div>
           </CardContent>

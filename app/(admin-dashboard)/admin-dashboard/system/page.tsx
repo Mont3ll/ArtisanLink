@@ -5,34 +5,77 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Skeleton } from '@/components/ui/skeleton'
 import { 
   Server, 
   Database, 
   Activity, 
   CheckCircle, 
   AlertTriangle,
+  XCircle,
   Cpu,
   HardDrive,
   Wifi,
   RefreshCw
 } from 'lucide-react'
+import {
+  useAdminMonitoring,
+  getHealthStatusBadgeClass,
+  getLogLevelBadgeClass,
+} from '@/lib/hooks'
 
 export default function SystemPage() {
-  const systemMetrics = {
-    database: { status: 'healthy', connections: 15, responseTime: 45 },
-    server: { status: 'healthy', uptime: 99.98, cpu: 25, memory: 40 },
-    api: { status: 'healthy', requests: 1247, errors: 0.02 }
+  const { data, isLoading, refetch } = useAdminMonitoring(false) // No auto-refresh for this page
+
+  const getStatusIcon = (status: string) => {
+    switch (status) {
+      case 'healthy':
+        return <CheckCircle className="h-4 w-4 text-green-500" />
+      case 'warning':
+        return <AlertTriangle className="h-4 w-4 text-yellow-500" />
+      case 'error':
+        return <XCircle className="h-4 w-4 text-red-500" />
+      default:
+        return <Activity className="h-4 w-4 text-muted-foreground" />
+    }
+  }
+
+  const getStatusBadge = (status: string) => {
+    const badgeClass = getHealthStatusBadgeClass(status)
+    const labels: Record<string, string> = {
+      healthy: 'Healthy',
+      warning: 'Warning',
+      error: 'Error',
+    }
+    return badgeClass ? (
+      <Badge className={badgeClass}>{labels[status] || 'Unknown'}</Badge>
+    ) : (
+      <Badge variant="outline">Unknown</Badge>
+    )
+  }
+
+  const getLogIcon = (level: string) => {
+    switch (level) {
+      case 'INFO':
+        return <Activity className="h-5 w-5 text-blue-500 mt-0.5" />
+      case 'WARNING':
+        return <AlertTriangle className="h-5 w-5 text-yellow-500 mt-0.5" />
+      case 'ERROR':
+        return <XCircle className="h-5 w-5 text-red-500 mt-0.5" />
+      default:
+        return <CheckCircle className="h-5 w-5 text-green-500 mt-0.5" />
+    }
   }
 
   return (
     <div className="px-4 lg:px-6 space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">System Health</h1>
-          <p className="text-gray-600 mt-2">Monitor platform infrastructure and performance</p>
+          <h1 className="text-3xl font-bold tracking-tight">System Health</h1>
+          <p className="text-muted-foreground">Monitor platform infrastructure and performance</p>
         </div>
-        <Button>
-          <RefreshCw className="h-4 w-4 mr-2" />
+        <Button onClick={() => refetch()} disabled={isLoading}>
+          <RefreshCw className={`h-4 w-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
           Refresh
         </Button>
       </div>
@@ -44,14 +87,29 @@ export default function SystemPage() {
             <Database className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="flex items-center gap-2 mb-2">
-              <CheckCircle className="h-4 w-4 text-green-500" />
-              <Badge className="bg-green-100 text-green-800">Healthy</Badge>
-            </div>
-            <div className="space-y-1 text-sm text-gray-600">
-              <div>Connections: {systemMetrics.database.connections}</div>
-              <div>Response: {systemMetrics.database.responseTime}ms</div>
-            </div>
+            {isLoading ? (
+              <div className="space-y-2">
+                <div className="flex items-center gap-2 mb-2">
+                  <Skeleton className="h-4 w-4 rounded-full" />
+                  <Skeleton className="h-5 w-16" />
+                </div>
+                <Skeleton className="h-4 w-28" />
+                <Skeleton className="h-4 w-24" />
+              </div>
+            ) : data ? (
+              <>
+                <div className="flex items-center gap-2 mb-2">
+                  {getStatusIcon(data.systemHealth.database.status)}
+                  {getStatusBadge(data.systemHealth.database.status)}
+                </div>
+                <div className="space-y-1 text-sm text-muted-foreground">
+                  <div>Connections: {data.systemHealth.database.connections}</div>
+                  <div>Response: {data.systemHealth.database.responseTime}ms</div>
+                </div>
+              </>
+            ) : (
+              <p className="text-sm text-muted-foreground">No data available</p>
+            )}
           </CardContent>
         </Card>
 
@@ -61,14 +119,29 @@ export default function SystemPage() {
             <Server className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="flex items-center gap-2 mb-2">
-              <CheckCircle className="h-4 w-4 text-green-500" />
-              <Badge className="bg-green-100 text-green-800">Healthy</Badge>
-            </div>
-            <div className="space-y-1 text-sm text-gray-600">
-              <div>Uptime: {systemMetrics.server.uptime}%</div>
-              <div>CPU: {systemMetrics.server.cpu}%</div>
-            </div>
+            {isLoading ? (
+              <div className="space-y-2">
+                <div className="flex items-center gap-2 mb-2">
+                  <Skeleton className="h-4 w-4 rounded-full" />
+                  <Skeleton className="h-5 w-16" />
+                </div>
+                <Skeleton className="h-4 w-24" />
+                <Skeleton className="h-4 w-20" />
+              </div>
+            ) : data ? (
+              <>
+                <div className="flex items-center gap-2 mb-2">
+                  {getStatusIcon(data.systemHealth.server.status)}
+                  {getStatusBadge(data.systemHealth.server.status)}
+                </div>
+                <div className="space-y-1 text-sm text-muted-foreground">
+                  <div>Uptime: {data.systemHealth.server.uptime}%</div>
+                  <div>CPU: {data.systemHealth.server.cpuUsage}%</div>
+                </div>
+              </>
+            ) : (
+              <p className="text-sm text-muted-foreground">No data available</p>
+            )}
           </CardContent>
         </Card>
 
@@ -78,14 +151,29 @@ export default function SystemPage() {
             <Wifi className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="flex items-center gap-2 mb-2">
-              <CheckCircle className="h-4 w-4 text-green-500" />
-              <Badge className="bg-green-100 text-green-800">Healthy</Badge>
-            </div>
-            <div className="space-y-1 text-sm text-gray-600">
-              <div>Requests: {systemMetrics.api.requests}</div>
-              <div>Error Rate: {systemMetrics.api.errors}%</div>
-            </div>
+            {isLoading ? (
+              <div className="space-y-2">
+                <div className="flex items-center gap-2 mb-2">
+                  <Skeleton className="h-4 w-4 rounded-full" />
+                  <Skeleton className="h-5 w-16" />
+                </div>
+                <Skeleton className="h-4 w-28" />
+                <Skeleton className="h-4 w-24" />
+              </div>
+            ) : data ? (
+              <>
+                <div className="flex items-center gap-2 mb-2">
+                  {getStatusIcon(data.systemHealth.api.status)}
+                  {getStatusBadge(data.systemHealth.api.status)}
+                </div>
+                <div className="space-y-1 text-sm text-muted-foreground">
+                  <div>Requests/min: {data.systemHealth.api.requestsPerMinute}</div>
+                  <div>Response: {data.systemHealth.api.responseTime}ms</div>
+                </div>
+              </>
+            ) : (
+              <p className="text-sm text-muted-foreground">No data available</p>
+            )}
           </CardContent>
         </Card>
       </div>
@@ -110,9 +198,17 @@ export default function SystemPage() {
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
                     <span className="text-sm font-medium">Current Usage</span>
-                    <span className="text-sm text-gray-600">{systemMetrics.server.cpu}%</span>
+                    {isLoading ? (
+                      <Skeleton className="h-4 w-10" />
+                    ) : (
+                      <span className="text-sm text-muted-foreground">{data?.systemHealth.server.cpuUsage || 0}%</span>
+                    )}
                   </div>
-                  <Progress value={systemMetrics.server.cpu} className="h-2" />
+                  {isLoading ? (
+                    <Skeleton className="h-2 w-full" />
+                  ) : (
+                    <Progress value={data?.systemHealth.server.cpuUsage || 0} className="h-2" />
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -128,9 +224,17 @@ export default function SystemPage() {
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
                     <span className="text-sm font-medium">Current Usage</span>
-                    <span className="text-sm text-gray-600">{systemMetrics.server.memory}%</span>
+                    {isLoading ? (
+                      <Skeleton className="h-4 w-10" />
+                    ) : (
+                      <span className="text-sm text-muted-foreground">{data?.systemHealth.server.memoryUsage || 0}%</span>
+                    )}
                   </div>
-                  <Progress value={systemMetrics.server.memory} className="h-2" />
+                  {isLoading ? (
+                    <Skeleton className="h-2 w-full" />
+                  ) : (
+                    <Progress value={data?.systemHealth.server.memoryUsage || 0} className="h-2" />
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -147,16 +251,43 @@ export default function SystemPage() {
               <div className="space-y-4">
                 <div className="grid grid-cols-3 gap-4 text-center">
                   <div className="p-4 border rounded-lg">
-                    <div className="text-2xl font-bold text-green-600">99.98%</div>
-                    <div className="text-sm text-gray-600">Uptime</div>
+                    {isLoading ? (
+                      <>
+                        <Skeleton className="h-8 w-20 mx-auto mb-1" />
+                        <Skeleton className="h-4 w-12 mx-auto" />
+                      </>
+                    ) : (
+                      <>
+                        <div className="text-2xl font-bold text-green-600">{data?.systemHealth.server.uptime || 0}%</div>
+                        <div className="text-sm text-muted-foreground">Uptime</div>
+                      </>
+                    )}
                   </div>
                   <div className="p-4 border rounded-lg">
-                    <div className="text-2xl font-bold text-blue-600">245ms</div>
-                    <div className="text-sm text-gray-600">Avg Response</div>
+                    {isLoading ? (
+                      <>
+                        <Skeleton className="h-8 w-20 mx-auto mb-1" />
+                        <Skeleton className="h-4 w-16 mx-auto" />
+                      </>
+                    ) : (
+                      <>
+                        <div className="text-2xl font-bold text-blue-600">{data?.systemHealth.api.responseTime || 0}ms</div>
+                        <div className="text-sm text-muted-foreground">Avg Response</div>
+                      </>
+                    )}
                   </div>
                   <div className="p-4 border rounded-lg">
-                    <div className="text-2xl font-bold text-purple-600">1,247</div>
-                    <div className="text-sm text-gray-600">Requests/min</div>
+                    {isLoading ? (
+                      <>
+                        <Skeleton className="h-8 w-20 mx-auto mb-1" />
+                        <Skeleton className="h-4 w-20 mx-auto" />
+                      </>
+                    ) : (
+                      <>
+                        <div className="text-2xl font-bold text-purple-600">{data?.systemHealth.api.requestsPerMinute?.toLocaleString() || 0}</div>
+                        <div className="text-sm text-muted-foreground">Requests/min</div>
+                      </>
+                    )}
                   </div>
                 </div>
               </div>
@@ -172,30 +303,36 @@ export default function SystemPage() {
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
-                <div className="flex items-start gap-3 p-3 border rounded-lg">
-                  <CheckCircle className="h-5 w-5 text-green-500 mt-0.5" />
-                  <div>
-                    <div className="font-medium">Database backup completed</div>
-                    <div className="text-sm text-gray-600">Daily backup process finished successfully</div>
-                    <div className="text-xs text-gray-500">2 hours ago</div>
+                {isLoading ? (
+                  [1, 2, 3].map((i) => (
+                    <div key={i} className="flex items-start gap-3 p-3 border rounded-lg">
+                      <Skeleton className="h-5 w-5 mt-0.5 rounded-full" />
+                      <div className="flex-1 space-y-2">
+                        <Skeleton className="h-4 w-48" />
+                        <Skeleton className="h-3 w-64" />
+                        <Skeleton className="h-3 w-20" />
+                      </div>
+                    </div>
+                  ))
+                ) : data?.systemLogs && data.systemLogs.length > 0 ? (
+                  data.systemLogs.slice(0, 5).map((log) => (
+                    <div key={log.id} className="flex items-start gap-3 p-3 border rounded-lg">
+                      {getLogIcon(log.level)}
+                      <div>
+                        <div className="font-medium">{log.message}</div>
+                        <div className="text-sm text-muted-foreground">{log.service}</div>
+                        <div className="text-xs text-muted-foreground">
+                          {new Date(log.timestamp).toLocaleString()}
+                        </div>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div className="text-center py-8 text-muted-foreground">
+                    <Activity className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                    <p>No system logs available</p>
                   </div>
-                </div>
-                <div className="flex items-start gap-3 p-3 border rounded-lg">
-                  <AlertTriangle className="h-5 w-5 text-yellow-500 mt-0.5" />
-                  <div>
-                    <div className="font-medium">High memory usage detected</div>
-                    <div className="text-sm text-gray-600">Memory usage exceeded 75% threshold</div>
-                    <div className="text-xs text-gray-500">4 hours ago</div>
-                  </div>
-                </div>
-                <div className="flex items-start gap-3 p-3 border rounded-lg">
-                  <Activity className="h-5 w-5 text-blue-500 mt-0.5" />
-                  <div>
-                    <div className="font-medium">API deployment successful</div>
-                    <div className="text-sm text-gray-600">New API version deployed without issues</div>
-                    <div className="text-xs text-gray-500">6 hours ago</div>
-                  </div>
-                </div>
+                )}
               </div>
             </CardContent>
           </Card>

@@ -7,18 +7,22 @@ import {
   SidebarGroup,
   SidebarGroupContent,
   SidebarMenu,
+  SidebarMenuBadge,
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
 
+export interface NavItem {
+  title: string
+  url: string
+  icon?: Icon
+  badge?: number
+}
+
 export function NavMain({
   items,
 }: {
-  items: {
-    title: string
-    url: string
-    icon?: Icon
-  }[]
+  items: NavItem[]
 }) {
   return (
     <SidebarGroup>
@@ -51,6 +55,11 @@ export function NavMain({
                   <span>{item.title}</span>
                 </a>
               </SidebarMenuButton>
+              {item.badge !== undefined && item.badge > 0 && (
+                <SidebarMenuBadge className="bg-destructive text-destructive-foreground">
+                  {item.badge > 99 ? "99+" : item.badge}
+                </SidebarMenuBadge>
+              )}
             </SidebarMenuItem>
           ))}
         </SidebarMenu>

@@ -75,12 +75,12 @@ export default function Hero() {
       
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center relative z-10">
         <div className="hero-content">
-          <h1 id="hero-title" className="hero-animate text-4xl sm:text-5xl lg:text-6xl font-extrabold leading-tight text-slate-900">
+          <h1 id="hero-title" className="hero-animate text-4xl sm:text-5xl lg:text-6xl font-extrabold leading-tight text-slate-900 dark:text-slate-100">
             Connect with{" "}
             <span className="text-gradient-primary">verified</span>{" "}
             local artisans in Kenya
           </h1>
-          <p className="hero-animate mt-6 text-lg text-slate-600 leading-relaxed">
+          <p className="hero-animate mt-6 text-lg text-slate-600 dark:text-slate-400 leading-relaxed">
             ArtisanLink helps clients discover skilled local professionals, view portfolios, and hire with confidence powered by map search and M-Pesa subscriptions.
           </p>
 
@@ -89,7 +89,7 @@ export default function Hero() {
               <RoundedButton 
                 href={isSignedIn ? "/dashboard" : "/sign-up"} 
                 backgroundColor="#1e293b"
-                className="text-slate-900 font-semibold hover:scale-105 transition-all duration-300 glow-primary"
+                className="text-slate-900 dark:text-slate-100 font-semibold hover:scale-105 transition-all duration-300 glow-primary"
               >
                 {isSignedIn ? "Go to Dashboard" : "Get started"}
               </RoundedButton>
@@ -97,7 +97,7 @@ export default function Hero() {
             <Magnetic>
               <a 
                 href="#features" 
-                className="inline-flex items-center px-6 py-3 text-sm text-slate-600 hover:text-slate-900 transition-all duration-300 rounded-full glass-card-light hover:glow-primary"
+                className="inline-flex items-center px-6 py-3 text-sm text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 transition-all duration-300 rounded-full glass-card-light hover:glow-primary"
               >
                 Learn more →
               </a>
@@ -105,25 +105,25 @@ export default function Hero() {
           </div>
 
           {/* Stats */}
-          <div className="hero-animate mt-12 grid grid-cols-3 gap-8 pt-8 border-t border-slate-200">
+          <div className="hero-animate mt-12 grid grid-cols-3 gap-8 pt-8 border-t border-slate-200 dark:border-slate-700">
             <div className="text-center">
-              <div className="text-2xl font-bold text-slate-900">2K+</div>
-              <div className="text-sm text-slate-600">Verified Artisans</div>
+              <div className="text-2xl font-bold text-slate-900 dark:text-slate-100">2K+</div>
+              <div className="text-sm text-slate-600 dark:text-slate-400">Verified Artisans</div>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold text-slate-900">15K+</div>
-              <div className="text-sm text-slate-600">Projects Done</div>
+              <div className="text-2xl font-bold text-slate-900 dark:text-slate-100">15K+</div>
+              <div className="text-sm text-slate-600 dark:text-slate-400">Projects Done</div>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold text-slate-900">98%</div>
-              <div className="text-sm text-slate-600">Satisfaction</div>
+              <div className="text-2xl font-bold text-slate-900 dark:text-slate-100">98%</div>
+              <div className="text-sm text-slate-600 dark:text-slate-400">Satisfaction</div>
             </div>
           </div>
         </div>
 
         <div className="relative order-first lg:order-last hero-animate hero-visual" aria-hidden="true">
           <div className="rounded-2xl shadow-2xl bg-gradient-to-br from-amber-50 to-amber-100 p-8 hover:scale-105 transition-all duration-500 glass-card-light hover:glow-amber">
-            <div className="bg-white rounded-lg p-6 shadow-sm">
+            <div className="bg-white dark:bg-slate-800 rounded-lg p-6 shadow-sm">
               <Image 
                 src="/images/Hero.jpeg" 
                 alt="Artisans gallery showcase" 
@@ -135,26 +135,26 @@ export default function Hero() {
             </div>
             
             {/* Floating cards */}
-            <div className="absolute -top-4 -left-4 floating-card bg-white rounded-lg shadow-lg p-4 glass-light z-10 animate-float">
+            <div className="absolute -top-4 -left-4 floating-card bg-white dark:bg-slate-800 rounded-lg shadow-lg p-4 glass-light z-10 animate-float">
               <div className="flex items-center gap-3">
                 <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
                   <ShieldCheck className="w-4 h-4 text-green-600" />
                 </div>
                 <div>
-                  <div className="text-sm font-semibold text-slate-900">Verified</div>
-                  <div className="text-xs text-slate-600">Trust guaranteed</div>
+                  <div className="text-sm font-semibold text-slate-900 dark:text-slate-100">Verified</div>
+                  <div className="text-xs text-slate-600 dark:text-slate-400">Trust guaranteed</div>
                 </div>
               </div>
             </div>
 
-            <div className="absolute -bottom-4 -right-4 floating-card bg-white rounded-lg shadow-lg p-4 glass-light z-10 animate-float-delayed">
+            <div className="absolute -bottom-4 -right-4 floating-card bg-white dark:bg-slate-800 rounded-lg shadow-lg p-4 glass-light z-10 animate-float-delayed">
               <div className="flex items-center gap-3">
                 <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
                   <MapPin className="w-4 h-4 text-blue-600" />
                 </div>
                 <div>
-                  <div className="text-sm font-semibold text-slate-900">Nearby</div>
-                  <div className="text-xs text-slate-600">2.5 km away</div>
+                  <div className="text-sm font-semibold text-slate-900 dark:text-slate-100">Nearby</div>
+                  <div className="text-xs text-slate-600 dark:text-slate-400">2.5 km away</div>
                 </div>
               </div>
             </div>

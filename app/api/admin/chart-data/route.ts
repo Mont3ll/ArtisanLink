@@ -1,10 +1,8 @@
 import { NextResponse } from 'next/server'
 import { auth } from '@clerk/nextjs/server'
-import { PrismaClient } from '@/app/generated/prisma'
+import { prisma } from '@/lib/prisma'
 
-const prisma = new PrismaClient()
-
-export async function GET() {
+export async function GET(request: Request) {
   try {
     const { userId } = await auth()
     
@@ -22,85 +20,156 @@ export async function GET() {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
-    // Generate chart data based on user registrations and activity
-    // Get data for the last 90 days
+    // Parse query parameters for date range (default: last 30 days)
+    const { searchParams } = new URL(request.url)
+    const days = parseInt(searchParams.get('days') || '30', 10)
+    const clampedDays = Math.min(Math.max(days, 7), 365) // Between 7 and 365 days
+
     const endDate = new Date()
     const startDate = new Date()
-    startDate.setDate(startDate.getDate() - 90)
+    startDate.setDate(startDate.getDate() - clampedDays)
 
-    // Get daily user registrations
-    const dailyRegistrations = await prisma.user.groupBy({
-      by: ['createdAt'],
+    // Get all users created in the date range
+    const users = await prisma.user.findMany({
       where: {
         createdAt: {
           gte: startDate,
           lte: endDate
         }
       },
-      _count: {
-        id: true
+      select: {
+        createdAt: true,
+        role: true
       },
       orderBy: {
         createdAt: 'asc'
       }
     })
 
-    // Get daily subscription activations
-    const dailySubscriptions = await prisma.subscription.groupBy({
-      by: ['createdAt'],
+    // Get all subscriptions activated in the date range
+    const subscriptions = await prisma.subscription.findMany({
       where: {
-        createdAt: {
+        startDate: {
           gte: startDate,
           lte: endDate
         },
         status: 'ACTIVE'
       },
-      _count: {
-        id: true
+      select: {
+        startDate: true,
+        amount: true
+      },
+      orderBy: {
+        startDate: 'asc'
+      }
+    })
+
+    // Get all reviews created in the date range
+    const reviews = await prisma.review.findMany({
+      where: {
+        createdAt: {
+          gte: startDate,
+          lte: endDate
+        }
+      },
+      select: {
+        createdAt: true
       },
       orderBy: {
         createdAt: 'asc'
       }
     })
 
-    // Generate complete date range and merge data
-    const chartData = []
+    // Aggregate data by date
+    const dataByDate = new Map<string, {
+      users: number
+      artisans: number
+      clients: number
+      subscriptions: number
+      revenue: number
+      reviews: number
+    }>()
+
+    // Initialize all dates in range with zeros
     const currentDate = new Date(startDate)
-    
     while (currentDate <= endDate) {
       const dateStr = currentDate.toISOString().split('T')[0]
-      
-      // Find registration count for this date
-      const registrationData = dailyRegistrations.find(item => 
-        item.createdAt.toISOString().split('T')[0] === dateStr
-      )
-      
-      // Find subscription count for this date
-      const subscriptionData = dailySubscriptions.find(item => 
-        item.createdAt.toISOString().split('T')[0] === dateStr
-      )
-
-      // Add some baseline values and variations for better visualization
-      const baseUsers = Math.floor(Math.random() * 50) + 20
-      const baseSubscriptions = Math.floor(Math.random() * 20) + 5
-      
-      chartData.push({
-        date: dateStr,
-        desktop: (registrationData?._count.id || 0) + baseUsers,
-        mobile: (subscriptionData?._count.id || 0) + baseSubscriptions
+      dataByDate.set(dateStr, {
+        users: 0,
+        artisans: 0,
+        clients: 0,
+        subscriptions: 0,
+        revenue: 0,
+        reviews: 0
       })
-      
       currentDate.setDate(currentDate.getDate() + 1)
     }
 
-    return NextResponse.json(chartData)
+    // Populate user data
+    for (const u of users) {
+      const dateStr = u.createdAt.toISOString().split('T')[0]
+      const data = dataByDate.get(dateStr)
+      if (data) {
+        data.users++
+        if (u.role === 'ARTISAN') data.artisans++
+        if (u.role === 'CLIENT') data.clients++
+      }
+    }
+
+    // Populate subscription data
+    for (const s of subscriptions) {
+      const dateStr = s.startDate.toISOString().split('T')[0]
+      const data = dataByDate.get(dateStr)
+      if (data) {
+        data.subscriptions++
+        data.revenue += s.amount
+      }
+    }
+
+    // Populate review data
+    for (const r of reviews) {
+      const dateStr = r.createdAt.toISOString().split('T')[0]
+      const data = dataByDate.get(dateStr)
+      if (data) {
+        data.reviews++
+      }
+    }
+
+    // Convert to array format for charts
+    const chartData = Array.from(dataByDate.entries()).map(([date, data]) => ({
+      date,
+      users: data.users,
+      artisans: data.artisans,
+      clients: data.clients,
+      subscriptions: data.subscriptions,
+      revenue: data.revenue,
+      reviews: data.reviews
+    }))
+
+    // Calculate summary statistics
+    const summary = {
+      totalUsers: users.length,
+      totalArtisans: users.filter((u: { role: string }) => u.role === 'ARTISAN').length,
+      totalClients: users.filter((u: { role: string }) => u.role === 'CLIENT').length,
+      totalSubscriptions: subscriptions.length,
+      totalRevenue: subscriptions.reduce((sum: number, s: { amount: number }) => sum + s.amount, 0),
+      totalReviews: reviews.length,
+      period: {
+        start: startDate.toISOString(),
+        end: endDate.toISOString(),
+        days: clampedDays
+      }
+    }
+
+    return NextResponse.json({
+      chartData,
+      summary
+    })
   } catch (error) {
     console.error('Error fetching chart data:', error)
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
     )
-  } finally {
-    await prisma.$disconnect()
   }
 }

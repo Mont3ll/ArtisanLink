@@ -1,11 +1,12 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Progress } from '@/components/ui/progress'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Skeleton } from '@/components/ui/skeleton'
 import { 
   Server, 
   Database, 
@@ -18,92 +19,16 @@ import {
   Wifi,
   RefreshCw
 } from 'lucide-react'
-
-interface SystemMonitoringData {
-  systemHealth: {
-    database: {
-      status: string
-      responseTime: number
-      connections: number
-    }
-    api: {
-      status: string
-      responseTime: number
-      requestsPerMinute: number
-    }
-    server: {
-      status: string
-      cpuUsage: number
-      memoryUsage: number
-      uptime: number
-    }
-  }
-  systemLogs: {
-    id: string
-    level: string
-    message: string
-    timestamp: string
-    service: string
-  }[]
-  performanceMetrics: {
-    time: string
-    cpu: number
-    memory: number
-    requests: number
-  }[]
-}
+import {
+  useAdminMonitoring,
+  getHealthStatusBadgeClass,
+  getLogLevelBadgeClass,
+} from '@/lib/hooks'
 
 export default function MonitoringPage() {
-  const [data, setData] = useState<SystemMonitoringData | null>(null)
-  const [loading, setLoading] = useState(true)
   const [autoRefresh, setAutoRefresh] = useState(true)
-
-  useEffect(() => {
-    fetchMonitoringData()
-    
-    let interval: NodeJS.Timeout
-    if (autoRefresh) {
-      interval = setInterval(fetchMonitoringData, 30000) // Refresh every 30 seconds
-    }
-    
-    return () => {
-      if (interval) clearInterval(interval)
-    }
-  }, [autoRefresh])
-
-  const fetchMonitoringData = async () => {
-    try {
-      const response = await fetch('/api/admin/system/monitoring')
-      if (response.ok) {
-        const monitoringData = await response.json()
-        setData(monitoringData)
-      }
-    } catch (error) {
-      console.error('Failed to fetch monitoring data:', error)
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
-      </div>
-    )
-  }
-
-  if (!data) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center">
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">Failed to load monitoring data</h2>
-          <p className="text-gray-600 mb-4">There was an error loading the system monitoring data.</p>
-          <Button onClick={fetchMonitoringData}>Try Again</Button>
-        </div>
-      </div>
-    )
-  }
+  
+  const { data, isLoading, isError, refetch } = useAdminMonitoring(autoRefresh)
 
   const getStatusIcon = (status: string) => {
     switch (status) {
@@ -114,42 +39,39 @@ export default function MonitoringPage() {
       case 'error':
         return <XCircle className="h-5 w-5 text-red-500" />
       default:
-        return <Activity className="h-5 w-5 text-gray-500" />
+        return <Activity className="h-5 w-5 text-muted-foreground" />
     }
   }
 
   const getStatusBadge = (status: string) => {
-    switch (status) {
-      case 'healthy':
-        return <Badge className="bg-green-100 text-green-800">Healthy</Badge>
-      case 'warning':
-        return <Badge className="bg-yellow-100 text-yellow-800">Warning</Badge>
-      case 'error':
-        return <Badge className="bg-red-100 text-red-800">Error</Badge>
-      default:
-        return <Badge variant="outline">Unknown</Badge>
+    const badgeClass = getHealthStatusBadgeClass(status)
+    const labels: Record<string, string> = {
+      healthy: 'Healthy',
+      warning: 'Warning',
+      error: 'Error',
     }
+    return badgeClass ? (
+      <Badge className={badgeClass}>{labels[status] || 'Unknown'}</Badge>
+    ) : (
+      <Badge variant="outline">Unknown</Badge>
+    )
   }
 
   const getLogLevelBadge = (level: string) => {
-    switch (level) {
-      case 'INFO':
-        return <Badge className="bg-blue-100 text-blue-800">INFO</Badge>
-      case 'WARNING':
-        return <Badge className="bg-yellow-100 text-yellow-800">WARNING</Badge>
-      case 'ERROR':
-        return <Badge className="bg-red-100 text-red-800">ERROR</Badge>
-      default:
-        return <Badge variant="outline">{level}</Badge>
-    }
+    const badgeClass = getLogLevelBadgeClass(level)
+    return badgeClass ? (
+      <Badge className={badgeClass}>{level}</Badge>
+    ) : (
+      <Badge variant="outline">{level}</Badge>
+    )
   }
 
   return (
     <div className="px-4 lg:px-6 space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">System Monitoring</h1>
-          <p className="mt-2">Real-time system health and performance monitoring</p>
+          <h1 className="text-3xl font-bold tracking-tight">System Monitoring</h1>
+          <p className="text-muted-foreground">Real-time system health and performance monitoring</p>
         </div>
         <div className="flex items-center gap-2">
           <Button
@@ -160,12 +82,20 @@ export default function MonitoringPage() {
             <RefreshCw className={`h-4 w-4 mr-2 ${autoRefresh ? 'animate-spin' : ''}`} />
             Auto Refresh
           </Button>
-          <Button onClick={fetchMonitoringData}>
+          <Button onClick={() => refetch()}>
             <RefreshCw className="h-4 w-4 mr-2" />
             Refresh Now
           </Button>
         </div>
       </div>
+
+      {isError && (
+        <Card className="border-red-200 bg-red-50">
+          <CardContent className="pt-6">
+            <p className="text-red-700">Failed to load monitoring data. Please try again.</p>
+          </CardContent>
+        </Card>
+      )}
 
       {/* System Health Overview */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -175,18 +105,33 @@ export default function MonitoringPage() {
             <Database className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="flex items-center justify-between mb-2">
-              {getStatusIcon(data.systemHealth.database.status)}
-              {getStatusBadge(data.systemHealth.database.status)}
-            </div>
-            <div className="space-y-1">
-              <div className="text-sm text-gray-600">
-                Response Time: {data.systemHealth.database.responseTime}ms
+            {isLoading ? (
+              <div className="space-y-2">
+                <div className="flex items-center justify-between mb-2">
+                  <Skeleton className="h-5 w-5 rounded-full" />
+                  <Skeleton className="h-6 w-16" />
+                </div>
+                <Skeleton className="h-4 w-32" />
+                <Skeleton className="h-4 w-28" />
               </div>
-              <div className="text-sm text-gray-600">
-                Connections: {data.systemHealth.database.connections}
-              </div>
-            </div>
+            ) : data ? (
+              <>
+                <div className="flex items-center justify-between mb-2">
+                  {getStatusIcon(data.systemHealth.database.status)}
+                  {getStatusBadge(data.systemHealth.database.status)}
+                </div>
+                <div className="space-y-1">
+                  <div className="text-sm text-muted-foreground">
+                    Response Time: {data.systemHealth.database.responseTime}ms
+                  </div>
+                  <div className="text-sm text-muted-foreground">
+                    Connections: {data.systemHealth.database.connections}
+                  </div>
+                </div>
+              </>
+            ) : (
+              <p className="text-sm text-muted-foreground">No data available</p>
+            )}
           </CardContent>
         </Card>
 
@@ -196,18 +141,33 @@ export default function MonitoringPage() {
             <Wifi className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="flex items-center justify-between mb-2">
-              {getStatusIcon(data.systemHealth.api.status)}
-              {getStatusBadge(data.systemHealth.api.status)}
-            </div>
-            <div className="space-y-1">
-              <div className="text-sm text-gray-600">
-                Response Time: {data.systemHealth.api.responseTime}ms
+            {isLoading ? (
+              <div className="space-y-2">
+                <div className="flex items-center justify-between mb-2">
+                  <Skeleton className="h-5 w-5 rounded-full" />
+                  <Skeleton className="h-6 w-16" />
+                </div>
+                <Skeleton className="h-4 w-32" />
+                <Skeleton className="h-4 w-28" />
               </div>
-              <div className="text-sm text-gray-600">
-                Requests/min: {data.systemHealth.api.requestsPerMinute}
-              </div>
-            </div>
+            ) : data ? (
+              <>
+                <div className="flex items-center justify-between mb-2">
+                  {getStatusIcon(data.systemHealth.api.status)}
+                  {getStatusBadge(data.systemHealth.api.status)}
+                </div>
+                <div className="space-y-1">
+                  <div className="text-sm text-muted-foreground">
+                    Response Time: {data.systemHealth.api.responseTime}ms
+                  </div>
+                  <div className="text-sm text-muted-foreground">
+                    Requests/min: {data.systemHealth.api.requestsPerMinute}
+                  </div>
+                </div>
+              </>
+            ) : (
+              <p className="text-sm text-muted-foreground">No data available</p>
+            )}
           </CardContent>
         </Card>
 
@@ -217,15 +177,29 @@ export default function MonitoringPage() {
             <Server className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="flex items-center justify-between mb-2">
-              {getStatusIcon(data.systemHealth.server.status)}
-              {getStatusBadge(data.systemHealth.server.status)}
-            </div>
-            <div className="space-y-1">
-              <div className="text-sm text-gray-600">
-                Uptime: {data.systemHealth.server.uptime}%
+            {isLoading ? (
+              <div className="space-y-2">
+                <div className="flex items-center justify-between mb-2">
+                  <Skeleton className="h-5 w-5 rounded-full" />
+                  <Skeleton className="h-6 w-16" />
+                </div>
+                <Skeleton className="h-4 w-24" />
               </div>
-            </div>
+            ) : data ? (
+              <>
+                <div className="flex items-center justify-between mb-2">
+                  {getStatusIcon(data.systemHealth.server.status)}
+                  {getStatusBadge(data.systemHealth.server.status)}
+                </div>
+                <div className="space-y-1">
+                  <div className="text-sm text-muted-foreground">
+                    Uptime: {data.systemHealth.server.uptime}%
+                  </div>
+                </div>
+              </>
+            ) : (
+              <p className="text-sm text-muted-foreground">No data available</p>
+            )}
           </CardContent>
         </Card>
       </div>
@@ -243,9 +217,17 @@ export default function MonitoringPage() {
             <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <span className="text-sm font-medium">Current Usage</span>
-                <span className="text-sm text-gray-600">{data.systemHealth.server.cpuUsage}%</span>
+                {isLoading ? (
+                  <Skeleton className="h-4 w-12" />
+                ) : (
+                  <span className="text-sm text-muted-foreground">{data?.systemHealth.server.cpuUsage || 0}%</span>
+                )}
               </div>
-              <Progress value={data.systemHealth.server.cpuUsage} className="h-2" />
+              {isLoading ? (
+                <Skeleton className="h-2 w-full" />
+              ) : (
+                <Progress value={data?.systemHealth.server.cpuUsage || 0} className="h-2" />
+              )}
             </div>
           </CardContent>
         </Card>
@@ -261,9 +243,17 @@ export default function MonitoringPage() {
             <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <span className="text-sm font-medium">Current Usage</span>
-                <span className="text-sm text-gray-600">{data.systemHealth.server.memoryUsage}%</span>
+                {isLoading ? (
+                  <Skeleton className="h-4 w-12" />
+                ) : (
+                  <span className="text-sm text-muted-foreground">{data?.systemHealth.server.memoryUsage || 0}%</span>
+                )}
               </div>
-              <Progress value={data.systemHealth.server.memoryUsage} className="h-2" />
+              {isLoading ? (
+                <Skeleton className="h-2 w-full" />
+              ) : (
+                <Progress value={data?.systemHealth.server.memoryUsage || 0} className="h-2" />
+              )}
             </div>
           </CardContent>
         </Card>
@@ -285,19 +275,36 @@ export default function MonitoringPage() {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {data.systemLogs.map((log) => (
-                  <div key={log.id} className="flex items-start gap-3 p-3 border rounded-lg">
-                    <div className="mt-1">
-                      {getLogLevelBadge(log.level)}
-                    </div>
-                    <div className="flex-1">
-                      <div className="font-medium">{log.message}</div>
-                      <div className="text-sm text-gray-600 mt-1">
-                        {log.service} • {new Date(log.timestamp).toLocaleString()}
+                {isLoading ? (
+                  [1, 2, 3, 4].map((i) => (
+                    <div key={i} className="flex items-start gap-3 p-3 border rounded-lg">
+                      <Skeleton className="h-6 w-16 mt-1" />
+                      <div className="flex-1 space-y-2">
+                        <Skeleton className="h-4 w-3/4" />
+                        <Skeleton className="h-3 w-1/2" />
                       </div>
                     </div>
+                  ))
+                ) : data?.systemLogs && data.systemLogs.length > 0 ? (
+                  data.systemLogs.map((log) => (
+                    <div key={log.id} className="flex items-start gap-3 p-3 border rounded-lg">
+                      <div className="mt-1">
+                        {getLogLevelBadge(log.level)}
+                      </div>
+                      <div className="flex-1">
+                        <div className="font-medium">{log.message}</div>
+                        <div className="text-sm text-muted-foreground mt-1">
+                          {log.service} • {new Date(log.timestamp).toLocaleString()}
+                        </div>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div className="text-center py-8 text-muted-foreground">
+                    <Activity className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                    <p>No system logs available</p>
                   </div>
-                ))}
+                )}
               </div>
             </CardContent>
           </Card>
@@ -311,14 +318,30 @@ export default function MonitoringPage() {
             </CardHeader>
             <CardContent>
               <div className="space-y-6">
-                {data.performanceMetrics.map((metric, index) => (
-                  <div key={index} className="grid grid-cols-4 gap-4 p-3 border rounded-lg">
-                    <div className="text-sm font-medium">{metric.time}</div>
-                    <div className="text-sm">CPU: {metric.cpu}%</div>
-                    <div className="text-sm">Memory: {metric.memory}%</div>
-                    <div className="text-sm">Requests: {metric.requests}</div>
+                {isLoading ? (
+                  [1, 2, 3].map((i) => (
+                    <div key={i} className="grid grid-cols-4 gap-4 p-3 border rounded-lg">
+                      <Skeleton className="h-4 w-20" />
+                      <Skeleton className="h-4 w-16" />
+                      <Skeleton className="h-4 w-20" />
+                      <Skeleton className="h-4 w-24" />
+                    </div>
+                  ))
+                ) : data?.performanceMetrics && data.performanceMetrics.length > 0 ? (
+                  data.performanceMetrics.map((metric, index) => (
+                    <div key={index} className="grid grid-cols-4 gap-4 p-3 border rounded-lg">
+                      <div className="text-sm font-medium">{metric.time}</div>
+                      <div className="text-sm">CPU: {metric.cpu}%</div>
+                      <div className="text-sm">Memory: {metric.memory}%</div>
+                      <div className="text-sm">Requests: {metric.requests}</div>
+                    </div>
+                  ))
+                ) : (
+                  <div className="text-center py-8 text-muted-foreground">
+                    <Activity className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                    <p>No performance metrics available</p>
                   </div>
-                ))}
+                )}
               </div>
             </CardContent>
           </Card>
@@ -332,18 +355,47 @@ export default function MonitoringPage() {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                <div className="flex items-start gap-3 p-3 border border-yellow-200 rounded-lg bg-yellow-50">
-                  <AlertTriangle className="h-5 w-5 text-yellow-500 mt-1" />
-                  <div>
-                    <div className="font-medium">High Memory Usage</div>
-                    <div className="text-sm text-gray-600">
-                      Memory usage is approaching 80% threshold
+                {isLoading ? (
+                  <div className="flex items-start gap-3 p-3 border rounded-lg">
+                    <Skeleton className="h-5 w-5 mt-1" />
+                    <div className="flex-1 space-y-2">
+                      <Skeleton className="h-4 w-48" />
+                      <Skeleton className="h-3 w-64" />
                     </div>
                   </div>
-                </div>
-                <div className="text-center text-gray-500 py-8">
-                  No critical alerts at this time
-                </div>
+                ) : (
+                  <>
+                    {data?.systemHealth.server.memoryUsage && data.systemHealth.server.memoryUsage > 70 && (
+                      <div className="flex items-start gap-3 p-3 border border-yellow-200 rounded-lg bg-yellow-50">
+                        <AlertTriangle className="h-5 w-5 text-yellow-500 mt-1" />
+                        <div>
+                          <div className="font-medium">High Memory Usage</div>
+                          <div className="text-sm text-muted-foreground">
+                            Memory usage is at {data.systemHealth.server.memoryUsage}%
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                    {data?.systemHealth.server.cpuUsage && data.systemHealth.server.cpuUsage > 70 && (
+                      <div className="flex items-start gap-3 p-3 border border-yellow-200 rounded-lg bg-yellow-50">
+                        <AlertTriangle className="h-5 w-5 text-yellow-500 mt-1" />
+                        <div>
+                          <div className="font-medium">High CPU Usage</div>
+                          <div className="text-sm text-muted-foreground">
+                            CPU usage is at {data.systemHealth.server.cpuUsage}%
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                    {(!data?.systemHealth.server.memoryUsage || data.systemHealth.server.memoryUsage <= 70) &&
+                     (!data?.systemHealth.server.cpuUsage || data.systemHealth.server.cpuUsage <= 70) && (
+                      <div className="text-center text-muted-foreground py-8">
+                        <CheckCircle className="h-12 w-12 mx-auto mb-4 opacity-50 text-green-500" />
+                        <p>No critical alerts at this time</p>
+                      </div>
+                    )}
+                  </>
+                )}
               </div>
             </CardContent>
           </Card>

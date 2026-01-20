@@ -39,14 +39,14 @@ export default function Testimonials() {
   return (
     <div className="space-y-12">
       <div className="testimonials-header text-center">
-        <div className="inline-flex items-center gap-2 px-4 py-2 glass-card-light rounded-full text-sm font-medium text-slate-600 mb-6">
+        <div className="inline-flex items-center gap-2 px-4 py-2 glass-card-light rounded-full text-sm font-medium text-slate-600 dark:text-slate-400 mb-6">
           <Star className="w-4 h-4 text-amber-500" />
           Client Stories
         </div>
-        <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-4">
+        <h2 className="text-3xl md:text-4xl font-bold text-slate-900 dark:text-slate-100 mb-4">
           What people <span className="text-gradient-primary">say</span>
         </h2>
-        <p className="text-lg text-slate-600 max-w-2xl mx-auto">
+        <p className="text-lg text-slate-600 dark:text-slate-400 max-w-2xl mx-auto">
           Discover how ArtisanLink has helped thousands of clients find and hire the perfect artisans for their projects.
         </p>
       </div>
@@ -59,23 +59,23 @@ export default function Testimonials() {
           >
             {/* Quote icon */}
             <div className="absolute top-4 right-4 opacity-10 group-hover:opacity-20 transition-opacity">
-              <Quote className="w-8 h-8 text-slate-600" />
+              <Quote className="w-8 h-8 text-slate-600 dark:text-slate-400" />
             </div>
 
             <div className="flex items-start gap-4 mb-4">
               <Avatar className="ring-2 ring-blue-100 group-hover:ring-blue-200 transition-all">
                 <AvatarImage src={testimonial.avatar} alt={testimonial.name} />
-                <AvatarFallback className="bg-gradient-to-br from-blue-100 to-purple-100 text-slate-700">
+                <AvatarFallback className="bg-gradient-to-br from-blue-100 to-purple-100 text-slate-700 dark:text-slate-300">
                   {testimonial.name[0]}
                 </AvatarFallback>
               </Avatar>
 
               <div className="flex-1">
-                <div className="font-semibold text-slate-900 group-hover:text-gradient-primary transition-all">
+                <div className="font-semibold text-slate-900 dark:text-slate-100 group-hover:text-gradient-primary transition-all">
                   {testimonial.name}
                 </div>
-                <div className="text-sm text-slate-500">{testimonial.role}</div>
-                <div className="text-xs text-slate-400">{testimonial.location}</div>
+                <div className="text-sm text-slate-500 dark:text-slate-400">{testimonial.role}</div>
+                <div className="text-xs text-slate-400 dark:text-slate-500">{testimonial.location}</div>
               </div>
             </div>
 
@@ -86,7 +86,7 @@ export default function Testimonials() {
               ))}
             </div>
 
-            <p className="text-slate-700 leading-relaxed">
+            <p className="text-slate-700 dark:text-slate-300 leading-relaxed">
               &ldquo;{testimonial.quote}&rdquo;
             </p>
 
@@ -97,19 +97,19 @@ export default function Testimonials() {
       </div>
 
       {/* Trust indicators */}
-      <div className="text-center pt-8 border-t border-slate-200">
+      <div className="text-center pt-8 border-t border-slate-200 dark:border-slate-700">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           <div className="space-y-2">
-            <div className="text-2xl font-bold text-slate-900">4.9/5</div>
-            <div className="text-sm text-slate-600">Average Rating</div>
+            <div className="text-2xl font-bold text-slate-900 dark:text-slate-100">4.9/5</div>
+            <div className="text-sm text-slate-600 dark:text-slate-400">Average Rating</div>
           </div>
           <div className="space-y-2">
-            <div className="text-2xl font-bold text-slate-900">2,500+</div>
-            <div className="text-sm text-slate-600">Happy Clients</div>
+            <div className="text-2xl font-bold text-slate-900 dark:text-slate-100">2,500+</div>
+            <div className="text-sm text-slate-600 dark:text-slate-400">Happy Clients</div>
           </div>
           <div className="space-y-2">
-            <div className="text-2xl font-bold text-slate-900">99%</div>
-            <div className="text-sm text-slate-600">Would Recommend</div>
+            <div className="text-2xl font-bold text-slate-900 dark:text-slate-100">99%</div>
+            <div className="text-sm text-slate-600 dark:text-slate-400">Would Recommend</div>
           </div>
         </div>
       </div>

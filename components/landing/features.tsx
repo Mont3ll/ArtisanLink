@@ -102,17 +102,17 @@ export default function Features() {
       <div ref={containerRef} className="container mx-auto px-6 md:px-8 lg:px-12 relative z-10">
         {/* Enhanced Header */}
         <div className="features-header text-center space-y-6 mb-20">
-          <div className="inline-flex items-center gap-2 px-4 py-2 glass-card-light rounded-full text-sm font-medium text-slate-600">
+          <div className="inline-flex items-center gap-2 px-4 py-2 glass-card-light rounded-full text-sm font-medium text-slate-600 dark:text-slate-400">
             <Star className="w-4 h-4 text-amber-500" />
             Powerful Features
           </div>
-          <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight text-slate-900">
+          <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight text-slate-900 dark:text-slate-100">
             Everything you need to{" "}
             <span className="text-gradient-primary">
               connect with artisans
             </span>
           </h2>
-          <p className="text-xl text-slate-600 max-w-3xl mx-auto leading-relaxed">
+          <p className="text-xl text-slate-600 dark:text-slate-400 max-w-3xl mx-auto leading-relaxed">
             Our comprehensive platform provides all the tools necessary for seamless discovery, verification, and communication with skilled local professionals.
           </p>
         </div>
@@ -132,20 +132,20 @@ export default function Features() {
                       <Icon className={`h-6 w-6 ${card.iconColor}`} aria-hidden="true" />
                     </div>
                     <div className="flex-1">
-                      <CardTitle className="text-xl text-slate-900 group-hover:text-gradient-primary transition-all duration-300">
+                      <CardTitle className="text-xl text-slate-900 dark:text-slate-100 group-hover:text-gradient-primary transition-all duration-300">
                         {card.title}
                       </CardTitle>
                     </div>
                   </div>
                 </CardHeader>
                 <CardContent>
-                  <CardDescription className="text-slate-600 text-base leading-relaxed mb-6">
+                  <CardDescription className="text-slate-600 dark:text-slate-400 text-base leading-relaxed mb-6">
                     {card.desc}
                   </CardDescription>
                   
                   <div className="space-y-2">
                     {card.benefits.map((benefit, idx) => (
-                      <div key={idx} className="flex items-center space-x-2 text-sm text-slate-500">
+                      <div key={idx} className="flex items-center space-x-2 text-sm text-slate-500 dark:text-slate-400">
                         <CheckCircle className="w-4 h-4 text-green-500 flex-shrink-0" />
                         <span>{benefit}</span>
                       </div>
@@ -173,10 +173,10 @@ export default function Features() {
                   <Icon className="w-8 h-8 text-white" />
                 </div>
                 <div>
-                  <div className="text-4xl font-bold text-slate-900 mb-2 group-hover:text-gradient-primary transition-all duration-300">
+                  <div className="text-4xl font-bold text-slate-900 dark:text-slate-100 mb-2 group-hover:text-gradient-primary transition-all duration-300">
                     {stat.number}
                   </div>
-                  <div className="text-slate-600 font-medium mb-2">{stat.label}</div>
+                  <div className="text-slate-600 dark:text-slate-400 font-medium mb-2">{stat.label}</div>
                   <div className="text-xs text-green-600 bg-green-100 px-2 py-1 rounded-full inline-block">
                     {stat.change}
                   </div>
@@ -187,11 +187,11 @@ export default function Features() {
         </div>
 
         {/* Call to Action */}
-        <div className="text-center pt-12 border-t border-slate-200/50">
-          <h3 className="text-3xl font-bold text-slate-900 mb-6">
+        <div className="text-center pt-12 border-t border-slate-200/50 dark:border-slate-700/50">
+          <h3 className="text-3xl font-bold text-slate-900 dark:text-slate-100 mb-6">
             Ready to <span className="text-gradient-primary">discover</span> amazing artisans?
           </h3>
-          <p className="text-slate-600 mb-8 max-w-2xl mx-auto">
+          <p className="text-slate-600 dark:text-slate-400 mb-8 max-w-2xl mx-auto">
             Join thousands of satisfied clients who have found their perfect artisan match through our platform.
           </p>
           <Link 

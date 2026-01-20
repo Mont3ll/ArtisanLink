@@ -1,8 +1,6 @@
 import { NextResponse } from 'next/server'
 import { auth } from '@clerk/nextjs/server'
-import { PrismaClient } from '@/app/generated/prisma'
-
-const prisma = new PrismaClient()
+import { prisma } from '@/lib/prisma'
 
 export async function GET() {
   try {
@@ -35,7 +33,8 @@ export async function GET() {
 
     // Transform data
     const userData = await Promise.all(
-      recentUsers.map(async (user) => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      recentUsers.map(async (user: any) => {
         const portfolioCount = user.role === 'ARTISAN' && user.profile?.id ? 
           await prisma.portfolioItem.count({ where: { profileId: user.profile.id } }) : 0
 
@@ -60,7 +59,5 @@ export async function GET() {
       { error: 'Internal server error' },
       { status: 500 }
     )
-  } finally {
-    await prisma.$disconnect()
   }
 }

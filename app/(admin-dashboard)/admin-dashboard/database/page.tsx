@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Progress } from '@/components/ui/progress'
+import { Skeleton } from '@/components/ui/skeleton'
 import { 
   Database, 
   RefreshCw,
@@ -13,114 +14,70 @@ import {
   Server,
   HardDrive,
   Activity,
-  Zap
+  Users,
+  Star,
+  CreditCard,
+  MessageSquare
 } from 'lucide-react'
+import {
+  useAdminDatabase,
+  getDatabaseStatusBadgeClass,
+} from '@/lib/hooks'
 
 export default function DatabasePage() {
-  const databaseData = {
-    stats: {
-      totalTables: 15,
-      totalRecords: 125430,
-      databaseSize: '2.4 GB',
-      backupStatus: 'Healthy',
-      lastBackup: '2024-03-15T02:00:00Z'
-    },
-    tables: [
-      { 
-        name: 'users', 
-        records: 12540, 
-        size: '45.2 MB', 
-        status: 'healthy',
-        lastOptimized: '2024-03-10T00:00:00Z'
-      },
-      { 
-        name: 'artisans', 
-        records: 3250, 
-        size: '78.5 MB', 
-        status: 'healthy',
-        lastOptimized: '2024-03-10T00:00:00Z'
-      },
-      { 
-        name: 'portfolioItems', 
-        records: 8960, 
-        size: '156.8 MB', 
-        status: 'warning',
-        lastOptimized: '2024-03-05T00:00:00Z'
-      },
-      { 
-        name: 'messages', 
-        records: 89650, 
-        size: '234.7 MB', 
-        status: 'healthy',
-        lastOptimized: '2024-03-12T00:00:00Z'
-      },
-      { 
-        name: 'subscriptions', 
-        records: 2340, 
-        size: '12.3 MB', 
-        status: 'healthy',
-        lastOptimized: '2024-03-10T00:00:00Z'
-      }
-    ],
-    performance: {
-      avgQueryTime: '45ms',
-      slowQueries: 3,
-      connectionPool: 85,
-      cpuUsage: 35,
-      memoryUsage: 68
-    },
-    backups: [
-      {
-        id: '1',
-        type: 'Full',
-        size: '2.4 GB',
-        status: 'completed',
-        date: '2024-03-15T02:00:00Z'
-      },
-      {
-        id: '2',
-        type: 'Incremental',
-        size: '45.2 MB',
-        status: 'completed',
-        date: '2024-03-14T12:00:00Z'
-      },
-      {
-        id: '3',
-        type: 'Full',
-        size: '2.3 GB',
-        status: 'completed',
-        date: '2024-03-14T02:00:00Z'
-      }
-    ]
-  }
+  const { data: databaseData, isLoading, error, refetch } = useAdminDatabase()
+
+  const stats = databaseData?.stats
+  const tables = databaseData?.tables ?? []
+  const health = databaseData?.health
+  const performance = databaseData?.performance
+  const metadata = databaseData?.metadata
 
   const getStatusBadge = (status: string) => {
-    switch (status) {
-      case 'healthy':
-        return <Badge className="bg-green-100 text-green-800">Healthy</Badge>
-      case 'warning':
-        return <Badge className="bg-yellow-100 text-yellow-800">Warning</Badge>
-      case 'error':
-        return <Badge className="bg-red-100 text-red-800">Error</Badge>
-      case 'completed':
-        return <Badge className="bg-green-100 text-green-800">Completed</Badge>
-      default:
-        return <Badge variant="outline">{status}</Badge>
+    const className = getDatabaseStatusBadgeClass(status)
+    if (className) {
+      return <Badge className={className}>{status.charAt(0).toUpperCase() + status.slice(1)}</Badge>
     }
+    return <Badge variant="outline">{status}</Badge>
   }
 
   return (
     <div className="px-4 lg:px-6 space-y-6">
+      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Database Management</h1>
-          <p className="text-gray-600 mt-2">Monitor and manage database performance and maintenance</p>
+          <h1 className="text-3xl font-bold tracking-tight">Database Management</h1>
+          <div className="text-muted-foreground mt-2">
+            {isLoading ? (
+              <Skeleton className="h-5 w-64 inline-block" />
+            ) : metadata ? (
+              `${metadata.provider} database via Prisma ${metadata.prismaVersion}`
+            ) : (
+              'Database statistics and health monitoring'
+            )}
+          </div>
         </div>
-        <Button>
-          <RefreshCw className="h-4 w-4 mr-2" />
+        <Button onClick={() => refetch()} disabled={isLoading}>
+          <RefreshCw className={`h-4 w-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
           Refresh Data
         </Button>
       </div>
+
+      {/* Error State */}
+      {error && (
+        <Card className="border-red-200 bg-red-50">
+          <CardContent className="pt-6">
+            <div className="flex items-center gap-2 text-red-800">
+              <AlertTriangle className="h-5 w-5" />
+              <span>Error loading database data: {error instanceof Error ? error.message : 'Unknown error'}</span>
+              <Button variant="outline" size="sm" onClick={() => refetch()}>
+                <RefreshCw className="h-4 w-4 mr-2" />
+                Retry
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Database Overview */}
       <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
@@ -130,8 +87,17 @@ export default function DatabasePage() {
             <Database className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{databaseData.stats.totalTables}</div>
-            <p className="text-xs text-muted-foreground">Database tables</p>
+            {isLoading ? (
+              <>
+                <Skeleton className="h-8 w-12 mb-1" />
+                <Skeleton className="h-3 w-24" />
+              </>
+            ) : (
+              <>
+                <div className="text-2xl font-bold">{stats?.totalTables ?? 0}</div>
+                <p className="text-xs text-muted-foreground">Database tables</p>
+              </>
+            )}
           </CardContent>
         </Card>
 
@@ -141,43 +107,79 @@ export default function DatabasePage() {
             <Server className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{databaseData.stats.totalRecords.toLocaleString()}</div>
-            <p className="text-xs text-muted-foreground">Database records</p>
+            {isLoading ? (
+              <>
+                <Skeleton className="h-8 w-16 mb-1" />
+                <Skeleton className="h-3 w-24" />
+              </>
+            ) : (
+              <>
+                <div className="text-2xl font-bold">{(stats?.totalRecords ?? 0).toLocaleString()}</div>
+                <p className="text-xs text-muted-foreground">Database records</p>
+              </>
+            )}
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Database Size</CardTitle>
+            <CardTitle className="text-sm font-medium">Estimated Size</CardTitle>
             <HardDrive className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{databaseData.stats.databaseSize}</div>
-            <p className="text-xs text-muted-foreground">Total size</p>
+            {isLoading ? (
+              <>
+                <Skeleton className="h-8 w-16 mb-1" />
+                <Skeleton className="h-3 w-28" />
+              </>
+            ) : (
+              <>
+                <div className="text-2xl font-bold">{stats?.databaseSize ?? '0 KB'}</div>
+                <p className="text-xs text-muted-foreground">Based on row estimates</p>
+              </>
+            )}
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Backup Status</CardTitle>
+            <CardTitle className="text-sm font-medium">Connection</CardTitle>
             <CheckCircle className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-green-600">{databaseData.stats.backupStatus}</div>
-            <p className="text-xs text-muted-foreground">
-              Last: {new Date(databaseData.stats.lastBackup).toLocaleDateString()}
-            </p>
+            {isLoading ? (
+              <>
+                <Skeleton className="h-8 w-20 mb-1" />
+                <Skeleton className="h-3 w-28" />
+              </>
+            ) : (
+              <>
+                <div className="text-2xl font-bold text-green-600">{stats?.connectionStatus ?? 'Unknown'}</div>
+                <p className="text-xs text-muted-foreground">
+                  {health?.databaseConnected ? 'Database accessible' : 'Connection issue'}
+                </p>
+              </>
+            )}
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Query Performance</CardTitle>
+            <CardTitle className="text-sm font-medium">Active Users</CardTitle>
             <Activity className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{databaseData.performance.avgQueryTime}</div>
-            <p className="text-xs text-muted-foreground">Average query time</p>
+            {isLoading ? (
+              <>
+                <Skeleton className="h-8 w-14 mb-1" />
+                <Skeleton className="h-3 w-24" />
+              </>
+            ) : (
+              <>
+                <div className="text-2xl font-bold">{(health?.activeUsers ?? 0).toLocaleString()}</div>
+                <p className="text-xs text-muted-foreground">Active accounts</p>
+              </>
+            )}
           </CardContent>
         </Card>
       </div>
@@ -185,194 +187,246 @@ export default function DatabasePage() {
       {/* Database Tabs */}
       <Tabs defaultValue="tables" className="space-y-6">
         <TabsList>
-          <TabsTrigger value="tables">Tables</TabsTrigger>
-          <TabsTrigger value="performance">Performance</TabsTrigger>
-          <TabsTrigger value="backups">Backups</TabsTrigger>
-          <TabsTrigger value="maintenance">Maintenance</TabsTrigger>
+          <TabsTrigger value="tables">Tables {isLoading ? '' : `(${tables.length})`}</TabsTrigger>
+          <TabsTrigger value="health">Health</TabsTrigger>
+          <TabsTrigger value="info">Info</TabsTrigger>
         </TabsList>
 
         <TabsContent value="tables" className="space-y-6">
           <Card>
             <CardHeader>
               <CardTitle>Database Tables</CardTitle>
-              <CardDescription>Monitor table health and performance</CardDescription>
+              <CardDescription>Current row counts for all tables</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {databaseData.tables.map((table, index) => (
-                  <div key={index} className="flex items-center justify-between p-4 border rounded-lg">
-                    <div className="flex items-center gap-4">
-                      <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-                        <Database className="h-5 w-5 text-blue-600" />
-                      </div>
-                      <div>
-                        <div className="font-medium">{table.name}</div>
-                        <div className="text-sm text-gray-600">
-                          {table.records.toLocaleString()} records • {table.size}
-                        </div>
-                        <div className="text-xs text-gray-500">
-                          Last optimized: {new Date(table.lastOptimized).toLocaleDateString()}
+                {isLoading ? (
+                  Array.from({ length: 5 }).map((_, i) => (
+                    <div key={i} className="flex items-center justify-between p-4 border rounded-lg">
+                      <div className="flex items-center gap-4">
+                        <Skeleton className="w-10 h-10 rounded-full" />
+                        <div>
+                          <Skeleton className="h-5 w-32 mb-1" />
+                          <Skeleton className="h-4 w-48 mb-1" />
+                          <Skeleton className="h-3 w-40" />
                         </div>
                       </div>
+                      <Skeleton className="h-6 w-16" />
                     </div>
-                    <div className="flex items-center gap-3">
-                      {getStatusBadge(table.status)}
-                      <Button variant="outline" size="sm">Optimize</Button>
+                  ))
+                ) : tables.length === 0 ? (
+                  <p className="text-muted-foreground text-center py-8">No table data available</p>
+                ) : (
+                  tables.map((table) => (
+                    <div key={table.name} className="flex items-center justify-between p-4 border rounded-lg">
+                      <div className="flex items-center gap-4">
+                        <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                          <Database className="h-5 w-5 text-blue-600" />
+                        </div>
+                        <div>
+                          <div className="font-medium">{table.displayName}</div>
+                          <div className="text-sm text-muted-foreground">
+                            {table.records.toLocaleString()} records &bull; ~{table.estimatedSize.formatted}
+                          </div>
+                          <div className="text-xs text-muted-foreground">
+                            {table.description}
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        {getStatusBadge(table.status)}
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  ))
+                )}
               </div>
             </CardContent>
           </Card>
         </TabsContent>
 
-        <TabsContent value="performance" className="space-y-6">
+        <TabsContent value="health" className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <Card>
               <CardHeader>
-                <CardTitle>Resource Usage</CardTitle>
-                <CardDescription>Current database resource consumption</CardDescription>
+                <CardTitle>Data Health Overview</CardTitle>
+                <CardDescription>Key metrics from your database</CardDescription>
               </CardHeader>
-              <CardContent className="space-y-6">
-                <div>
-                  <div className="flex justify-between text-sm mb-2">
-                    <span>CPU Usage</span>
-                    <span>{databaseData.performance.cpuUsage}%</span>
-                  </div>
-                  <Progress value={databaseData.performance.cpuUsage} className="h-2" />
-                </div>
-                <div>
-                  <div className="flex justify-between text-sm mb-2">
-                    <span>Memory Usage</span>
-                    <span>{databaseData.performance.memoryUsage}%</span>
-                  </div>
-                  <Progress value={databaseData.performance.memoryUsage} className="h-2" />
-                </div>
-                <div>
-                  <div className="flex justify-between text-sm mb-2">
-                    <span>Connection Pool</span>
-                    <span>{databaseData.performance.connectionPool}%</span>
-                  </div>
-                  <Progress value={databaseData.performance.connectionPool} className="h-2" />
-                </div>
+              <CardContent className="space-y-4">
+                {isLoading ? (
+                  Array.from({ length: 4 }).map((_, i) => (
+                    <div key={i} className="flex items-center justify-between p-3 border rounded-lg">
+                      <div className="flex items-center gap-3">
+                        <Skeleton className="h-5 w-5" />
+                        <Skeleton className="h-4 w-28" />
+                      </div>
+                      <Skeleton className="h-5 w-16" />
+                    </div>
+                  ))
+                ) : (
+                  <>
+                    <div className="flex items-center justify-between p-3 border rounded-lg">
+                      <div className="flex items-center gap-3">
+                        <Users className="h-5 w-5 text-blue-500" />
+                        <span className="text-sm">Active Users</span>
+                      </div>
+                      <span className="font-medium">{(health?.activeUsers ?? 0).toLocaleString()}</span>
+                    </div>
+                    <div className="flex items-center justify-between p-3 border rounded-lg">
+                      <div className="flex items-center gap-3">
+                        <CheckCircle className="h-5 w-5 text-green-500" />
+                        <span className="text-sm">Verified Artisans</span>
+                      </div>
+                      <span className="font-medium">{(health?.verifiedArtisans ?? 0).toLocaleString()}</span>
+                    </div>
+                    <div className="flex items-center justify-between p-3 border rounded-lg">
+                      <div className="flex items-center gap-3">
+                        <CreditCard className="h-5 w-5 text-purple-500" />
+                        <span className="text-sm">Active Subscriptions</span>
+                      </div>
+                      <span className="font-medium">{(health?.activeSubscriptions ?? 0).toLocaleString()}</span>
+                    </div>
+                    <div className="flex items-center justify-between p-3 border rounded-lg">
+                      <div className="flex items-center gap-3">
+                        <Star className="h-5 w-5 text-yellow-500" />
+                        <span className="text-sm">Pending Reviews</span>
+                      </div>
+                      <span className="font-medium">{(health?.pendingReviews ?? 0).toLocaleString()}</span>
+                    </div>
+                  </>
+                )}
               </CardContent>
             </Card>
 
             <Card>
               <CardHeader>
-                <CardTitle>Query Performance</CardTitle>
-                <CardDescription>Database query metrics</CardDescription>
+                <CardTitle>Data Distribution</CardTitle>
+                <CardDescription>Records per table</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm">Average Query Time</span>
-                  <span className="font-medium">{databaseData.performance.avgQueryTime}</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm">Slow Queries</span>
-                  <div className="flex items-center gap-2">
-                    <span className="font-medium">{databaseData.performance.slowQueries}</span>
-                    {databaseData.performance.slowQueries > 0 && (
-                      <AlertTriangle className="h-4 w-4 text-yellow-500" />
-                    )}
-                  </div>
-                </div>
-                <Button variant="outline" className="w-full">
-                  <Zap className="h-4 w-4 mr-2" />
-                  Optimize Queries
-                </Button>
+                {isLoading ? (
+                  Array.from({ length: 5 }).map((_, i) => (
+                    <div key={i}>
+                      <div className="flex justify-between text-sm mb-1">
+                        <Skeleton className="h-4 w-20" />
+                        <Skeleton className="h-4 w-24" />
+                      </div>
+                      <Skeleton className="h-2 w-full" />
+                    </div>
+                  ))
+                ) : (
+                  tables.slice(0, 5).map((table) => {
+                    const percentage = (stats?.totalRecords ?? 0) > 0 
+                      ? Math.round((table.records / (stats?.totalRecords ?? 1)) * 100) 
+                      : 0
+                    return (
+                      <div key={table.name}>
+                        <div className="flex justify-between text-sm mb-1">
+                          <span>{table.displayName}</span>
+                          <span>{table.records.toLocaleString()} ({percentage}%)</span>
+                        </div>
+                        <Progress value={percentage} className="h-2" />
+                      </div>
+                    )
+                  })
+                )}
               </CardContent>
             </Card>
           </div>
+
+          {!isLoading && health?.lastActivity && (
+            <Card>
+              <CardContent className="pt-6">
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <Activity className="h-4 w-4" />
+                  <span>
+                    Last activity logged: {new Date(health.lastActivity).toLocaleString()}
+                  </span>
+                </div>
+              </CardContent>
+            </Card>
+          )}
         </TabsContent>
 
-        <TabsContent value="backups" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Database Backups</CardTitle>
-              <CardDescription>Backup history and management</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {databaseData.backups.map((backup) => (
-                  <div key={backup.id} className="flex items-center justify-between p-4 border rounded-lg">
-                    <div className="flex items-center gap-4">
-                      <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
-                        <Database className="h-5 w-5 text-green-600" />
-                      </div>
-                      <div>
-                        <div className="font-medium">{backup.type} Backup</div>
-                        <div className="text-sm text-gray-600">
-                          Size: {backup.size}
-                        </div>
-                        <div className="text-xs text-gray-500">
-                          {new Date(backup.date).toLocaleString()}
-                        </div>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      {getStatusBadge(backup.status)}
-                      <Button variant="outline" size="sm">Restore</Button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="maintenance" className="space-y-6">
+        <TabsContent value="info" className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <Card>
               <CardHeader>
-                <CardTitle>Scheduled Maintenance</CardTitle>
-                <CardDescription>Automated maintenance tasks</CardDescription>
+                <CardTitle>Database Information</CardTitle>
+                <CardDescription>Technical details</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="p-4 border rounded-lg">
-                  <div className="font-medium">Database Optimization</div>
-                  <div className="text-sm text-gray-600">Daily at 2:00 AM</div>
-                  <div className="text-xs text-gray-500 mt-1">
-                    Last run: {new Date(databaseData.stats.lastBackup).toLocaleDateString()}
-                  </div>
-                </div>
-                <div className="p-4 border rounded-lg">
-                  <div className="font-medium">Index Rebuild</div>
-                  <div className="text-sm text-gray-600">Weekly on Sunday</div>
-                  <div className="text-xs text-gray-500 mt-1">
-                    Last run: March 10, 2024
-                  </div>
-                </div>
+                {isLoading ? (
+                  Array.from({ length: 5 }).map((_, i) => (
+                    <div key={i} className="flex items-center justify-between p-3 border rounded-lg">
+                      <Skeleton className="h-4 w-24" />
+                      <Skeleton className="h-5 w-28" />
+                    </div>
+                  ))
+                ) : (
+                  <>
+                    <div className="flex items-center justify-between p-3 border rounded-lg">
+                      <span className="text-sm text-muted-foreground">Provider</span>
+                      <span className="font-medium">{metadata?.provider ?? 'Unknown'}</span>
+                    </div>
+                    <div className="flex items-center justify-between p-3 border rounded-lg">
+                      <span className="text-sm text-muted-foreground">ORM</span>
+                      <span className="font-medium">Prisma {metadata?.prismaVersion ?? ''}</span>
+                    </div>
+                    <div className="flex items-center justify-between p-3 border rounded-lg">
+                      <span className="text-sm text-muted-foreground">Total Tables</span>
+                      <span className="font-medium">{stats?.totalTables ?? 0}</span>
+                    </div>
+                    <div className="flex items-center justify-between p-3 border rounded-lg">
+                      <span className="text-sm text-muted-foreground">Total Records</span>
+                      <span className="font-medium">{(stats?.totalRecords ?? 0).toLocaleString()}</span>
+                    </div>
+                    <div className="flex items-center justify-between p-3 border rounded-lg">
+                      <span className="text-sm text-muted-foreground">Estimated Size</span>
+                      <span className="font-medium">{stats?.databaseSize ?? '0 KB'}</span>
+                    </div>
+                  </>
+                )}
               </CardContent>
             </Card>
 
             <Card>
               <CardHeader>
-                <CardTitle>Manual Operations</CardTitle>
-                <CardDescription>One-time maintenance operations</CardDescription>
+                <CardTitle>Performance Notes</CardTitle>
+                <CardDescription>Monitoring recommendations</CardDescription>
               </CardHeader>
-              <CardContent className="space-y-3">
-                <Button variant="outline" className="w-full justify-start">
-                  <RefreshCw className="h-4 w-4 mr-2" />
-                  Rebuild Indexes
-                </Button>
-                <Button variant="outline" className="w-full justify-start">
-                  <Database className="h-4 w-4 mr-2" />
-                  Update Statistics
-                </Button>
-                <Button variant="outline" className="w-full justify-start">
-                  <HardDrive className="h-4 w-4 mr-2" />
-                  Compact Database
-                </Button>
-                <Button variant="outline" className="w-full justify-start">
-                  <CheckCircle className="h-4 w-4 mr-2" />
-                  Run Integrity Check
-                </Button>
+              <CardContent>
+                {isLoading ? (
+                  <Skeleton className="h-32 w-full" />
+                ) : (
+                  <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
+                    <div className="flex items-start gap-3">
+                      <MessageSquare className="h-5 w-5 text-blue-600 mt-0.5" />
+                      <div className="text-sm text-blue-800">
+                        <p className="font-medium mb-1">Production Monitoring</p>
+                        <p>{performance?.note ?? 'No performance notes available'}</p>
+                        <ul className="mt-2 space-y-1 list-disc list-inside text-xs">
+                          <li>Consider integrating with pgAdmin or similar tools</li>
+                          <li>Set up database performance monitoring</li>
+                          <li>Configure automated backups with your hosting provider</li>
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </CardContent>
             </Card>
           </div>
         </TabsContent>
       </Tabs>
+
+      {/* Last Updated Footer */}
+      <div className="text-xs text-muted-foreground text-right">
+        {isLoading ? (
+          <Skeleton className="h-3 w-48 ml-auto" />
+        ) : metadata ? (
+          `Last checked: ${new Date(metadata.lastChecked).toLocaleString()}`
+        ) : null}
+      </div>
     </div>
   )
 }

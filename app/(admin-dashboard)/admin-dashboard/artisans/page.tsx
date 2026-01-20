@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
+import { Skeleton } from '@/components/ui/skeleton'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { 
@@ -16,91 +17,24 @@ import {
   MoreVertical,
   Eye,
   UserCheck,
-  UserX
+  UserX,
+  AlertCircle,
 } from 'lucide-react'
-
-interface ArtisanData {
-  id: string
-  name: string
-  email: string
-  profession: string
-  location: string
-  experience: number
-  rating: number
-  totalReviews: number
-  portfolioItems: number
-  status: 'VERIFIED' | 'PENDING' | 'REJECTED'
-  joinDate: string
-  lastActive: string
-  subscriptionStatus: 'ACTIVE' | 'INACTIVE' | 'EXPIRED'
-}
-
-const mockArtisans: ArtisanData[] = [
-  {
-    id: '1',
-    name: 'John Mwangi',
-    email: 'john.mwangi@example.com',
-    profession: 'Carpenter',
-    location: 'Nairobi, Kenya',
-    experience: 8,
-    rating: 4.8,
-    totalReviews: 24,
-    portfolioItems: 12,
-    status: 'VERIFIED',
-    joinDate: '2024-01-15',
-    lastActive: '2024-03-14',
-    subscriptionStatus: 'ACTIVE'
-  },
-  {
-    id: '2',
-    name: 'Sarah Wanjiku',
-    email: 'sarah.wanjiku@example.com',
-    profession: 'Tailor',
-    location: 'Mombasa, Kenya',
-    experience: 5,
-    rating: 4.6,
-    totalReviews: 18,
-    portfolioItems: 15,
-    status: 'VERIFIED',
-    joinDate: '2024-02-20',
-    lastActive: '2024-03-13',
-    subscriptionStatus: 'ACTIVE'
-  },
-  {
-    id: '3',
-    name: 'Peter Kiprotich',
-    email: 'peter.kiprotich@example.com',
-    profession: 'Electrician',
-    location: 'Eldoret, Kenya',
-    experience: 12,
-    rating: 4.9,
-    totalReviews: 31,
-    portfolioItems: 8,
-    status: 'VERIFIED',
-    joinDate: '2023-11-10',
-    lastActive: '2024-03-15',
-    subscriptionStatus: 'ACTIVE'
-  },
-  {
-    id: '4',
-    name: 'Grace Nyong\'o',
-    email: 'grace.nyongo@example.com',
-    profession: 'Hair Stylist',
-    location: 'Kisumu, Kenya',
-    experience: 3,
-    rating: 4.4,
-    totalReviews: 12,
-    portfolioItems: 20,
-    status: 'PENDING',
-    joinDate: '2024-03-01',
-    lastActive: '2024-03-12',
-    subscriptionStatus: 'INACTIVE'
-  }
-]
+import { useAdminArtisans, type AdminArtisan } from '@/lib/hooks'
 
 export default function ArtisansPage() {
-  const [artisans] = useState<ArtisanData[]>(mockArtisans)
+  const [page, setPage] = useState(1)
   const [searchTerm, setSearchTerm] = useState('')
+  const [statusFilter, setStatusFilter] = useState<'PENDING' | 'VERIFIED' | 'REJECTED' | undefined>()
+  const [subscriptionFilter, setSubscriptionFilter] = useState<'ACTIVE' | 'INACTIVE' | 'EXPIRED' | undefined>()
+
+  const { data, isLoading, isError, refetch } = useAdminArtisans({
+    page,
+    limit: 20,
+    search: searchTerm || undefined,
+    status: statusFilter,
+    subscriptionStatus: subscriptionFilter,
+  })
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -128,23 +62,37 @@ export default function ArtisansPage() {
     }
   }
 
-  const filteredArtisans = artisans.filter(artisan =>
-    artisan.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    artisan.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    artisan.profession.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    artisan.location.toLowerCase().includes(searchTerm.toLowerCase())
-  )
+  // Stats from API
+  const stats = data?.stats
+  const artisans = data?.artisans || []
 
+  // Filter artisans for tabs (client-side filtering for display)
   const verifiedArtisans = artisans.filter(a => a.status === 'VERIFIED')
   const pendingArtisans = artisans.filter(a => a.status === 'PENDING')
-  const activeSubscriptions = artisans.filter(a => a.subscriptionStatus === 'ACTIVE')
+  const subscribedArtisans = artisans.filter(a => a.subscriptionStatus === 'ACTIVE')
+
+  // Error state
+  if (isError) {
+    return (
+      <div className="px-4 lg:px-6 space-y-6">
+        <div className="flex items-center justify-center min-h-[400px]">
+          <div className="text-center">
+            <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
+            <h2 className="text-2xl font-bold mb-2">Failed to load artisans</h2>
+            <p className="text-muted-foreground mb-4">There was an error loading the artisan directory.</p>
+            <Button onClick={() => refetch()}>Try Again</Button>
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="px-4 lg:px-6 space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Artisan Directory</h1>
-          <p className="mt-2">Manage and oversee all platform artisans</p>
+          <h1 className="text-3xl font-bold tracking-tight">Artisan Directory</h1>
+          <p className="text-muted-foreground">Manage and oversee all platform artisans</p>
         </div>
         <Button>Export Directory</Button>
       </div>
@@ -157,8 +105,17 @@ export default function ArtisansPage() {
             <Hammer className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{artisans.length}</div>
-            <p className="text-xs text-muted-foreground">Registered artisans</p>
+            {isLoading ? (
+              <>
+                <Skeleton className="h-8 w-16 mb-1" />
+                <Skeleton className="h-4 w-24" />
+              </>
+            ) : (
+              <>
+                <div className="text-2xl font-bold">{stats?.totalArtisans ?? 0}</div>
+                <p className="text-xs text-muted-foreground">Registered artisans</p>
+              </>
+            )}
           </CardContent>
         </Card>
 
@@ -168,10 +125,21 @@ export default function ArtisansPage() {
             <UserCheck className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{verifiedArtisans.length}</div>
-            <p className="text-xs text-muted-foreground">
-              {((verifiedArtisans.length / artisans.length) * 100).toFixed(1)}% of total
-            </p>
+            {isLoading ? (
+              <>
+                <Skeleton className="h-8 w-16 mb-1" />
+                <Skeleton className="h-4 w-28" />
+              </>
+            ) : (
+              <>
+                <div className="text-2xl font-bold">{stats?.verifiedCount ?? 0}</div>
+                <p className="text-xs text-muted-foreground">
+                  {stats && stats.totalArtisans > 0 
+                    ? `${((stats.verifiedCount / stats.totalArtisans) * 100).toFixed(1)}% of total`
+                    : '0% of total'}
+                </p>
+              </>
+            )}
           </CardContent>
         </Card>
 
@@ -181,8 +149,17 @@ export default function ArtisansPage() {
             <UserX className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{pendingArtisans.length}</div>
-            <p className="text-xs text-muted-foreground">Awaiting approval</p>
+            {isLoading ? (
+              <>
+                <Skeleton className="h-8 w-16 mb-1" />
+                <Skeleton className="h-4 w-24" />
+              </>
+            ) : (
+              <>
+                <div className="text-2xl font-bold">{stats?.pendingCount ?? 0}</div>
+                <p className="text-xs text-muted-foreground">Awaiting approval</p>
+              </>
+            )}
           </CardContent>
         </Card>
 
@@ -192,10 +169,21 @@ export default function ArtisansPage() {
             <Star className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{activeSubscriptions.length}</div>
-            <p className="text-xs text-muted-foreground">
-              {((activeSubscriptions.length / artisans.length) * 100).toFixed(1)}% subscription rate
-            </p>
+            {isLoading ? (
+              <>
+                <Skeleton className="h-8 w-16 mb-1" />
+                <Skeleton className="h-4 w-32" />
+              </>
+            ) : (
+              <>
+                <div className="text-2xl font-bold">{stats?.activeSubscriptions ?? 0}</div>
+                <p className="text-xs text-muted-foreground">
+                  {stats && stats.totalArtisans > 0
+                    ? `${((stats.activeSubscriptions / stats.totalArtisans) * 100).toFixed(1)}% subscription rate`
+                    : '0% subscription rate'}
+                </p>
+              </>
+            )}
           </CardContent>
         </Card>
       </div>
@@ -209,7 +197,10 @@ export default function ArtisansPage() {
               <Input
                 placeholder="Search artisans..."
                 value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
+                onChange={(e) => {
+                  setSearchTerm(e.target.value)
+                  setPage(1) // Reset to first page on search
+                }}
                 className="pl-8"
               />
             </div>
@@ -228,10 +219,10 @@ export default function ArtisansPage() {
       {/* Artisans Tabs */}
       <Tabs defaultValue="all" className="space-y-6">
         <TabsList>
-          <TabsTrigger value="all">All Artisans ({artisans.length})</TabsTrigger>
-          <TabsTrigger value="verified">Verified ({verifiedArtisans.length})</TabsTrigger>
-          <TabsTrigger value="pending">Pending ({pendingArtisans.length})</TabsTrigger>
-          <TabsTrigger value="subscribed">Subscribed ({activeSubscriptions.length})</TabsTrigger>
+          <TabsTrigger value="all">All Artisans ({stats?.totalArtisans ?? 0})</TabsTrigger>
+          <TabsTrigger value="verified">Verified ({stats?.verifiedCount ?? 0})</TabsTrigger>
+          <TabsTrigger value="pending">Pending ({stats?.pendingCount ?? 0})</TabsTrigger>
+          <TabsTrigger value="subscribed">Subscribed ({stats?.activeSubscriptions ?? 0})</TabsTrigger>
         </TabsList>
 
         <TabsContent value="all" className="space-y-6">
@@ -241,66 +232,17 @@ export default function ArtisansPage() {
               <CardDescription>Complete directory of platform artisans</CardDescription>
             </CardHeader>
             <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Artisan</TableHead>
-                    <TableHead>Profession</TableHead>
-                    <TableHead>Location</TableHead>
-                    <TableHead>Rating</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Subscription</TableHead>
-                    <TableHead>Last Active</TableHead>
-                    <TableHead></TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredArtisans.map((artisan) => (
-                    <TableRow key={artisan.id}>
-                      <TableCell>
-                        <div>
-                          <div className="font-medium">{artisan.name}</div>
-                          <div className="text-sm text-gray-500">{artisan.email}</div>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-2">
-                          <Hammer className="h-4 w-4 text-gray-400" />
-                          {artisan.profession}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-1">
-                          <MapPin className="h-3 w-3 text-gray-400" />
-                          {artisan.location}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-1">
-                          <Star className="h-4 w-4 text-yellow-400 fill-current" />
-                          <span className="font-medium">{artisan.rating}</span>
-                          <span className="text-sm text-gray-500">({artisan.totalReviews})</span>
-                        </div>
-                      </TableCell>
-                      <TableCell>{getStatusBadge(artisan.status)}</TableCell>
-                      <TableCell>{getSubscriptionBadge(artisan.subscriptionStatus)}</TableCell>
-                      <TableCell className="text-sm text-gray-500">
-                        {new Date(artisan.lastActive).toLocaleDateString()}
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-2">
-                          <Button variant="ghost" size="sm">
-                            <Eye className="h-4 w-4" />
-                          </Button>
-                          <Button variant="ghost" size="sm">
-                            <MoreVertical className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+              {isLoading ? (
+                <ArtisanTableSkeleton />
+              ) : artisans.length === 0 ? (
+                <EmptyState message="No artisans found" />
+              ) : (
+                <ArtisanTable 
+                  artisans={artisans} 
+                  getStatusBadge={getStatusBadge}
+                  getSubscriptionBadge={getSubscriptionBadge}
+                />
+              )}
             </CardContent>
           </Card>
         </TabsContent>
@@ -312,44 +254,21 @@ export default function ArtisansPage() {
               <CardDescription>Artisans with verified certificates and profiles</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {verifiedArtisans.map((artisan) => (
-                  <div key={artisan.id} className="p-4 border rounded-lg">
-                    <div className="flex items-start justify-between mb-3">
-                      <div>
-                        <h3 className="font-medium">{artisan.name}</h3>
-                        <p className="text-sm text-gray-600">{artisan.profession}</p>
-                      </div>
-                      {getStatusBadge(artisan.status)}
-                    </div>
-                    <div className="space-y-2 text-sm">
-                      <div className="flex items-center gap-1">
-                        <MapPin className="h-3 w-3 text-gray-400" />
-                        {artisan.location}
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <Star className="h-3 w-3 text-yellow-400 fill-current" />
-                        {artisan.rating} ({artisan.totalReviews} reviews)
-                      </div>
-                      <div className="text-gray-500">
-                        {artisan.experience} years experience
-                      </div>
-                      <div className="text-gray-500">
-                        {artisan.portfolioItems} portfolio items
-                      </div>
-                    </div>
-                    <div className="mt-3 flex gap-2">
-                      <Button variant="outline" size="sm" className="flex-1">
-                        <Eye className="h-3 w-3 mr-1" />
-                        View
-                      </Button>
-                      <Button variant="outline" size="sm">
-                        <MoreVertical className="h-3 w-3" />
-                      </Button>
-                    </div>
-                  </div>
-                ))}
-              </div>
+              {isLoading ? (
+                <ArtisanCardsSkeleton />
+              ) : verifiedArtisans.length === 0 ? (
+                <EmptyState message="No verified artisans found" />
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {verifiedArtisans.map((artisan) => (
+                    <ArtisanCard 
+                      key={artisan.id} 
+                      artisan={artisan} 
+                      getStatusBadge={getStatusBadge}
+                    />
+                  ))}
+                </div>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
@@ -361,26 +280,21 @@ export default function ArtisansPage() {
               <CardDescription>Artisans awaiting verification approval</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
-                {pendingArtisans.map((artisan) => (
-                  <div key={artisan.id} className="flex items-center justify-between p-4 border rounded-lg">
-                    <div className="flex items-center gap-4">
-                      <div className="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center">
-                        <Hammer className="h-6 w-6 text-orange-600" />
-                      </div>
-                      <div>
-                        <div className="font-medium">{artisan.name}</div>
-                        <div className="text-sm text-gray-600">{artisan.profession}</div>
-                        <div className="text-sm text-gray-500">{artisan.location}</div>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      {getStatusBadge(artisan.status)}
-                      <Button variant="outline" size="sm">Review</Button>
-                    </div>
-                  </div>
-                ))}
-              </div>
+              {isLoading ? (
+                <PendingListSkeleton />
+              ) : pendingArtisans.length === 0 ? (
+                <EmptyState message="No pending verifications" />
+              ) : (
+                <div className="space-y-4">
+                  {pendingArtisans.map((artisan) => (
+                    <PendingArtisanRow 
+                      key={artisan.id} 
+                      artisan={artisan}
+                      getStatusBadge={getStatusBadge}
+                    />
+                  ))}
+                </div>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
@@ -392,34 +306,302 @@ export default function ArtisansPage() {
               <CardDescription>Artisans with active premium subscriptions</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
-                {activeSubscriptions.map((artisan) => (
-                  <div key={artisan.id} className="flex items-center justify-between p-4 border rounded-lg">
-                    <div className="flex items-center gap-4">
-                      <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
-                        <Star className="h-6 w-6 text-green-600" />
-                      </div>
-                      <div>
-                        <div className="font-medium">{artisan.name}</div>
-                        <div className="text-sm text-gray-600">{artisan.profession}</div>
-                        <div className="text-sm text-gray-500">
-                          ⭐ {artisan.rating} • {artisan.totalReviews} reviews
-                        </div>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      {getSubscriptionBadge(artisan.subscriptionStatus)}
-                      <Button variant="outline" size="sm">
-                        <Eye className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </div>
-                ))}
-              </div>
+              {isLoading ? (
+                <PendingListSkeleton />
+              ) : subscribedArtisans.length === 0 ? (
+                <EmptyState message="No subscribed artisans found" />
+              ) : (
+                <div className="space-y-4">
+                  {subscribedArtisans.map((artisan) => (
+                    <SubscribedArtisanRow 
+                      key={artisan.id} 
+                      artisan={artisan}
+                      getSubscriptionBadge={getSubscriptionBadge}
+                    />
+                  ))}
+                </div>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
       </Tabs>
+
+      {/* Pagination */}
+      {!isLoading && data && data.pagination.totalPages > 1 && (
+        <div className="flex items-center justify-center gap-2 pt-4">
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={page === 1}
+            onClick={() => setPage((p) => p - 1)}
+          >
+            Previous
+          </Button>
+          <span className="text-sm text-muted-foreground">
+            Page {page} of {data.pagination.totalPages}
+          </span>
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={page === data.pagination.totalPages}
+            onClick={() => setPage((p) => p + 1)}
+          >
+            Next
+          </Button>
+        </div>
+      )}
+    </div>
+  )
+}
+
+// Sub-components
+function ArtisanTable({ 
+  artisans, 
+  getStatusBadge, 
+  getSubscriptionBadge 
+}: { 
+  artisans: AdminArtisan[]
+  getStatusBadge: (status: string) => React.ReactNode
+  getSubscriptionBadge: (status: string) => React.ReactNode
+}) {
+  return (
+    <Table>
+      <TableHeader>
+        <TableRow>
+          <TableHead>Artisan</TableHead>
+          <TableHead>Profession</TableHead>
+          <TableHead>Location</TableHead>
+          <TableHead>Rating</TableHead>
+          <TableHead>Status</TableHead>
+          <TableHead>Subscription</TableHead>
+          <TableHead>Last Active</TableHead>
+          <TableHead></TableHead>
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        {artisans.map((artisan) => (
+          <TableRow key={artisan.id}>
+            <TableCell>
+              <div>
+                <div className="font-medium">{artisan.name}</div>
+                <div className="text-sm text-muted-foreground">{artisan.email}</div>
+              </div>
+            </TableCell>
+            <TableCell>
+              <div className="flex items-center gap-2">
+                <Hammer className="h-4 w-4 text-muted-foreground" />
+                {artisan.profession || 'Not specified'}
+              </div>
+            </TableCell>
+            <TableCell>
+              <div className="flex items-center gap-1">
+                <MapPin className="h-3 w-3 text-muted-foreground" />
+                {artisan.location || 'Not specified'}
+              </div>
+            </TableCell>
+            <TableCell>
+              <div className="flex items-center gap-1">
+                <Star className="h-4 w-4 text-yellow-400 fill-current" />
+                <span className="font-medium">{artisan.rating.toFixed(1)}</span>
+                <span className="text-sm text-muted-foreground">({artisan.totalReviews})</span>
+              </div>
+            </TableCell>
+            <TableCell>{getStatusBadge(artisan.status)}</TableCell>
+            <TableCell>{getSubscriptionBadge(artisan.subscriptionStatus)}</TableCell>
+            <TableCell className="text-sm text-muted-foreground">
+              {new Date(artisan.lastActive).toLocaleDateString()}
+            </TableCell>
+            <TableCell>
+              <div className="flex items-center gap-2">
+                <Button variant="ghost" size="sm">
+                  <Eye className="h-4 w-4" />
+                </Button>
+                <Button variant="ghost" size="sm">
+                  <MoreVertical className="h-4 w-4" />
+                </Button>
+              </div>
+            </TableCell>
+          </TableRow>
+        ))}
+      </TableBody>
+    </Table>
+  )
+}
+
+function ArtisanCard({ 
+  artisan, 
+  getStatusBadge 
+}: { 
+  artisan: AdminArtisan
+  getStatusBadge: (status: string) => React.ReactNode
+}) {
+  return (
+    <div className="p-4 border rounded-lg">
+      <div className="flex items-start justify-between mb-3">
+        <div>
+          <h3 className="font-medium">{artisan.name}</h3>
+          <p className="text-sm text-muted-foreground">{artisan.profession || 'Not specified'}</p>
+        </div>
+        {getStatusBadge(artisan.status)}
+      </div>
+      <div className="space-y-2 text-sm">
+        <div className="flex items-center gap-1">
+          <MapPin className="h-3 w-3 text-muted-foreground" />
+          {artisan.location || 'Not specified'}
+        </div>
+        <div className="flex items-center gap-1">
+          <Star className="h-3 w-3 text-yellow-400 fill-current" />
+          {artisan.rating.toFixed(1)} ({artisan.totalReviews} reviews)
+        </div>
+        <div className="text-muted-foreground">
+          {artisan.experience} years experience
+        </div>
+        <div className="text-muted-foreground">
+          {artisan.portfolioItems} portfolio items
+        </div>
+      </div>
+      <div className="mt-3 flex gap-2">
+        <Button variant="outline" size="sm" className="flex-1">
+          <Eye className="h-3 w-3 mr-1" />
+          View
+        </Button>
+        <Button variant="outline" size="sm">
+          <MoreVertical className="h-3 w-3" />
+        </Button>
+      </div>
+    </div>
+  )
+}
+
+function PendingArtisanRow({ 
+  artisan, 
+  getStatusBadge 
+}: { 
+  artisan: AdminArtisan
+  getStatusBadge: (status: string) => React.ReactNode
+}) {
+  return (
+    <div className="flex items-center justify-between p-4 border rounded-lg">
+      <div className="flex items-center gap-4">
+        <div className="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center">
+          <Hammer className="h-6 w-6 text-orange-600" />
+        </div>
+        <div>
+          <div className="font-medium">{artisan.name}</div>
+          <div className="text-sm text-muted-foreground">{artisan.profession || 'Not specified'}</div>
+          <div className="text-sm text-muted-foreground">{artisan.location || 'Not specified'}</div>
+        </div>
+      </div>
+      <div className="flex items-center gap-3">
+        {getStatusBadge(artisan.status)}
+        <Button variant="outline" size="sm">Review</Button>
+      </div>
+    </div>
+  )
+}
+
+function SubscribedArtisanRow({ 
+  artisan, 
+  getSubscriptionBadge 
+}: { 
+  artisan: AdminArtisan
+  getSubscriptionBadge: (status: string) => React.ReactNode
+}) {
+  return (
+    <div className="flex items-center justify-between p-4 border rounded-lg">
+      <div className="flex items-center gap-4">
+        <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
+          <Star className="h-6 w-6 text-green-600" />
+        </div>
+        <div>
+          <div className="font-medium">{artisan.name}</div>
+          <div className="text-sm text-muted-foreground">{artisan.profession || 'Not specified'}</div>
+          <div className="text-sm text-muted-foreground">
+            {artisan.rating.toFixed(1)} rating - {artisan.totalReviews} reviews
+          </div>
+        </div>
+      </div>
+      <div className="flex items-center gap-3">
+        {getSubscriptionBadge(artisan.subscriptionStatus)}
+        <Button variant="outline" size="sm">
+          <Eye className="h-4 w-4" />
+        </Button>
+      </div>
+    </div>
+  )
+}
+
+function EmptyState({ message }: { message: string }) {
+  return (
+    <div className="text-center py-12 text-muted-foreground">
+      <Hammer className="h-12 w-12 mx-auto mb-4 opacity-50" />
+      <p>{message}</p>
+    </div>
+  )
+}
+
+// Skeleton components
+function ArtisanTableSkeleton() {
+  return (
+    <div className="space-y-4">
+      {Array.from({ length: 5 }).map((_, i) => (
+        <div key={i} className="flex items-center gap-4 p-4 border rounded-lg">
+          <Skeleton className="h-10 w-10 rounded-full" />
+          <div className="flex-1 space-y-2">
+            <Skeleton className="h-4 w-32" />
+            <Skeleton className="h-3 w-48" />
+          </div>
+          <Skeleton className="h-6 w-20" />
+          <Skeleton className="h-6 w-16" />
+        </div>
+      ))}
+    </div>
+  )
+}
+
+function ArtisanCardsSkeleton() {
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      {Array.from({ length: 6 }).map((_, i) => (
+        <div key={i} className="p-4 border rounded-lg space-y-3">
+          <div className="flex items-start justify-between">
+            <div className="space-y-2">
+              <Skeleton className="h-4 w-28" />
+              <Skeleton className="h-3 w-20" />
+            </div>
+            <Skeleton className="h-6 w-16" />
+          </div>
+          <div className="space-y-2">
+            <Skeleton className="h-3 w-full" />
+            <Skeleton className="h-3 w-3/4" />
+            <Skeleton className="h-3 w-1/2" />
+          </div>
+          <Skeleton className="h-9 w-full" />
+        </div>
+      ))}
+    </div>
+  )
+}
+
+function PendingListSkeleton() {
+  return (
+    <div className="space-y-4">
+      {Array.from({ length: 3 }).map((_, i) => (
+        <div key={i} className="flex items-center justify-between p-4 border rounded-lg">
+          <div className="flex items-center gap-4">
+            <Skeleton className="h-12 w-12 rounded-full" />
+            <div className="space-y-2">
+              <Skeleton className="h-4 w-32" />
+              <Skeleton className="h-3 w-24" />
+              <Skeleton className="h-3 w-28" />
+            </div>
+          </div>
+          <div className="flex items-center gap-3">
+            <Skeleton className="h-6 w-16" />
+            <Skeleton className="h-9 w-20" />
+          </div>
+        </div>
+      ))}
     </div>
   )
 }

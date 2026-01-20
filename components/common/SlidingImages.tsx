@@ -137,14 +137,14 @@ export default function SlidingImages() {
                 {/* Header with container */}
                 <div className="max-w-7xl mx-auto px-6 md:px-8 lg:px-12">
                     <div className="sliding-header text-center">
-                        <div className="inline-flex items-center gap-2 px-4 py-2 glass-card-light rounded-full text-sm font-medium text-slate-600 mb-6">
+                        <div className="inline-flex items-center gap-2 px-4 py-2 glass-card-light rounded-full text-sm font-medium text-slate-600 dark:text-slate-400 mb-6">
                             <Users className="w-4 h-4 text-blue-500" />
                             Our Artisans
                         </div>
-                        <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-4">
+                        <h2 className="text-3xl md:text-4xl font-bold text-slate-900 dark:text-slate-100 mb-4">
                             Skilled <span className="text-gradient-primary">Artisans</span> at Work
                         </h2>
-                        <p className="text-lg text-slate-600 max-w-2xl mx-auto">
+                        <p className="text-lg text-slate-600 dark:text-slate-400 max-w-2xl mx-auto">
                             Discover talented professionals across various trades, each verified and ready to bring your projects to life.
                         </p>
                     </div>
@@ -174,17 +174,17 @@ export default function SlidingImages() {
                                         
                                         {/* Card Details */}
                                         <div className="space-y-2">
-                                            <h3 className="font-semibold text-slate-900 text-lg group-hover:text-gradient-primary transition-all">
+                                            <h3 className="font-semibold text-slate-900 dark:text-slate-100 text-lg group-hover:text-gradient-primary transition-all">
                                                 {image.category}
                                             </h3>
                                             <div className="flex items-center justify-between">
                                                 <div className="flex items-center gap-1">
                                                     <Star className="w-4 h-4 fill-amber-400 text-amber-400" />
-                                                    <span className="text-sm font-medium text-slate-700">{image.rating}</span>
+                                                    <span className="text-sm font-medium text-slate-700 dark:text-slate-300">{image.rating}</span>
                                                 </div>
                                                 <div className="flex items-center gap-1">
-                                                    <Hammer className="w-4 h-4 text-slate-500" />
-                                                    <span className="text-sm text-slate-600">{image.projects} projects</span>
+                                                    <Hammer className="w-4 h-4 text-slate-500 dark:text-slate-400" />
+                                                    <span className="text-sm text-slate-600 dark:text-slate-400">{image.projects} projects</span>
                                                 </div>
                                             </div>
                                         </div>
@@ -217,17 +217,17 @@ export default function SlidingImages() {
                                         
                                         {/* Card Details */}
                                         <div className="space-y-2">
-                                            <h3 className="font-semibold text-slate-900 text-lg group-hover:text-gradient-primary transition-all">
+                                            <h3 className="font-semibold text-slate-900 dark:text-slate-100 text-lg group-hover:text-gradient-primary transition-all">
                                                 {image.category}
                                             </h3>
                                             <div className="flex items-center justify-between">
                                                 <div className="flex items-center gap-1">
                                                     <Star className="w-4 h-4 fill-amber-400 text-amber-400" />
-                                                    <span className="text-sm font-medium text-slate-700">{image.rating}</span>
+                                                    <span className="text-sm font-medium text-slate-700 dark:text-slate-300">{image.rating}</span>
                                                 </div>
                                                 <div className="flex items-center gap-1">
-                                                    <Hammer className="w-4 h-4 text-slate-500" />
-                                                    <span className="text-sm text-slate-600">{image.projects} projects</span>
+                                                    <Hammer className="w-4 h-4 text-slate-500 dark:text-slate-400" />
+                                                    <span className="text-sm text-slate-600 dark:text-slate-400">{image.projects} projects</span>
                                                 </div>
                                             </div>
                                         </div>
@@ -243,28 +243,28 @@ export default function SlidingImages() {
 
                 {/* Trust Indicators with container */}
                 <div className="max-w-7xl mx-auto px-6 md:px-8 lg:px-12">
-                    <div className="text-center py-12 border-t border-slate-200">
+                    <div className="text-center py-12 border-t border-slate-200 dark:border-slate-700">
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl mx-auto">
                             <div className="space-y-2">
                                 <div className="flex items-center justify-center gap-2 mb-2">
                                     <Zap className="w-5 h-5 text-amber-500" />
-                                    <span className="text-2xl font-bold text-slate-900">2K+</span>
+                                    <span className="text-2xl font-bold text-slate-900 dark:text-slate-100">2K+</span>
                                 </div>
-                                <div className="text-sm text-slate-600">Verified Artisans</div>
+                                <div className="text-sm text-slate-600 dark:text-slate-400">Verified Artisans</div>
                             </div>
                             <div className="space-y-2">
                                 <div className="flex items-center justify-center gap-2 mb-2">
                                     <Star className="w-5 h-5 text-amber-500" />
-                                    <span className="text-2xl font-bold text-slate-900">4.8/5</span>
+                                    <span className="text-2xl font-bold text-slate-900 dark:text-slate-100">4.8/5</span>
                                 </div>
-                                <div className="text-sm text-slate-600">Average Rating</div>
+                                <div className="text-sm text-slate-600 dark:text-slate-400">Average Rating</div>
                             </div>
                             <div className="space-y-2">
                                 <div className="flex items-center justify-center gap-2 mb-2">
                                     <Hammer className="w-5 h-5 text-amber-500" />
-                                    <span className="text-2xl font-bold text-slate-900">15K+</span>
+                                    <span className="text-2xl font-bold text-slate-900 dark:text-slate-100">15K+</span>
                                 </div>
-                                <div className="text-sm text-slate-600">Projects Completed</div>
+                                <div className="text-sm text-slate-600 dark:text-slate-400">Projects Completed</div>
                             </div>
                         </div>
                     </div>

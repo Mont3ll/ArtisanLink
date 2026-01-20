@@ -90,11 +90,11 @@ function FaqItem({ faq }: FaqItemProps) {
         className="w-full px-6 py-5 text-left flex items-center justify-between hover:bg-white/50 transition-all duration-300 rounded-xl relative z-10"
         aria-expanded={isOpen}
       >
-        <span className="font-semibold text-slate-900 text-lg group-hover:text-gradient-primary transition-all pr-4">
+        <span className="font-semibold text-slate-900 dark:text-slate-100 text-lg group-hover:text-gradient-primary transition-all pr-4">
           {faq.q}
         </span>
         <div ref={iconRef} className="flex-shrink-0 ml-4">
-          <ChevronDown className="h-5 w-5 text-slate-500 group-hover:text-blue-500 transition-colors" />
+          <ChevronDown className="h-5 w-5 text-slate-500 dark:text-slate-400 group-hover:text-blue-500 transition-colors" />
         </div>
       </button>
       <div
@@ -102,7 +102,7 @@ function FaqItem({ faq }: FaqItemProps) {
         className="overflow-hidden relative z-10"
         style={{ height: 0, opacity: 0 }}
       >
-        <div className="px-6 pb-5 text-slate-600 leading-relaxed">
+        <div className="px-6 pb-5 text-slate-600 dark:text-slate-400 leading-relaxed">
           {faq.a}
         </div>
       </div>
@@ -126,14 +126,14 @@ export default function Faq() {
   return (
     <div className="space-y-12">
       <div className="faq-header text-center">
-        <div className="inline-flex items-center gap-2 px-4 py-2 glass-card-light rounded-full text-sm font-medium text-slate-600 mb-6">
+        <div className="inline-flex items-center gap-2 px-4 py-2 glass-card-light rounded-full text-sm font-medium text-slate-600 dark:text-slate-400 mb-6">
           <HelpCircle className="w-4 h-4 text-blue-500" />
           FAQ
         </div>
-        <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-4">
+        <h2 className="text-3xl md:text-4xl font-bold text-slate-900 dark:text-slate-100 mb-4">
           Frequently Asked <span className="text-gradient-primary">Questions</span>
         </h2>
-        <p className="text-lg text-slate-600 max-w-2xl mx-auto">
+        <p className="text-lg text-slate-600 dark:text-slate-400 max-w-2xl mx-auto">
           Get answers to common questions about our platform and how it works for both clients and artisans.
         </p>
       </div>
@@ -145,12 +145,12 @@ export default function Faq() {
       </div>
 
       {/* Contact Support Section */}
-      <div className="text-center pt-12 border-t border-slate-200">
+      <div className="text-center pt-12 border-t border-slate-200 dark:border-slate-700">
         <div className="max-w-2xl mx-auto">
-          <h3 className="text-xl font-bold text-slate-900 mb-4">
+          <h3 className="text-xl font-bold text-slate-900 dark:text-slate-100 mb-4">
             Still have questions?
           </h3>
-          <p className="text-slate-600 mb-6">
+          <p className="text-slate-600 dark:text-slate-400 mb-6">
             Our support team is here to help you get the most out of ArtisanLink.
           </p>
           
@@ -164,7 +164,7 @@ export default function Faq() {
             </a>
             <a 
               href="/help" 
-              className="inline-flex items-center justify-center gap-2 px-6 py-3 text-slate-700 hover:text-slate-900 transition-colors rounded-full glass-card-light hover:glow-primary"
+              className="inline-flex items-center justify-center gap-2 px-6 py-3 text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-100 transition-colors rounded-full glass-card-light hover:glow-primary"
             >
               <Shield className="w-4 h-4" />
               Help Center

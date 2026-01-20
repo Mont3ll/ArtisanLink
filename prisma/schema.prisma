@@ -8,7 +8,6 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
 }
 
 // Enums
@@ -92,7 +91,15 @@ model User {
   clientConversations  Conversation[] @relation("ClientConversations")
   artisanConversations Conversation[] @relation("ArtisanConversations")
   reviews              Review[]       @relation("ClientReviews")
+  savedArtisans        SavedArtisan[]
+  searchHistory        SearchHistory[]
+  notifications        Notification[]
+  notificationPreferences NotificationPreferences?
 
+  // Indexes for common queries
+  @@index([role, status]) // Filter users by role and status
+  @@index([createdAt]) // Sort users by creation date
+  @@index([email]) // Email lookups (in addition to unique)
   @@map("users")
 }
 
@@ -142,7 +149,19 @@ model Profile {
   subscription    Subscription?
   reviews         Review[]
   specializations Specialization[]
+  savedBy         SavedArtisan[]
 
+  // Indexes for common queries
+  @@index([userId]) // User lookup
+  @@index([profession]) // Filter by profession
+  @@index([county]) // Filter by county
+  @@index([city]) // Filter by city
+  @@index([artisanStatus]) // Filter by verification status
+  @@index([isAvailable]) // Filter available artisans
+  @@index([averageRating]) // Sort by rating
+  @@index([hourlyRate]) // Sort/filter by rate
+  @@index([latitude, longitude]) // Geospatial queries
+  @@index([createdAt]) // Sort by creation date
   @@map("profiles")
 }
 
@@ -172,6 +191,11 @@ model PortfolioItem {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  // Indexes for common queries
+  @@index([profileId]) // Filter by artisan profile
+  @@index([category]) // Filter by category
+  @@index([isPublic, isFeatured]) // Public and featured items
+  @@index([createdAt]) // Sort by creation date
   @@map("portfolio_items")
 }
 
@@ -188,6 +212,10 @@ model Specialization {
 
   createdAt DateTime @default(now())
 
+  // Indexes for common queries
+  @@index([profileId]) // Filter by profile
+  @@index([category]) // Filter by category
+  @@index([name]) // Search by name
   @@unique([profileId, name])
   @@map("specializations")
 }
@@ -219,6 +247,11 @@ model Subscription {
   // Relationships
   payments Payment[]
 
+  // Indexes for common queries
+  @@index([profileId]) // Filter by profile
+  @@index([status]) // Filter by status
+  @@index([endDate]) // Find expiring subscriptions
+  @@index([status, endDate]) // Find active subscriptions expiring soon
   @@map("subscriptions")
 }
 
@@ -249,6 +282,11 @@ model Payment {
   updatedAt DateTime  @updatedAt
   paidAt    DateTime?
 
+  // Indexes for common queries
+  @@index([subscriptionId]) // Filter by subscription
+  @@index([status]) // Filter by status
+  @@index([mpesaCheckoutId]) // M-Pesa callback lookup
+  @@index([createdAt]) // Sort by creation date
   @@map("payments")
 }
 
@@ -272,6 +310,11 @@ model Conversation {
   // Relationships
   messages Message[]
 
+  // Indexes for common queries
+  @@index([clientId]) // Client's conversations
+  @@index([artisanId]) // Artisan's conversations
+  @@index([status]) // Filter by status
+  @@index([lastMessageAt]) // Sort by recent activity
   @@unique([clientId, artisanId])
   @@map("conversations")
 }
@@ -296,6 +339,12 @@ model Message {
   createdAt DateTime  @default(now())
   readAt    DateTime?
 
+  // Indexes for common queries
+  @@index([conversationId]) // Messages in conversation
+  @@index([senderId]) // Sent messages
+  @@index([receiverId]) // Received messages
+  @@index([receiverId, status]) // Unread messages for receiver
+  @@index([createdAt]) // Sort by creation date
   @@map("messages")
 }
 
@@ -323,8 +372,32 @@ model Review {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  // Indexes for common queries
+  @@index([profileId]) // Reviews for artisan
+  @@index([clientId]) // Reviews by client
+  @@index([rating]) // Filter by rating
+  @@index([isApproved, isHidden]) // Moderation filtering
+  @@index([createdAt]) // Sort by creation date
   @@unique([profileId, clientId])
   @@map("reviews")
+}
+
+// Saved Artisans (Client Favorites)
+model SavedArtisan {
+  id        String   @id @default(cuid())
+  userId    String   // Client who saved
+  profileId String   // Artisan profile saved
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  profile Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  // Indexes for common queries
+  @@index([userId]) // User's saved artisans
+  @@index([profileId]) // Who saved this artisan
+  @@unique([userId, profileId])
+  @@map("saved_artisans")
 }
 
 // Admin Activity Logs
@@ -349,6 +422,11 @@ model ActivityLog {
   // Timestamps
   createdAt DateTime @default(now())
 
+  // Indexes for common queries
+  @@index([adminId]) // Filter by admin
+  @@index([action]) // Filter by action type
+  @@index([targetType, targetId]) // Find logs for specific entity
+  @@index([createdAt]) // Sort by creation date
   @@map("activity_logs")
 }
 
@@ -366,4 +444,97 @@ model Setting {
   updatedAt DateTime @updatedAt
 
   @@map("settings")
+}
+
+// Search History for Clients
+model SearchHistory {
+  id     String @id @default(cuid())
+  userId String
+
+  // Search parameters
+  query      String? // Text search query
+  profession String? // Profession filter
+  location   String? // Location/county filter
+  minRating  Float?  // Minimum rating filter
+  maxRadius  Float?  // Distance radius in km
+  filters    Json?   // Additional filters as JSON
+
+  // Results info
+  resultCount Int?
+
+  // Geo information (if location-based search)
+  latitude  Float?
+  longitude Float?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@map("search_history")
+}
+
+// Notification Types
+enum NotificationType {
+  MESSAGE       // New message received
+  REVIEW        // New review received
+  VERIFICATION  // Profile verification status change
+  SYSTEM        // System announcements
+  PROMOTION     // Promotional notifications
+  BOOKING       // Booking/inquiry notifications
+}
+
+// Notifications System
+model Notification {
+  id     String @id @default(cuid())
+  userId String
+
+  type    NotificationType
+  title   String
+  message String
+  data    Json?   // Additional context data (e.g., artisanId, messageId, etc.)
+  isRead  Boolean @default(false)
+
+  // Link to related entity
+  linkUrl String? // URL to navigate to when clicked
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime  @default(now())
+  readAt    DateTime?
+
+  @@index([userId, isRead])
+  @@index([userId, createdAt])
+  @@map("notifications")
+}
+
+// Notification Preferences
+model NotificationPreferences {
+  id     String @id @default(cuid())
+  userId String @unique
+
+  // Notification channels
+  emailNotifications Boolean @default(true)
+  pushNotifications  Boolean @default(true)
+  smsNotifications   Boolean @default(false)
+
+  // Notification types
+  messageNotifications      Boolean @default(true)  // New messages
+  reviewNotifications       Boolean @default(true)  // New reviews
+  verificationNotifications Boolean @default(true)  // Profile verification updates
+  systemNotifications       Boolean @default(true)  // System announcements
+  promotionNotifications    Boolean @default(false) // Marketing/promotions
+  bookingNotifications      Boolean @default(true)  // Booking/inquiry updates
+
+  // Quiet hours
+  quietHoursEnabled Boolean @default(false)
+  quietHoursStart   String? // Format: "HH:mm" (e.g., "22:00")
+  quietHoursEnd     String? // Format: "HH:mm" (e.g., "08:00")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("notification_preferences")
 }

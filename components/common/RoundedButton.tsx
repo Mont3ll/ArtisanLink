@@ -55,7 +55,7 @@ export default function RoundedButton({
 
   const buttonClass = `
     relative inline-flex items-center justify-center
-    px-8 py-4 rounded-full border border-gray-400
+    px-8 py-4 rounded-full border border-slate-400 dark:border-slate-600
     cursor-pointer overflow-hidden transition-colors duration-400
     hover:text-white ${className}
   `.trim();

@@ -1,8 +1,6 @@
 import { NextResponse } from 'next/server'
 import { auth } from '@clerk/nextjs/server'
-import { PrismaClient } from '@/app/generated/prisma'
-
-const prisma = new PrismaClient()
+import { prisma } from '@/lib/prisma'
 
 export async function GET() {
   try {
@@ -105,7 +103,8 @@ export async function GET() {
     })
 
     // Transform data for the new table structure
-    const pendingVerifications = pendingArtisans.map((artisan) => ({
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const pendingVerifications = pendingArtisans.map((artisan: any) => ({
       id: artisan.id,
       name: `${artisan.firstName} ${artisan.lastName}`,
       email: artisan.email,
@@ -117,7 +116,8 @@ export async function GET() {
 
     const recentActivity = [
       // User registrations
-      ...recentUsers.map((user) => ({
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      ...recentUsers.map((user: any) => ({
         id: `user-${user.id}`,
         type: 'user_joined' as const,
         description: `${user.role === 'ARTISAN' ? 'New artisan' : 'New client'} registered`,
@@ -127,8 +127,10 @@ export async function GET() {
       })),
       // Subscription payments
       ...recentUsers
-        .filter(user => user.profile?.subscription?.status === 'ACTIVE')
-        .map((user) => ({
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        .filter((user: any) => user.profile?.subscription?.status === 'ACTIVE')
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        .map((user: any) => ({
           id: `sub-${user.id}`,
           type: 'subscription_paid' as const,
           description: 'Subscription payment received',
@@ -137,7 +139,8 @@ export async function GET() {
           status: 'completed' as const
         })),
       // Recent reviews
-      ...recentReviews.map((review) => ({
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      ...recentReviews.map((review: any) => ({
         id: `review-${review.id}`,
         type: 'review_submitted' as const,
         description: `${review.rating}-star review submitted for ${review.profile.user.firstName}`,
@@ -147,8 +150,10 @@ export async function GET() {
       })),
       // Recent messages
       ...recentMessages
-        .filter(conv => conv.messages.length > 0)
-        .map((conversation) => ({
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        .filter((conv: any) => conv.messages.length > 0)
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        .map((conversation: any) => ({
           id: `msg-${conversation.id}`,
           type: 'message_sent' as const,
           description: `New message in conversation`,
@@ -191,7 +196,5 @@ export async function GET() {
       { error: 'Internal server error' },
       { status: 500 }
     )
-  } finally {
-    await prisma.$disconnect()
   }
 }
