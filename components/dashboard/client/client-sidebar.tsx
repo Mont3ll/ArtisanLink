@@ -6,19 +6,15 @@ import {
   IconSearch,
   IconMapPin,
   IconMessage,
-  IconCalendar,
   IconHeart,
-  IconHistory,
   IconSettings,
   IconHelp,
   IconInnerShadowTop,
-  IconFolder,
-  IconFileDescription,
-  IconUsers,
+  IconStar,
 } from "@tabler/icons-react"
 import { useUser } from "@clerk/nextjs"
 
-import { NavMain } from "@/components/shared/nav-main";
+import { NavMain, type NavItem } from "@/components/shared/nav-main";
 import { NavDocuments } from "@/components/shared/nav-documents";
 import { NavSecondary } from "@/components/shared/nav-secondary";
 import { NavUser } from "@/components/shared/nav-user";
@@ -31,10 +27,42 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
+import { useUnreadCount } from "@/lib/hooks";
 
-// Client navigation data
-const data = {
-  navMain: [
+// Static navigation data
+const navSecondary = [
+  {
+    title: "Settings",
+    url: "/client-dashboard/settings",
+    icon: IconSettings,
+  },
+  {
+    title: "Get Help",
+    url: "/client-dashboard/help",
+    icon: IconHelp,
+  },
+]
+
+const documents = [
+  {
+    name: "My Reviews",
+    url: "/client-dashboard/reviews",
+    icon: IconStar,
+  },
+]
+
+export function ClientSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  const { user } = useUser()
+  const { count: unreadCount } = useUnreadCount()
+
+  const userData = {
+    name: user?.fullName || "Client",
+    email: user?.primaryEmailAddress?.emailAddress || "client@artisanlink.ke",
+    avatar: user?.imageUrl || "/avatars/client.jpg",
+  }
+
+  // Build nav items with dynamic badge
+  const navMain: NavItem[] = [
     {
       title: "Dashboard",
       url: "/client-dashboard",
@@ -54,62 +82,14 @@ const data = {
       title: "Messages",
       url: "/client-dashboard/messages",
       icon: IconMessage,
-    },
-    {
-      title: "My Projects",
-      url: "/client-dashboard/projects",
-      icon: IconCalendar,
+      badge: unreadCount,
     },
     {
       title: "Saved Artisans",
       url: "/client-dashboard/saved",
       icon: IconHeart,
     },
-    {
-      title: "History",
-      url: "/client-dashboard/history",
-      icon: IconHistory,
-    },
-  ],
-  navSecondary: [
-    {
-      title: "Settings",
-      url: "/client-dashboard/settings",
-      icon: IconSettings,
-    },
-    {
-      title: "Get Help",
-      url: "/client-dashboard/help",
-      icon: IconHelp,
-    },
-  ],
-  documents: [
-    {
-      name: "Project Requests",
-      url: "/client-dashboard/requests",
-      icon: IconFolder,
-    },
-    {
-      name: "Contracts",
-      url: "/client-dashboard/contracts",
-      icon: IconFileDescription,
-    },
-    {
-      name: "Reviews Given",
-      url: "/client-dashboard/reviews",
-      icon: IconUsers,
-    },
-  ],
-};
-
-export function ClientSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-  const { user } = useUser()
-
-  const userData = {
-    name: user?.fullName || "Client",
-    email: user?.primaryEmailAddress?.emailAddress || "client@artisanlink.ke",
-    avatar: user?.imageUrl || "/avatars/client.jpg",
-  }
+  ]
 
   return (
     <Sidebar collapsible="offcanvas" {...props}>
@@ -129,9 +109,9 @@ export function ClientSidebar({ ...props }: React.ComponentProps<typeof Sidebar>
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
-        <NavMain items={data.navMain} />
-        <NavDocuments items={data.documents} />
-        <NavSecondary items={data.navSecondary} className="mt-auto" />
+        <NavMain items={navMain} />
+        <NavDocuments items={documents} />
+        <NavSecondary items={navSecondary} className="mt-auto" />
       </SidebarContent>
       <SidebarFooter>
         <NavUser user={userData} />

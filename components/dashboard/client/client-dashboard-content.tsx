@@ -16,8 +16,10 @@ import {
   TrendingUp,
   CheckCircle,
   Loader2,
-  User
+  User,
+  ImageIcon
 } from "lucide-react"
+import { isValidImageUrl } from "@/lib/utils"
 
 // Types for API responses
 interface ClientStats {
@@ -116,19 +118,19 @@ export function ClientDashboardContent() {
       case 'message': return <MessageSquare className="w-4 h-4 text-blue-600" />
       case 'user': return <User className="w-4 h-4 text-green-600" />
       case 'heart': return <Heart className="w-4 h-4 text-red-600" />
-      default: return <Clock className="w-4 h-4 text-gray-600" />
+      default: return <Clock className="w-4 h-4 text-muted-foreground" />
     }
   }
 
   return (
-    <div className="px-4 lg:px-6 space-y-6">
+    <div className="space-y-6">
       {/* Welcome Header */}
       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">
+          <h1 className="text-2xl font-bold">
             Find Skilled Artisans
           </h1>
-          <p className="text-gray-600">
+          <p className="text-muted-foreground">
             Connect with verified craftspeople for your projects
           </p>
         </div>
@@ -196,13 +198,13 @@ export function ClientDashboardContent() {
             {recentActivity.length > 0 ? (
               recentActivity.map((activity) => (
                 <div key={activity.id} className="flex items-start gap-3 p-3 border rounded-lg">
-                  <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center">
+                  <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center">
                     {getActivityIcon(activity.icon)}
                   </div>
                   <div className="flex-1 space-y-1">
                     <p className="text-sm font-medium">{activity.title}</p>
-                    <p className="text-xs text-gray-600">{activity.description}</p>
-                    <div className="flex items-center gap-1 text-xs text-gray-400">
+                    <p className="text-xs text-muted-foreground">{activity.description}</p>
+                    <div className="flex items-center gap-1 text-xs text-muted-foreground">
                       <Clock className="w-3 h-3" />
                       {new Date(activity.timestamp).toLocaleString()}
                     </div>
@@ -210,8 +212,8 @@ export function ClientDashboardContent() {
                 </div>
               ))
             ) : (
-              <div className="text-center py-8 text-gray-500">
-                <MessageSquare className="mx-auto h-12 w-12 text-gray-300 mb-4" />
+              <div className="text-center py-8 text-muted-foreground">
+                <MessageSquare className="mx-auto h-12 w-12 text-muted-foreground/50 mb-4" />
                 <p>No recent activity</p>
                 <p className="text-xs">Start browsing artisans to see activity here</p>
               </div>
@@ -274,8 +276,8 @@ export function ClientDashboardContent() {
                     </Avatar>
                     <div className="flex-1 min-w-0">
                       <h3 className="font-semibold truncate">{artisan.name}</h3>
-                      <p className="text-sm text-gray-600">{artisan.profession}</p>
-                      <div className="flex items-center gap-1 text-xs text-gray-500">
+                      <p className="text-sm text-muted-foreground">{artisan.profession}</p>
+                      <div className="flex items-center gap-1 text-xs text-muted-foreground">
                         <MapPin className="h-3 w-3" />
                         {artisan.location}
                       </div>
@@ -286,7 +288,7 @@ export function ClientDashboardContent() {
                     <div className="flex items-center gap-1">
                       <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
                       <span>{artisan.rating.toFixed(1)}</span>
-                      <span className="text-gray-500">({artisan.totalReviews})</span>
+                      <span className="text-muted-foreground">({artisan.totalReviews})</span>
                     </div>
                     <div className="flex items-center gap-1">
                       <DollarSign className="h-3 w-3" />
@@ -296,17 +298,20 @@ export function ClientDashboardContent() {
 
                   {artisan.featuredWork && (
                     <div className="mb-3">
-                      <Image 
-                        src={artisan.featuredWork.imageUrl} 
-                        alt={artisan.featuredWork.title}
-                        width={300}
-                        height={128}
-                        className="w-full h-32 object-cover rounded"
-                        onError={(e) => {
-                          (e.target as HTMLImageElement).style.display = 'none'
-                        }}
-                      />
-                      <p className="text-xs text-gray-600 mt-1">{artisan.featuredWork.title}</p>
+                      {isValidImageUrl(artisan.featuredWork.imageUrl) ? (
+                        <Image 
+                          src={artisan.featuredWork.imageUrl} 
+                          alt={artisan.featuredWork.title}
+                          width={300}
+                          height={128}
+                          className="w-full h-32 object-cover rounded"
+                        />
+                      ) : (
+                        <div className="w-full h-32 bg-gray-100 dark:bg-gray-800 rounded flex items-center justify-center">
+                          <ImageIcon className="h-8 w-8 text-gray-300 dark:text-gray-600" />
+                        </div>
+                      )}
+                      <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">{artisan.featuredWork.title}</p>
                     </div>
                   )}
 
@@ -323,8 +328,8 @@ export function ClientDashboardContent() {
               ))}
             </div>
           ) : (
-            <div className="text-center py-8 text-gray-500">
-              <User className="mx-auto h-12 w-12 text-gray-300 mb-4" />
+            <div className="text-center py-8 text-muted-foreground">
+              <User className="mx-auto h-12 w-12 text-muted-foreground/50 mb-4" />
               <p>No artisan recommendations yet</p>
               <p className="text-xs">Browse artisans to get personalized recommendations</p>
             </div>
