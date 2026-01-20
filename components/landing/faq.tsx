@@ -83,7 +83,7 @@ function FaqItem({ faq }: FaqItemProps) {
   return (
     <div className="faq-item rounded-xl glass-card-light hover:glow-primary transition-all duration-500 overflow-hidden group relative">
       {/* Subtle gradient overlay */}
-      <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+      <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-sky-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
       
       <button
         onClick={() => setIsOpen(!isOpen)}
