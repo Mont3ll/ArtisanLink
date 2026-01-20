@@ -1,40 +1,36 @@
-import { AppSidebar } from "@/components/shared/app-sidebar"
-import { ChartAreaInteractive } from "@/components/shared/chart-area-interactive"
-import { DataTable } from "@/components/shared/data-table"
-import { SectionCards } from "@/components/shared/section-cards"
-import { SiteHeader } from "@/components/shared/site-header"
-import {
-  SidebarInset,
-  SidebarProvider,
-} from "@/components/ui/sidebar"
+import { redirect } from "next/navigation"
+import { auth } from "@clerk/nextjs/server"
 
-import data from "./data.json"
+/**
+ * Generic /dashboard route that redirects users to their role-specific dashboard.
+ * 
+ * Uses Clerk's session claims to determine role, avoiding database queries
+ * that could fail during the auth flow.
+ * 
+ * - ADMIN -> /admin-dashboard
+ * - ARTISAN -> /artisan-dashboard  
+ * - CLIENT -> /client-dashboard
+ * - Unauthenticated -> /sign-in
+ */
+export default async function DashboardRedirectPage() {
+  const { userId, sessionClaims } = await auth()
+  
+  if (!userId) {
+    redirect("/sign-in")
+  }
 
-export default function Page() {
-  return (
-    <SidebarProvider
-      style={
-        {
-          "--sidebar-width": "calc(var(--spacing) * 72)",
-          "--header-height": "calc(var(--spacing) * 12)",
-        } as React.CSSProperties
-      }
-    >
-      <AppSidebar variant="inset" />
-      <SidebarInset>
-        <SiteHeader />
-        <div className="flex flex-1 flex-col">
-          <div className="@container/main flex flex-1 flex-col gap-2">
-            <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
-              <SectionCards />
-              <div className="px-4 lg:px-6">
-                <ChartAreaInteractive />
-              </div>
-              <DataTable data={data} />
-            </div>
-          </div>
-        </div>
-      </SidebarInset>
-    </SidebarProvider>
-  )
+  // Get role from Clerk's session claims (set during sign-up/sign-in)
+  const role = (sessionClaims?.publicMetadata as { role?: string })?.role?.toLowerCase()
+
+  // Redirect based on role
+  switch (role) {
+    case "admin":
+      redirect("/admin-dashboard")
+    case "artisan":
+      redirect("/artisan-dashboard")
+    case "client":
+    default:
+      // Default to client dashboard
+      redirect("/client-dashboard")
+  }
 }

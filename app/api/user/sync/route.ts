@@ -1,8 +1,6 @@
 import { NextResponse } from 'next/server'
 import { auth, currentUser } from '@clerk/nextjs/server'
-import { PrismaClient } from '@/app/generated/prisma'
-
-const prisma = new PrismaClient()
+import { prisma } from '@/lib/prisma'
 
 export async function POST() {
   try {
@@ -21,8 +19,6 @@ export async function POST() {
 
     if (!user) {
       // Create user in database
-      console.log('Creating new user in database:', clerkUser.emailAddresses[0]?.emailAddress)
-      
       user = await prisma.user.create({
         data: {
           clerkId: userId,
@@ -62,7 +58,5 @@ export async function POST() {
       { error: 'Failed to sync user', details: error instanceof Error ? error.message : 'Unknown error' },
       { status: 500 }
     )
-  } finally {
-    await prisma.$disconnect()
   }
 }
