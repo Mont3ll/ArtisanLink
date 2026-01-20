@@ -154,20 +154,20 @@ export default function Faq() {
             Our support team is here to help you get the most out of ArtisanLink.
           </p>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-md mx-auto">
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <a 
               href="/support" 
-              className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-gradient-cta text-white font-semibold rounded-full hover:scale-105 transition-all duration-300 glow-primary"
+              className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-gradient-cta text-white font-semibold rounded-full hover:scale-105 transition-all duration-300 glow-primary whitespace-nowrap"
             >
               <MessageCircle className="w-4 h-4" />
-              Contact Support
+              Support
             </a>
             <a 
               href="/help" 
-              className="inline-flex items-center justify-center gap-2 px-6 py-3 text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-100 transition-colors rounded-full glass-card-light hover:glow-primary"
+              className="inline-flex items-center justify-center gap-2 px-6 py-3 text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-100 transition-colors rounded-full glass-card-light hover:glow-primary whitespace-nowrap"
             >
               <Shield className="w-4 h-4" />
-              Help Center
+              Help
             </a>
           </div>
         </div>
