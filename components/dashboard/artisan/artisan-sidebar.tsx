@@ -2,24 +2,20 @@
 
 import * as React from "react"
 import {
-  IconCalendar,
   IconDashboard,
   IconMessage,
-  IconUsers,
   IconStar,
-  IconCurrencyDollar,
   IconChartBar,
   IconSettings,
   IconHelp,
-  IconSearch,
-  IconInnerShadowTop,
-  IconBriefcase,
   IconFileDescription,
-  IconEye,
+  IconCrown,
+  IconReceipt,
+  IconInnerShadowTop,
 } from "@tabler/icons-react"
 import { useUser } from "@clerk/nextjs"
 
-import { NavMain } from "@/components/shared/nav-main";
+import { NavMain, type NavItem } from "@/components/shared/nav-main";
 import { NavDocuments } from "@/components/shared/nav-documents";
 import { NavSecondary } from "@/components/shared/nav-secondary";
 import { NavUser } from "@/components/shared/nav-user";
@@ -32,19 +28,51 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
+import { useUnreadCount } from "@/lib/hooks";
 
-// Artisan navigation data
-const data = {
-  navMain: [
+// Static navigation data
+const navSecondary = [
+  {
+    title: "Settings",
+    url: "/artisan-dashboard/settings",
+    icon: IconSettings,
+  },
+  {
+    title: "Get Help",
+    url: "/artisan-dashboard/help",
+    icon: IconHelp,
+  },
+]
+
+const documents = [
+  {
+    name: "Profile Analytics",
+    url: "/artisan-dashboard/analytics",
+    icon: IconChartBar,
+  },
+  {
+    name: "Payment History",
+    url: "/artisan-dashboard/payments", 
+    icon: IconReceipt,
+  },
+]
+
+export function ArtisanSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  const { user } = useUser()
+  const { count: unreadCount } = useUnreadCount()
+
+  const userData = {
+    name: user?.fullName || "Artisan",
+    email: user?.primaryEmailAddress?.emailAddress || "artisan@artisanlink.ke",
+    avatar: user?.imageUrl || "/avatars/artisan.jpg",
+  }
+
+  // Build nav items with dynamic badge
+  const navMain: NavItem[] = [
     {
       title: "Dashboard",
       url: "/artisan-dashboard",
       icon: IconDashboard,
-    },
-    {
-      title: "My Projects",
-      url: "/artisan-dashboard/projects",
-      icon: IconBriefcase,
     },
     {
       title: "Portfolio",
@@ -55,16 +83,7 @@ const data = {
       title: "Messages",
       url: "/artisan-dashboard/messages",
       icon: IconMessage,
-    },
-    {
-      title: "Inquiries",
-      url: "/artisan-dashboard/inquiries",
-      icon: IconUsers,
-    },
-    {
-      title: "Calendar",
-      url: "/artisan-dashboard/calendar",
-      icon: IconCalendar,
+      badge: unreadCount,
     },
     {
       title: "Reviews",
@@ -72,55 +91,11 @@ const data = {
       icon: IconStar,
     },
     {
-      title: "Earnings",
-      url: "/artisan-dashboard/earnings",
-      icon: IconCurrencyDollar,
+      title: "Subscription",
+      url: "/artisan-dashboard/subscription",
+      icon: IconCrown,
     },
-  ],
-  navSecondary: [
-    {
-      title: "Settings",
-      url: "/artisan-dashboard/settings",
-      icon: IconSettings,
-    },
-    {
-      title: "Get Help",
-      url: "/artisan-dashboard/help",
-      icon: IconHelp,
-    },
-    {
-      title: "Search",
-      url: "/artisan-dashboard/search",
-      icon: IconSearch,
-    },
-  ],
-  documents: [
-    {
-      name: "Profile Analytics",
-      url: "/artisan-dashboard/analytics",
-      icon: IconChartBar,
-    },
-    {
-      name: "Profile Views",
-      url: "/artisan-dashboard/views", 
-      icon: IconEye,
-    },
-    {
-      name: "Certificates",
-      url: "/artisan-dashboard/certificates",
-      icon: IconFileDescription,
-    },
-  ],
-}
-
-export function ArtisanSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-  const { user } = useUser()
-
-  const userData = {
-    name: user?.fullName || "Artisan",
-    email: user?.primaryEmailAddress?.emailAddress || "artisan@artisanlink.ke",
-    avatar: user?.imageUrl || "/avatars/artisan.jpg",
-  }
+  ]
 
   return (
     <Sidebar collapsible="offcanvas" {...props}>
@@ -140,9 +115,9 @@ export function ArtisanSidebar({ ...props }: React.ComponentProps<typeof Sidebar
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
-        <NavMain items={data.navMain} />
-        <NavDocuments items={data.documents} />
-        <NavSecondary items={data.navSecondary} className="mt-auto" />
+        <NavMain items={navMain} />
+        <NavDocuments items={documents} />
+        <NavSecondary items={navSecondary} className="mt-auto" />
       </SidebarContent>
       <SidebarFooter>
         <NavUser user={userData} />
