@@ -73,12 +73,12 @@ export default function Header() {
   }, [open]);
 
   return (
-    <header className="border-b bg-white/80 backdrop-blur-md sticky top-0 z-40">
+    <header className="border-b bg-white/80 dark:bg-slate-900/80 backdrop-blur-md sticky top-0 z-40">
       <div className="max-w-7xl mx-auto px-6 md:px-8 lg:px-12">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <Magnetic>
-            <Link href="/" className="font-bold text-xl text-slate-900" aria-label="Home">
+            <Link href="/" className="font-bold text-xl text-slate-900 dark:text-slate-100" aria-label="Home">
               ArtisanLink
             </Link>
           </Magnetic>
@@ -88,26 +88,26 @@ export default function Header() {
             <div className="flex items-center gap-8">
               <Magnetic>
                 <div className="nav-element relative flex flex-col items-center py-3 px-4 cursor-pointer group">
-                  <a href="#features" className="text-sm text-slate-600 hover:text-slate-900 transition-colors">
+                  <a href="#features" className="text-sm text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 transition-colors">
                     Features
                   </a>
-                  <div className="nav-indicator absolute w-1 h-1 bg-slate-900 rounded-full bottom-0 transform scale-0 group-hover:scale-100 transition-transform duration-200 ease-out"></div>
+                  <div className="nav-indicator absolute w-1 h-1 bg-slate-900 dark:bg-slate-100 rounded-full bottom-0 transform scale-0 group-hover:scale-100 transition-transform duration-200 ease-out"></div>
                 </div>
               </Magnetic>
               <Magnetic>
                 <div className="nav-element relative flex flex-col items-center py-3 px-4 cursor-pointer group">
-                  <a href="#pricing" className="text-sm text-slate-600 hover:text-slate-900 transition-colors">
+                  <a href="#pricing" className="text-sm text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 transition-colors">
                     Pricing
                   </a>
-                  <div className="nav-indicator absolute w-1 h-1 bg-slate-900 rounded-full bottom-0 transform scale-0 group-hover:scale-100 transition-transform duration-200 ease-out"></div>
+                  <div className="nav-indicator absolute w-1 h-1 bg-slate-900 dark:bg-slate-100 rounded-full bottom-0 transform scale-0 group-hover:scale-100 transition-transform duration-200 ease-out"></div>
                 </div>
               </Magnetic>
               <Magnetic>
                 <div className="nav-element relative flex flex-col items-center py-3 px-4 cursor-pointer group">
-                  <a href="#faq" className="text-sm text-slate-600 hover:text-slate-900 transition-colors">
+                  <a href="#faq" className="text-sm text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 transition-colors">
                     FAQ
                   </a>
-                  <div className="nav-indicator absolute w-1 h-1 bg-slate-900 rounded-full bottom-0 transform scale-0 group-hover:scale-100 transition-transform duration-200 ease-out"></div>
+                  <div className="nav-indicator absolute w-1 h-1 bg-slate-900 dark:bg-slate-100 rounded-full bottom-0 transform scale-0 group-hover:scale-100 transition-transform duration-200 ease-out"></div>
                 </div>
               </Magnetic>
             </div>
@@ -119,7 +119,7 @@ export default function Header() {
               <Magnetic>
                 <Link 
                   href="/sign-up" 
-                  className="text-sm text-slate-600 hover:text-slate-900 transition-colors px-4 py-2"
+                  className="text-sm text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 transition-colors px-4 py-2"
                 >
                   Get Started
                 </Link>
@@ -128,7 +128,7 @@ export default function Header() {
             <RoundedButton 
               href={isSignedIn ? "/dashboard" : "/sign-in"}
               backgroundColor="#1e293b"
-              className="text-slate-900 font-medium"
+              className="text-slate-900 dark:text-slate-100 font-medium"
             >
               {isSignedIn ? "Dashboard" : "Sign In"}
             </RoundedButton>
@@ -141,7 +141,7 @@ export default function Header() {
               aria-expanded={open}
               aria-label={open ? "Close menu" : "Open menu"}
               onClick={() => setOpen((v) => !v)}
-              className="rounded-md p-2 hover:bg-slate-100 transition-colors relative z-50"
+              className="rounded-md p-2 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors relative z-50"
             >
               {open ? <X size={20} /> : <Menu size={20} />}
             </button>

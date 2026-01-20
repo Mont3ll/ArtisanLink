@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { ClerkProvider } from '@clerk/nextjs';
 import { RoleSync } from "@/components/role/role-sync";
+import { ThemeProvider } from "@/components/theme-provider";
+import { QueryProvider } from "@/lib/react-query";
 import { Toaster } from "sonner";
 import "./globals.css";
 
@@ -31,9 +33,18 @@ export default function RootLayout({
         <body
           className={`${geistSans.variable} ${geistMono.variable} antialiased`}
         >
-          <RoleSync />
-          {children}
-          <Toaster />
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="system"
+            enableSystem
+            disableTransitionOnChange
+          >
+            <QueryProvider>
+              <RoleSync />
+              {children}
+              <Toaster />
+            </QueryProvider>
+          </ThemeProvider>
         </body>
       </html>
     </ClerkProvider>

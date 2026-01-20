@@ -24,7 +24,7 @@ export default function Home() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-white text-slate-900 antialiased">
+    <div className="min-h-screen bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 antialiased">
       <Preloader />
       <SmoothScroll />
       <Header />
