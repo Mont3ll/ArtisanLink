@@ -62,21 +62,43 @@ export const artisanSettingsKeys = {
   specializations: () => [...artisanSettingsKeys.all, 'specializations'] as const,
 }
 
+// Default values for when API fails
+const defaultProfile: { profile: ArtisanProfile | null } = { profile: null }
+const defaultSpecializations: SpecializationsData = { specializations: [], categories: [] }
+
 // Fetch functions
 async function fetchProfile(): Promise<{ profile: ArtisanProfile | null }> {
-  const response = await fetch('/api/user/me')
-  if (!response.ok) {
-    throw new Error('Failed to fetch profile')
+  try {
+    const response = await fetch('/api/user/me')
+    if (response.status === 403 || response.status === 404) {
+      console.warn('[useArtisanProfile] User not authorized or not found, returning defaults')
+      return defaultProfile
+    }
+    if (!response.ok) {
+      throw new Error('Failed to fetch profile')
+    }
+    return response.json()
+  } catch (error) {
+    console.error('[useArtisanProfile] Error fetching profile:', error)
+    return defaultProfile
   }
-  return response.json()
 }
 
 async function fetchSpecializations(): Promise<SpecializationsData> {
-  const response = await fetch('/api/artisan/specializations')
-  if (!response.ok) {
-    throw new Error('Failed to fetch specializations')
+  try {
+    const response = await fetch('/api/artisan/specializations')
+    if (response.status === 403 || response.status === 404) {
+      console.warn('[useArtisanSpecializations] User not authorized or not found, returning defaults')
+      return defaultSpecializations
+    }
+    if (!response.ok) {
+      throw new Error('Failed to fetch specializations')
+    }
+    return response.json()
+  } catch (error) {
+    console.error('[useArtisanSpecializations] Error fetching specializations:', error)
+    return defaultSpecializations
   }
-  return response.json()
 }
 
 async function updateProfile(data: Partial<ArtisanProfile>): Promise<{ profile: ArtisanProfile }> {

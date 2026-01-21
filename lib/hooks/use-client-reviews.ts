@@ -60,6 +60,17 @@ export interface UpdateReviewData {
   projectCost?: number
 }
 
+// Default values
+const defaultReviewsResponse: ClientReviewsResponse = {
+  reviews: [],
+  pagination: {
+    page: 1,
+    limit: 20,
+    total: 0,
+    totalPages: 0,
+  },
+}
+
 // Query keys
 export const clientReviewsKeys = {
   all: ['client-reviews'] as const,
@@ -69,18 +80,29 @@ export const clientReviewsKeys = {
 
 // Fetch functions
 async function fetchClientReviews(filters: ClientReviewsFilters = {}): Promise<ClientReviewsResponse> {
-  const params = new URLSearchParams()
-  if (filters.page) params.set('page', filters.page.toString())
-  if (filters.limit) params.set('limit', filters.limit.toString())
+  try {
+    const params = new URLSearchParams()
+    if (filters.page) params.set('page', filters.page.toString())
+    if (filters.limit) params.set('limit', filters.limit.toString())
 
-  const url = `/api/reviews${params.toString() ? `?${params.toString()}` : ''}`
-  const response = await fetch(url)
+    const url = `/api/reviews${params.toString() ? `?${params.toString()}` : ''}`
+    const response = await fetch(url)
 
-  if (!response.ok) {
-    throw new Error('Failed to fetch reviews')
+    // Handle 403/404 gracefully
+    if (response.status === 403 || response.status === 404) {
+      console.warn('[useClientReviews] User not authorized or not found, returning defaults')
+      return defaultReviewsResponse
+    }
+
+    if (!response.ok) {
+      throw new Error('Failed to fetch reviews')
+    }
+
+    return response.json()
+  } catch (error) {
+    console.error('[useClientReviews] Error fetching reviews:', error)
+    return defaultReviewsResponse
   }
-
-  return response.json()
 }
 
 async function createReview(data: CreateReviewData): Promise<ClientReview> {
