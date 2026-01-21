@@ -3,6 +3,7 @@
 import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import { useSearchParams, useRouter } from "next/navigation";
+import { useQuery } from "@tanstack/react-query";
 import {
   MessageSquare,
   Search,
@@ -13,6 +14,10 @@ import {
   Mail,
   Check,
   CheckCheck,
+  User,
+  X,
+  MapPin,
+  Star,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -48,6 +53,21 @@ import {
   useCreateConversation,
   type Conversation,
 } from "@/lib/hooks";
+
+// Type for artisan details fetched from API
+interface ArtisanDetails {
+  id: string;
+  firstName: string;
+  lastName: string;
+  profile?: {
+    profession?: string;
+    profileImage?: string;
+    city?: string;
+    county?: string;
+    averageRating?: number;
+    isAvailable?: boolean;
+  };
+}
 
 // Format message time
 function formatMessageTime(date: Date): string {
@@ -220,21 +240,45 @@ function NewConversationDialog({
   open,
   onOpenChange,
   onCreated,
+  initialArtisanId,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onCreated: (id: string) => void;
+  initialArtisanId?: string;
 }) {
-  const [artisanId, setArtisanId] = useState("");
   const [subject, setSubject] = useState("");
   const [message, setMessage] = useState("");
   const [error, setError] = useState<string | null>(null);
 
   const createMutation = useCreateConversation();
 
+  // Fetch artisan details when initialArtisanId is provided
+  const { data: artisan, isLoading: isLoadingArtisan, error: artisanError } = useQuery<ArtisanDetails>({
+    queryKey: ["artisan-details", initialArtisanId],
+    queryFn: async () => {
+      const res = await fetch(`/api/client/artisans/${initialArtisanId}`);
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.error || "Artisan not found");
+      }
+      return res.json();
+    },
+    enabled: !!initialArtisanId && open,
+  });
+
+  // Reset form when dialog closes
+  useEffect(() => {
+    if (!open) {
+      setSubject("");
+      setMessage("");
+      setError(null);
+    }
+  }, [open]);
+
   const handleCreate = async () => {
-    if (!artisanId.trim()) {
-      setError("Artisan ID is required");
+    if (!initialArtisanId) {
+      setError("No artisan selected");
       return;
     }
 
@@ -242,19 +286,20 @@ function NewConversationDialog({
 
     try {
       const result = await createMutation.mutateAsync({
-        artisanId: artisanId.trim(),
+        artisanId: initialArtisanId,
         subject: subject.trim() || undefined,
         initialMessage: message.trim() || undefined,
       });
       onCreated(result.id);
       onOpenChange(false);
-      setArtisanId("");
-      setSubject("");
-      setMessage("");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to create conversation");
     }
   };
+
+  const artisanInitials = artisan 
+    ? `${artisan.firstName[0]}${artisan.lastName[0]}`
+    : "?";
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -273,17 +318,72 @@ function NewConversationDialog({
             </div>
           )}
 
+          {artisanError && (
+            <div className="text-sm text-red-600 bg-red-50 p-3 rounded-md">
+              {artisanError instanceof Error ? artisanError.message : "Failed to load artisan details"}
+            </div>
+          )}
+
+          {/* Artisan Info Card */}
           <div className="space-y-2">
-            <Label htmlFor="artisanId">Artisan ID</Label>
-            <Input
-              id="artisanId"
-              placeholder="Enter artisan user ID"
-              value={artisanId}
-              onChange={(e) => setArtisanId(e.target.value)}
-            />
-            <p className="text-xs text-muted-foreground">
-              You can find this on the artisan&apos;s profile page
-            </p>
+            <Label>Contacting</Label>
+            {isLoadingArtisan ? (
+              <div className="flex items-center gap-3 p-3 border rounded-lg bg-muted/30">
+                <Skeleton className="h-12 w-12 rounded-full" />
+                <div className="space-y-2">
+                  <Skeleton className="h-4 w-32" />
+                  <Skeleton className="h-3 w-24" />
+                </div>
+              </div>
+            ) : artisan ? (
+              <div className="flex items-center gap-3 p-3 border rounded-lg bg-muted/30">
+                <Avatar className="h-12 w-12">
+                  <AvatarImage
+                    src={artisan.profile?.profileImage || undefined}
+                    alt={`${artisan.firstName} ${artisan.lastName}`}
+                  />
+                  <AvatarFallback className="bg-primary/10 text-primary">
+                    {artisanInitials}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2">
+                    <span className="font-medium">
+                      {artisan.firstName} {artisan.lastName}
+                    </span>
+                    {artisan.profile?.isAvailable && (
+                      <Badge variant="outline" className="text-green-600 border-green-600 text-xs">
+                        Available
+                      </Badge>
+                    )}
+                  </div>
+                  {artisan.profile?.profession && (
+                    <p className="text-sm text-muted-foreground">
+                      {artisan.profile.profession}
+                    </p>
+                  )}
+                  <div className="flex items-center gap-3 text-xs text-muted-foreground mt-1">
+                    {artisan.profile?.city && artisan.profile?.county && (
+                      <span className="flex items-center gap-1">
+                        <MapPin className="h-3 w-3" />
+                        {artisan.profile.city}, {artisan.profile.county}
+                      </span>
+                    )}
+                    {artisan.profile?.averageRating !== undefined && artisan.profile.averageRating > 0 && (
+                      <span className="flex items-center gap-1">
+                        <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
+                        {artisan.profile.averageRating.toFixed(1)}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              </div>
+            ) : !initialArtisanId ? (
+              <div className="flex items-center justify-center gap-2 p-6 border rounded-lg border-dashed text-muted-foreground">
+                <User className="h-5 w-5" />
+                <span>Find an artisan first to start a conversation</span>
+              </div>
+            ) : null}
           </div>
 
           <div className="space-y-2">
@@ -312,7 +412,10 @@ function NewConversationDialog({
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             Cancel
           </Button>
-          <Button onClick={handleCreate} disabled={createMutation.isPending}>
+          <Button 
+            onClick={handleCreate} 
+            disabled={createMutation.isPending || isLoadingArtisan || !artisan}
+          >
             {createMutation.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
             Start Conversation
           </Button>
@@ -328,6 +431,7 @@ export default function MessagesPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [activeTab, setActiveTab] = useState<"active" | "archived">("active");
   const [newConversationOpen, setNewConversationOpen] = useState(false);
+  const [selectedArtisanId, setSelectedArtisanId] = useState<string | undefined>();
   const [page, setPage] = useState(1);
 
   // React Query hooks
@@ -377,10 +481,11 @@ export default function MessagesPage() {
     });
   }, [searchQuery, conversations]);
 
-  // Check if coming from artisan contact
+  // Check if coming from artisan contact link
   useEffect(() => {
     const artisanId = searchParams.get("artisan");
     if (artisanId) {
+      setSelectedArtisanId(artisanId);
       setNewConversationOpen(true);
     }
   }, [searchParams]);
@@ -392,7 +497,28 @@ export default function MessagesPage() {
 
   // Handle new conversation created
   const handleConversationCreated = (id: string) => {
+    // Clear the URL param
+    router.replace("/client-dashboard/messages");
+    setSelectedArtisanId(undefined);
     router.push(`/client-dashboard/messages/${id}`);
+  };
+
+  // Handle dialog close
+  const handleDialogClose = (open: boolean) => {
+    setNewConversationOpen(open);
+    if (!open) {
+      // Clear the artisan ID and URL param when closing
+      setSelectedArtisanId(undefined);
+      if (searchParams.get("artisan")) {
+        router.replace("/client-dashboard/messages");
+      }
+    }
+  };
+
+  // Handle "New Message" button click (without pre-selected artisan)
+  const handleNewMessageClick = () => {
+    // Redirect to find artisans page since we need to select an artisan first
+    router.push("/client-dashboard/find-artisans");
   };
 
   return (
@@ -414,7 +540,7 @@ export default function MessagesPage() {
             Your conversations with artisans
           </p>
         </div>
-        <Button onClick={() => setNewConversationOpen(true)}>
+        <Button onClick={handleNewMessageClick}>
           <Plus className="h-4 w-4 mr-2" />
           New Message
         </Button>
@@ -469,13 +595,13 @@ export default function MessagesPage() {
                   {conversations.length === 0
                     ? activeTab === "archived"
                       ? "Archived conversations will appear here"
-                      : "Start a conversation with an artisan"
+                      : "Find an artisan to start a conversation"
                     : "Try adjusting your search query"}
                 </p>
                 {conversations.length === 0 && activeTab === "active" && (
-                  <Button onClick={() => setNewConversationOpen(true)}>
-                    <Plus className="h-4 w-4 mr-2" />
-                    Start a Conversation
+                  <Button onClick={handleNewMessageClick}>
+                    <Search className="h-4 w-4 mr-2" />
+                    Find Artisans
                   </Button>
                 )}
               </CardContent>
@@ -523,8 +649,9 @@ export default function MessagesPage() {
       {/* New Conversation Dialog */}
       <NewConversationDialog
         open={newConversationOpen}
-        onOpenChange={setNewConversationOpen}
+        onOpenChange={handleDialogClose}
         onCreated={handleConversationCreated}
+        initialArtisanId={selectedArtisanId}
       />
     </div>
   );
