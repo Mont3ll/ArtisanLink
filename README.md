@@ -18,7 +18,7 @@ A digital marketplace connecting clients with skilled artisans in Kenya.
 ### Prerequisites
 
 - Node.js 20+
-- PostgreSQL 15+
+- Docker (recommended) or PostgreSQL 15+
 - Clerk account
 - M-Pesa Daraja API credentials (for payments)
 
@@ -57,7 +57,25 @@ Open [http://localhost:3000](http://localhost:3000) to view the application.
 
 ## Database Setup
 
-### 1. Create PostgreSQL Database
+### Option A: Using Docker (Recommended)
+
+The easiest way to set up PostgreSQL is with Docker:
+
+```bash
+docker compose up -d
+```
+
+This starts a PostgreSQL 15 container with the correct credentials pre-configured. The database persists in a Docker volume.
+
+To stop the database:
+```bash
+docker compose down        # Stop container (data persists)
+docker compose down -v     # Stop and delete all data
+```
+
+### Option B: Manual PostgreSQL Setup
+
+If you prefer a local PostgreSQL installation:
 
 ```bash
 # Using psql
@@ -68,23 +86,21 @@ GRANT ALL PRIVILEGES ON DATABASE artisanlink_db TO artisan_user;
 \q
 ```
 
-Or use your preferred PostgreSQL management tool.
-
-### 2. Configure Database URL
+### Configure Database URL
 
 Update your `.env` file:
 ```env
 DATABASE_URL="postgresql://artisan_user:artisan_password@localhost:5432/artisanlink_db"
 ```
 
-### 3. Generate Prisma Client & Push Schema
+### Generate Prisma Client & Push Schema
 
 ```bash
 npm run db:generate    # Generate Prisma client
 npm run db:push        # Push schema to database
 ```
 
-### 4. Seed the Database (Recommended)
+### Seed the Database (Recommended)
 
 The seed script creates comprehensive mock data for development:
 
