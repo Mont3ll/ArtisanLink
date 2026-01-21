@@ -1,10 +1,11 @@
 'use client'
 
 import { useUser } from '@clerk/nextjs'
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 
 export function RoleSync() {
   const { user, isLoaded } = useUser()
+  const syncAttempted = useRef(false)
 
   useEffect(() => {
     if (isLoaded && user) {
@@ -20,6 +21,25 @@ export function RoleSync() {
             role: 'client'
           }
         }).catch(console.error)
+      }
+
+      // Sync user to database (only once per session)
+      if (!syncAttempted.current) {
+        syncAttempted.current = true
+        
+        fetch('/api/user/sync', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+        })
+          .then(async (response) => {
+            if (!response.ok) {
+              const error = await response.json().catch(() => ({}))
+              console.error('[RoleSync] Failed to sync user to database:', error)
+            }
+          })
+          .catch((error) => {
+            console.error('[RoleSync] Error syncing user to database:', error)
+          })
       }
     }
   }, [user, isLoaded])
