@@ -26,6 +26,9 @@
  *   - 08-settings.ts     : System settings
  */
 
+// Load environment variables from .env file
+import 'dotenv/config'
+
 import { 
   seed, 
   prisma,
