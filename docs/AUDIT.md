@@ -1,7 +1,7 @@
 # ArtisanLink Development Audit & Task Tracker
 
-> **Last Updated**: January 18, 2026
-> **Status**: Production Ready (98% Complete)
+> **Last Updated**: January 21, 2026
+> **Status**: Active Development (Phase 9-10 In Progress)
 > **Next.js Version**: 16.1.3 | **Prisma**: 7.2.0 | **React**: 19.2.3
 > **Tests**: 467 passing (unit/component/integration) + 93 E2E tests
 
@@ -309,6 +309,150 @@ This document serves as the source of truth for all development tasks. Mark task
 | Phase 6: Payment Integration | 12 | 12 | 100% |
 | Phase 7: Testing | 17 | 17 | 100% |
 | Phase 8: Production | 17 | 17 | 100% |
+| **Phases 0-8 TOTAL** | **155** | **153** | **98%** |
+| Phase 9: Job System | 42 | 7 | 17% |
+| Phase 10: Verification Enhanced | 24 | 7 | 29% |
+| **GRAND TOTAL** | **221** | **167** | **76%** |
+
+---
+
+## Phase 9: Job Request & Booking System (High Priority)
+
+> **Goal**: Implement a complete job lifecycle from request to completion with payments.
+
+### 9.1 Database Schema Updates
+- [x] Add `Job` model with full lifecycle tracking
+- [x] Add `Quote` model for artisan pricing proposals
+- [x] Add `JobPayment` model linking jobs to M-Pesa payments
+- [x] Add `artisanCapacity` field to Profile model
+- [x] Add `currentJobCount` computed/tracking field
+- [x] Update `Conversation` model with optional Job relation
+- [x] Add indexes for job queries (status, dates, artisan, client)
+- [ ] Run migration and update Prisma client
+
+### 9.2 Job Request APIs (Client)
+- [ ] Create `POST /api/client/jobs` - Create job request from conversation
+- [ ] Create `GET /api/client/jobs` - List client's jobs with filters
+- [ ] Create `GET /api/client/jobs/[id]` - Get job details
+- [ ] Create `PATCH /api/client/jobs/[id]` - Accept quote, cancel job
+- [ ] Create `POST /api/client/jobs/[id]/payment` - Initiate deposit/final payment
+- [ ] Create `POST /api/client/jobs/standalone` - Create standalone job request (not from conversation)
+
+### 9.3 Job Management APIs (Artisan)
+- [ ] Create `GET /api/artisan/jobs` - List artisan's jobs with filters
+- [ ] Create `GET /api/artisan/jobs/[id]` - Get job details
+- [ ] Create `PATCH /api/artisan/jobs/[id]` - Accept/decline/update status
+- [ ] Create `POST /api/artisan/jobs/[id]/quote` - Send quote (draft or final)
+- [ ] Create `PATCH /api/artisan/capacity` - Update job capacity setting
+- [ ] Implement auto-availability toggle when at capacity
+
+### 9.4 Quote System
+- [ ] Create `GET /api/jobs/[id]/quotes` - Get all quotes for a job
+- [ ] Create `POST /api/artisan/jobs/[id]/quote` - Create draft quote
+- [ ] Create `PATCH /api/artisan/quotes/[id]` - Update quote (draft → final)
+- [ ] Create `POST /api/client/quotes/[id]/accept` - Client accepts quote
+- [ ] Create `POST /api/client/quotes/[id]/decline` - Client declines quote
+- [ ] Limit quotes to 2 rounds (draft + final) per job
+
+### 9.5 Job Payment Integration
+- [ ] Create `POST /api/payments/job/deposit` - M-Pesa deposit payment (% of agreed price)
+- [ ] Create `POST /api/payments/job/final` - M-Pesa final payment
+- [ ] Create `GET /api/payments/job/[jobId]` - Get payments for job
+- [ ] Update M-Pesa callback to handle job payments
+- [ ] Create deposit percentage configuration (default 30%)
+- [ ] Implement payment status tracking on jobs
+
+### 9.6 Client Job UI
+- [ ] Create `app/(client-dashboard)/client-dashboard/jobs/page.tsx` - Jobs listing
+- [ ] Create `app/(client-dashboard)/client-dashboard/jobs/[id]/page.tsx` - Job detail
+- [ ] Add "Create Job Request" button to conversation page
+- [ ] Create job request form component (title, description, budget, dates)
+- [ ] Create quote review component with accept/decline actions
+- [ ] Create job payment component with deposit/final payment buttons
+- [ ] Add job status badges and timeline component
+
+### 9.7 Artisan Job UI
+- [ ] Create `app/(artisan-dashboard)/artisan-dashboard/jobs/page.tsx` - Jobs listing
+- [ ] Create `app/(artisan-dashboard)/artisan-dashboard/jobs/[id]/page.tsx` - Job detail
+- [ ] Create quote form component (draft/final, pricing, dates, notes)
+- [ ] Create job action buttons (accept, decline, mark in progress, complete)
+- [ ] Add capacity management to settings page
+- [ ] Create availability auto-toggle notification component
+
+### 9.8 Notifications & Real-time
+- [ ] Add job-related notification types to schema
+- [ ] Create notifications for: new job request, quote received, quote accepted, job status changes
+- [ ] Update notification bell to show job notifications
+- [ ] Add job request card component for conversation view
+
+---
+
+## Phase 10: Enhanced Verification System (High Priority)
+
+> **Goal**: Robust artisan verification with ID documents and email notifications.
+
+### 10.1 Image Upload Infrastructure
+- [x] Create `lib/cloudinary.ts` - Cloudinary upload utilities
+- [x] Create `POST /api/upload/image` - Secure image upload endpoint
+- [x] Create `DELETE /api/upload/image` - Image deletion endpoint
+- [x] Add upload progress tracking
+- [x] Implement file type and size validation
+- [ ] Create reusable `ImageUploader` component with drag-and-drop
+
+### 10.2 Database Schema Updates
+- [x] Add `idDocumentUrl` field to Profile model
+- [x] Add `idDocumentType` enum (NATIONAL_ID, PASSPORT, DRIVING_LICENSE)
+- [x] Add `idDocumentUploadedAt` timestamp
+- [x] Add `rejectionReason` field for detailed rejection feedback
+- [x] Add `resubmissionCount` to track verification attempts
+- [x] Add `verificationNotes` for admin internal notes
+
+### 10.3 Enhanced Verification APIs
+- [ ] Update `PATCH /api/artisan/profile` - Handle ID document upload
+- [ ] Create `POST /api/artisan/verification/resubmit` - Resubmission workflow
+- [ ] Update `POST /api/admin/verification/process` - Include rejection reason
+- [ ] Create `GET /api/artisan/verification/status` - Detailed verification status
+- [ ] Add verification history tracking
+
+### 10.4 Email Notification System
+- [x] Create `lib/email.ts` - Email sending utilities (Resend/Nodemailer)
+- [x] Create email templates directory `lib/emails/`
+- [x] Create `verification-approved.tsx` email template
+- [x] Create `verification-rejected.tsx` email template
+- [x] Create `verification-resubmit-reminder.tsx` email template
+- [ ] Create `POST /api/email/send` - Internal email sending endpoint
+- [ ] Integrate email sending into verification process API
+
+### 10.5 Verification UI Enhancements
+- [ ] Update artisan settings verification tab with ID upload
+- [ ] Add ID document type selector (National ID, Passport, etc.)
+- [ ] Create resubmission UI for rejected artisans
+- [ ] Show rejection reason and resubmission guidance
+- [ ] Add verification progress stepper component
+- [ ] Create admin verification detail view with both certificate and ID
+
+### 10.6 Admin Verification Enhancements
+- [ ] Update admin verification page with ID document preview
+- [ ] Add rejection reason dropdown/input in review dialog
+- [ ] Add verification history view
+- [ ] Create verification analytics (processing times, approval rates)
+- [ ] Add bulk verification actions (optional)
+
+---
+
+## Progress Summary
+
+| Phase | Total Tasks | Completed | Progress |
+|-------|-------------|-----------|----------|
+| Phase 0: Foundation | 11 | 11 | 100% |
+| Phase 1: API Completeness | 31 | 31 | 100% |
+| Phase 2: Admin Dashboard | 18 | 18 | 100% |
+| Phase 3: Artisan Dashboard | 16 | 16 | 100% |
+| Phase 4: Client Dashboard | 17 | 16 | 94% |
+| Phase 5: Core Features | 16 | 15 | 94% |
+| Phase 6: Payment Integration | 12 | 12 | 100% |
+| Phase 7: Testing | 17 | 17 | 100% |
+| Phase 8: Production | 17 | 17 | 100% |
 | **TOTAL** | **155** | **153** | **98%** |
 
 ---
@@ -341,6 +485,27 @@ This document serves as the source of truth for all development tasks. Mark task
 - Email notifications - evaluate need after core features
 - SMS notifications - evaluate after M-Pesa integration
 - Mobile app - consider after web platform stable
+
+### Phase 9-10 Architecture Decisions
+- **Job System**: Jobs can be created from conversations OR standalone
+- **Quote System**: Limited to 2 rounds (draft → final) to prevent endless negotiation
+- **Payments**: Deposit (configurable %, default 30%) + Final payment model
+- **Availability**: Auto-toggle when artisan reaches configured capacity
+- **Capacity**: Artisans set max concurrent jobs (default: 5)
+- **ID Verification**: Required alongside professional certificate for accountability
+- **Email Service**: Using Resend or Nodemailer for transactional emails
+- **Image Storage**: Cloudinary for portfolio images, certificates, and ID documents
+
+### Phase 9-10 New Files (Planned)
+- `lib/cloudinary.ts` - Cloudinary upload/delete utilities
+- `lib/email.ts` - Email sending service
+- `lib/emails/*.tsx` - Email templates (React Email)
+- `app/api/client/jobs/` - Client job endpoints
+- `app/api/artisan/jobs/` - Artisan job endpoints
+- `app/api/payments/job/` - Job payment endpoints
+- `app/api/upload/` - Image upload endpoints
+- `app/(client-dashboard)/client-dashboard/jobs/` - Client jobs UI
+- `app/(artisan-dashboard)/artisan-dashboard/jobs/` - Artisan jobs UI
 
 ---
 
@@ -509,3 +674,8 @@ This document serves as the source of truth for all development tasks. Mark task
 | 2026-01-18 | Created `components/shared/notification-preferences-card.tsx` - reusable notification preferences UI |
 | 2026-01-18 | Created `app/(client-dashboard)/client-dashboard/settings/page.tsx` - client settings with notification preferences |
 | 2026-01-18 | **PROJECT STATUS**: 98% complete (153/155 tasks), 467 tests passing |
+| 2026-01-21 | **Phase 9 & 10 Planning**: Added Job System and Enhanced Verification phases |
+| 2026-01-21 | Phase 9: Job Request & Booking System - 42 tasks planned |
+| 2026-01-21 | Phase 10: Enhanced Verification System - 24 tasks planned |
+| 2026-01-21 | New features: Job lifecycle, quotes, job payments, ID verification, email notifications |
+| 2026-01-21 | Cloudinary integration already configured - will implement upload library |
