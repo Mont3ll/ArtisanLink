@@ -86,34 +86,74 @@ export const artisanPaymentsKeys = {
   receipt: (id: string) => [...artisanPaymentsKeys.all, 'receipt', id] as const,
 }
 
-// Fetch functions
-async function fetchPayments(filters: PaymentFilters): Promise<PaymentsResponse> {
-  const params = new URLSearchParams({
-    page: (filters.page || 1).toString(),
-    limit: (filters.limit || 10).toString(),
-  })
-  
-  if (filters.status && filters.status !== 'all') {
-    params.set('status', filters.status)
-  }
-  
-  const response = await fetch(`/api/artisan/payments?${params}`)
-  
-  if (!response.ok) {
-    throw new Error('Failed to fetch payments')
-  }
-  
-  return response.json()
+// Default values
+const defaultPaymentsResponse: PaymentsResponse = {
+  items: [],
+  summary: {
+    totalPayments: 0,
+    totalAmount: 0,
+    completedPayments: 0,
+    completedAmount: 0,
+    pendingPayments: 0,
+    failedPayments: 0,
+  },
+  pagination: {
+    page: 1,
+    limit: 10,
+    total: 0,
+    totalPages: 0,
+  },
 }
 
-async function fetchReceipt(paymentId: string): Promise<ReceiptData> {
-  const response = await fetch(`/api/artisan/payments/${paymentId}`)
-  
-  if (!response.ok) {
-    throw new Error('Failed to fetch receipt')
+// Fetch functions
+async function fetchPayments(filters: PaymentFilters): Promise<PaymentsResponse> {
+  try {
+    const params = new URLSearchParams({
+      page: (filters.page || 1).toString(),
+      limit: (filters.limit || 10).toString(),
+    })
+    
+    if (filters.status && filters.status !== 'all') {
+      params.set('status', filters.status)
+    }
+    
+    const response = await fetch(`/api/artisan/payments?${params}`)
+    
+    // Handle 403/404 gracefully
+    if (response.status === 403 || response.status === 404) {
+      console.warn('[useArtisanPayments] User not authorized or not found, returning defaults')
+      return defaultPaymentsResponse
+    }
+    
+    if (!response.ok) {
+      throw new Error('Failed to fetch payments')
+    }
+    
+    return response.json()
+  } catch (error) {
+    console.error('[useArtisanPayments] Error fetching payments:', error)
+    return defaultPaymentsResponse
   }
-  
-  return response.json()
+}
+
+async function fetchReceipt(paymentId: string): Promise<ReceiptData | null> {
+  try {
+    const response = await fetch(`/api/artisan/payments/${paymentId}`)
+    
+    if (response.status === 403 || response.status === 404) {
+      console.warn('[usePaymentReceipt] Not authorized or not found')
+      return null
+    }
+    
+    if (!response.ok) {
+      throw new Error('Failed to fetch receipt')
+    }
+    
+    return response.json()
+  } catch (error) {
+    console.error('[usePaymentReceipt] Error fetching receipt:', error)
+    return null
+  }
 }
 
 async function exportPayments(status?: string): Promise<Blob> {
@@ -139,6 +179,8 @@ export function useArtisanPayments(filters: PaymentFilters = {}) {
     queryKey: artisanPaymentsKeys.list(filters),
     queryFn: () => fetchPayments(filters),
     placeholderData: (previousData) => previousData,
+    staleTime: 30000,
+    retry: 1,
   })
 }
 
@@ -150,6 +192,8 @@ export function usePaymentReceipt(paymentId: string | null) {
     queryKey: artisanPaymentsKeys.receipt(paymentId || ''),
     queryFn: () => fetchReceipt(paymentId!),
     enabled: !!paymentId,
+    staleTime: 30000,
+    retry: 1,
   })
 }
 
