@@ -21,6 +21,14 @@ import {
 } from './utils'
 
 // ============================================================================
+// TEST USER CLERK ID (from environment variable)
+// ============================================================================
+// This allows linking the first seeded artisan to a real Clerk account for testing
+// Set this in .env to use actual Clerk user ID after creating test user
+
+const SEED_ARTISAN_CLERK_ID = process.env.SEED_ARTISAN_CLERK_ID || 'clerk_artisan_001'
+
+// ============================================================================
 // SEED ARTISANS
 // ============================================================================
 
@@ -46,6 +54,7 @@ export async function seedArtisans(
     hasSubscription: boolean
     isAvailable: boolean
     artisanId: number
+    isTestArtisan: boolean
   }> = []
   
   for (let profIndex = 0; profIndex < PROFESSIONS.length; profIndex++) {
@@ -62,20 +71,31 @@ export async function seedArtisans(
       const experience = randomInt(1, 20)
       const hourlyRate = randomInt(profession.hourlyRateRange[0], profession.hourlyRateRange[1])
       
+      const artisanId = profIndex * artisansPerProfession + i + 1
+      const isTestArtisan = artisanId === 1 // First artisan is the test user
+      
       // Determine artisan status distribution
-      const statusRoll = Math.random()
+      // First artisan (test user) is always VERIFIED with active subscription
       let artisanStatus: ArtisanStatus
       let hasSubscription = false
       let isAvailable = false
       
-      if (statusRoll < 0.65) {
+      if (isTestArtisan) {
+        // Test artisan: guaranteed VERIFIED, has subscription, is available
         artisanStatus = ArtisanStatus.VERIFIED
-        hasSubscription = Math.random() > 0.2
-        isAvailable = hasSubscription && Math.random() > 0.15
-      } else if (statusRoll < 0.85) {
-        artisanStatus = ArtisanStatus.PENDING
+        hasSubscription = true
+        isAvailable = true
       } else {
-        artisanStatus = ArtisanStatus.REJECTED
+        const statusRoll = Math.random()
+        if (statusRoll < 0.65) {
+          artisanStatus = ArtisanStatus.VERIFIED
+          hasSubscription = Math.random() > 0.2
+          isAvailable = hasSubscription && Math.random() > 0.15
+        } else if (statusRoll < 0.85) {
+          artisanStatus = ArtisanStatus.PENDING
+        } else {
+          artisanStatus = ArtisanStatus.REJECTED
+        }
       }
       
       artisanData.push({
@@ -92,7 +112,8 @@ export async function seedArtisans(
         artisanStatus,
         hasSubscription,
         isAvailable,
-        artisanId: profIndex * artisansPerProfession + i + 1
+        artisanId,
+        isTestArtisan
       })
     }
   }
@@ -101,10 +122,15 @@ export async function seedArtisans(
     artisanData,
     BATCH_SIZE,
     async (data) => {
+      // Use env var Clerk ID for test artisan (artisanId 1), placeholder for rest
+      const clerkId = data.isTestArtisan 
+        ? SEED_ARTISAN_CLERK_ID 
+        : `clerk_artisan_${String(data.artisanId).padStart(3, '0')}`
+      
       return prisma.user.create({
         data: {
-          clerkId: `clerk_artisan_${String(data.artisanId).padStart(3, '0')}`,
-          email: generateEmail(data.firstName, data.lastName),
+          clerkId,
+          email: data.isTestArtisan ? 'artisan@artisanlink.co.ke' : generateEmail(data.firstName, data.lastName),
           firstName: data.firstName,
           lastName: data.lastName,
           phone: generatePhone(),
@@ -141,10 +167,12 @@ export async function seedArtisans(
               ...(data.hasSubscription && {
                 subscription: {
                   create: {
-                    plan: Math.random() > 0.4 ? SubscriptionPlan.MONTHLY : SubscriptionPlan.ANNUAL,
-                    status: Math.random() > 0.1 ? SubscriptionStatus.ACTIVE : SubscriptionStatus.EXPIRED,
+                    plan: data.isTestArtisan ? SubscriptionPlan.MONTHLY : (Math.random() > 0.4 ? SubscriptionPlan.MONTHLY : SubscriptionPlan.ANNUAL),
+                    status: data.isTestArtisan ? SubscriptionStatus.ACTIVE : (Math.random() > 0.1 ? SubscriptionStatus.ACTIVE : SubscriptionStatus.EXPIRED),
                     startDate: randomDate(365),
-                    endDate: new Date(Date.now() + randomInt(-30, 365) * 24 * 60 * 60 * 1000),
+                    endDate: data.isTestArtisan 
+                      ? new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) // Test artisan: 30 days from now
+                      : new Date(Date.now() + randomInt(-30, 365) * 24 * 60 * 60 * 1000),
                     amount: Math.random() > 0.4 ? 499 : 4999,
                     currency: 'KES',
                     mpesaRequestId: `ws_CO_${randomInt(100000000, 999999999)}`,

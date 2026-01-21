@@ -14,6 +14,15 @@ import {
 } from './utils'
 
 // ============================================================================
+// TEST USER CLERK IDS (from environment variables)
+// ============================================================================
+// These allow linking seeded database users to real Clerk accounts for testing
+// Set these in .env to use actual Clerk user IDs after creating test users
+
+const SEED_ADMIN_CLERK_ID = process.env.SEED_ADMIN_CLERK_ID || 'clerk_admin_001'
+const SEED_CLIENT_CLERK_ID = process.env.SEED_CLIENT_CLERK_ID || 'clerk_client_001'
+
+// ============================================================================
 // SEED ADMINS
 // ============================================================================
 
@@ -23,7 +32,7 @@ export async function seedAdmins(): Promise<{ admins: Awaited<ReturnType<typeof 
   const admins = await Promise.all([
     prisma.user.create({
       data: {
-        clerkId: 'clerk_admin_001',
+        clerkId: SEED_ADMIN_CLERK_ID,
         email: 'admin@artisanlink.co.ke',
         firstName: 'System',
         lastName: 'Administrator',
@@ -105,10 +114,15 @@ export async function seedClients(count = 40): Promise<{ clients: Awaited<Return
     clientData,
     BATCH_SIZE,
     async (data) => {
+      // Use env var Clerk ID for first client (index 0), placeholder for rest
+      const clerkId = data.index === 0 
+        ? SEED_CLIENT_CLERK_ID 
+        : `clerk_client_${String(data.index + 1).padStart(3, '0')}`
+      
       return prisma.user.create({
         data: {
-          clerkId: `clerk_client_${String(data.index + 1).padStart(3, '0')}`,
-          email: generateEmail(data.firstName, data.lastName),
+          clerkId,
+          email: data.index === 0 ? 'client@artisanlink.co.ke' : generateEmail(data.firstName, data.lastName),
           firstName: data.firstName,
           lastName: data.lastName,
           phone: generatePhone(),
