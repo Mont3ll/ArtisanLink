@@ -18,6 +18,7 @@ import {
   Loader2,
   History,
   Trash2,
+  MoreHorizontal,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -52,6 +53,7 @@ import {
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Separator } from "@/components/ui/separator";
@@ -192,12 +194,28 @@ function ArtisanCard({
               Available
             </Badge>
           )}
-          <Button size="sm" asChild>
-            <Link href={`/client-dashboard/messages?artisan=${artisan.id}`}>
-              <MessageSquare className="h-3 w-3 mr-1" />
-              Contact
-            </Link>
-          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button size="sm">
+                Actions
+                <MoreHorizontal className="h-3 w-3 ml-1" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem asChild>
+                <Link href={`/client-dashboard/messages?artisan=${artisan.id}`}>
+                  <MessageSquare className="h-4 w-4 mr-2" />
+                  Contact
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link href={`/client-dashboard/reviews?artisan=${artisan.id}`}>
+                  <Star className="h-4 w-4 mr-2" />
+                  Write Review
+                </Link>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </CardFooter>
     </Card>

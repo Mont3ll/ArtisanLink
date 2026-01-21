@@ -806,19 +806,11 @@ export default function MapSearchPage() {
                       Contact
                     </Link>
                   </Button>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="flex-1"
-                    onClick={() =>
-                      router.push(
-                        `/client-dashboard/find-artisans?q=${encodeURIComponent(
-                          selectedArtisan.name
-                        )}`
-                      )
-                    }
-                  >
-                    View Profile
+                  <Button size="sm" variant="outline" className="flex-1" asChild>
+                    <Link href={`/client-dashboard/reviews?artisan=${selectedArtisan.id}`}>
+                      <Star className="h-3 w-3 mr-1" />
+                      Review
+                    </Link>
                   </Button>
                 </div>
               </CardContent>
