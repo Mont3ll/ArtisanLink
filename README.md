@@ -57,9 +57,20 @@ Open [http://localhost:3000](http://localhost:3000) to view the application.
 
 ## Database Setup
 
-### Option A: Using Docker (Recommended)
+### Option A: Cloud Database Provider (Easiest)
 
-The easiest way to set up PostgreSQL is with Docker:
+Use a managed PostgreSQL service like [Prisma Postgres](https://www.prisma.io/postgres), [Neon](https://neon.tech), [Supabase](https://supabase.com), or [Railway](https://railway.app):
+
+1. Create a database on your chosen provider
+2. Copy the connection string to your `.env`:
+   ```env
+   DATABASE_URL="postgresql://user:password@host:port/database?sslmode=require"
+   ```
+3. Continue to [Generate Prisma Client](#generate-prisma-client--push-schema)
+
+### Option B: Using Docker (Recommended for Local)
+
+The easiest way to set up PostgreSQL locally is with Docker:
 
 ```bash
 docker compose up -d
@@ -73,7 +84,7 @@ docker compose down        # Stop container (data persists)
 docker compose down -v     # Stop and delete all data
 ```
 
-### Option B: Manual PostgreSQL Setup
+### Option C: Manual PostgreSQL Setup
 
 If you prefer a local PostgreSQL installation:
 
@@ -88,7 +99,7 @@ GRANT ALL PRIVILEGES ON DATABASE artisanlink_db TO artisan_user;
 
 ### Configure Database URL
 
-Update your `.env` file:
+For local setups (Docker or manual), update your `.env` file:
 ```env
 DATABASE_URL="postgresql://artisan_user:artisan_password@localhost:5432/artisanlink_db"
 ```
@@ -189,6 +200,31 @@ Supported roles in `publicMetadata`:
 - `admin` - Platform administrator
 - `client` - Customer looking for artisans
 - `artisan` - Service provider
+
+## Mapbox Setup
+
+Mapbox is used for displaying artisan locations on interactive maps.
+
+### 1. Create Mapbox Account
+
+1. Go to [Mapbox](https://www.mapbox.com/) and create a free account
+2. Navigate to your [Access Tokens](https://account.mapbox.com/access-tokens/) page
+3. Copy your **Default public token** (starts with `pk.`)
+
+### 2. Add Token to Environment
+
+Add to your `.env` file:
+```env
+NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN=pk.your_mapbox_public_token_here
+```
+
+### 3. Usage Limits
+
+The free tier includes:
+- 50,000 map loads per month
+- 100,000 geocoding requests per month
+
+This is sufficient for development and small-scale production.
 
 ## Scripts
 
