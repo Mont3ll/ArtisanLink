@@ -540,62 +540,61 @@ export default function MapSearchPage() {
   }
 
   return (
-    <div className="flex-1 flex flex-col h-[calc(100vh-8rem)]">
+    <div className="px-4 lg:px-6 py-6 space-y-6">
       {/* Header */}
-      <div className="p-4 border-b bg-background space-y-4">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight">Map View</h1>
-            <p className="text-sm text-muted-foreground">
-              Find artisans near you on the map
-            </p>
-          </div>
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={getUserLocation}
-              disabled={isLocating}
-            >
-              {isLocating ? (
-                <Loader2 className="h-4 w-4 animate-spin mr-2" />
-              ) : (
-                <Locate className="h-4 w-4 mr-2" />
-              )}
-              My Location
-            </Button>
-            <Button variant="outline" size="sm" asChild>
-              <Link href="/client-dashboard/find-artisans">
-                <Search className="h-4 w-4 mr-2" />
-                List View
-              </Link>
-            </Button>
-          </div>
+      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Map View</h1>
+          <p className="text-sm text-muted-foreground">
+            Find artisans near you on the map
+          </p>
         </div>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={getUserLocation}
+            disabled={isLocating}
+          >
+            {isLocating ? (
+              <Loader2 className="h-4 w-4 animate-spin mr-2" />
+            ) : (
+              <Locate className="h-4 w-4 mr-2" />
+            )}
+            My Location
+          </Button>
+          <Button variant="outline" size="sm" asChild>
+            <Link href="/client-dashboard/find-artisans">
+              <Search className="h-4 w-4 mr-2" />
+              List View
+            </Link>
+          </Button>
+        </div>
+      </div>
 
-        {/* Search and Filters */}
-        <div className="flex gap-2">
-          <form onSubmit={handleSearch} className="flex-1 flex gap-2">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Search artisans..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-9"
-              />
-            </div>
-            <Button type="submit" disabled={isLoading}>
-              {isLoading ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                "Search"
-              )}
-            </Button>
-          </form>
+      {/* Search and Filters */}
+      <div className="flex gap-2">
+        <form onSubmit={handleSearch} className="flex-1 flex gap-2">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Search artisans..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-9"
+            />
+          </div>
+          <Button type="submit" disabled={isLoading}>
+            {isLoading ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              "Search"
+            )}
+          </Button>
+        </form>
 
-          {/* Filter Sheet */}
-          <Sheet>
+        {/* Filter Sheet */}
+        <Sheet>
             <SheetTrigger asChild>
               <Button variant="outline">
                 <Filter className="h-4 w-4 mr-2" />
@@ -680,11 +679,11 @@ export default function MapSearchPage() {
             </SheetContent>
           </Sheet>
         </div>
-      </div>
 
-      {/* Map Container */}
-      <div className="flex-1 relative">
-        <div ref={mapContainer} className="absolute inset-0" />
+      {/* Map Card Container */}
+      <Card className="flex-1 overflow-hidden">
+        <div className="relative h-[600px]">
+          <div ref={mapContainer} className="absolute inset-0 w-full h-full" />
 
         {/* Loading overlay */}
         {!mapLoaded && (
@@ -807,19 +806,11 @@ export default function MapSearchPage() {
                       Contact
                     </Link>
                   </Button>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="flex-1"
-                    onClick={() =>
-                      router.push(
-                        `/client-dashboard/find-artisans?q=${encodeURIComponent(
-                          selectedArtisan.name
-                        )}`
-                      )
-                    }
-                  >
-                    View Profile
+                  <Button size="sm" variant="outline" className="flex-1" asChild>
+                    <Link href={`/client-dashboard/reviews?artisan=${selectedArtisan.id}`}>
+                      <Star className="h-3 w-3 mr-1" />
+                      Review
+                    </Link>
                   </Button>
                 </div>
               </CardContent>
@@ -883,7 +874,8 @@ export default function MapSearchPage() {
             </Card>
           </div>
         )}
-      </div>
+        </div>
+      </Card>
     </div>
   );
 }

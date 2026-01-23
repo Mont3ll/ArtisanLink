@@ -12,6 +12,7 @@ import {
   BadgeCheck,
   Loader2,
   Users,
+  MoreHorizontal,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -37,6 +38,12 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 import {
@@ -203,12 +210,28 @@ function SavedArtisanCard({
             </AlertDialogContent>
           </AlertDialog>
 
-          <Button size="sm" asChild>
-            <Link href={`/client-dashboard/messages?artisan=${artisan.id}`}>
-              <MessageSquare className="h-3 w-3 mr-1" />
-              Contact
-            </Link>
-          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button size="sm">
+                Actions
+                <MoreHorizontal className="h-3 w-3 ml-1" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem asChild>
+                <Link href={`/client-dashboard/messages?artisan=${artisan.id}`}>
+                  <MessageSquare className="h-4 w-4 mr-2" />
+                  Contact
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link href={`/client-dashboard/reviews?artisan=${artisan.id}`}>
+                  <Star className="h-4 w-4 mr-2" />
+                  Write Review
+                </Link>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </CardFooter>
     </Card>

@@ -11,6 +11,9 @@ export interface ArtisanStats {
   subscriptionEndDate?: string
   isVerified: boolean
   isAvailable: boolean
+  totalConversations?: number
+  newConversationsThisMonth?: number
+  totalSpecializations?: number
 }
 
 export interface ArtisanRecentActivity {
@@ -49,8 +52,30 @@ export interface ArtisanUser {
 export interface ArtisanDashboardData {
   stats: ArtisanStats
   recentActivity: ArtisanRecentActivity[]
-  profile: ArtisanProfile
-  user: ArtisanUser
+  profile: ArtisanProfile | null
+  user: ArtisanUser | null
+}
+
+// Default values for when API fails or user doesn't have artisan role
+const defaultStats: ArtisanStats = {
+  profileViews: 0,
+  totalProjects: 0,
+  totalReviews: 0,
+  averageRating: 0,
+  unreadMessages: 0,
+  subscriptionStatus: 'INACTIVE',
+  isVerified: false,
+  isAvailable: false,
+  totalConversations: 0,
+  newConversationsThisMonth: 0,
+  totalSpecializations: 0,
+}
+
+const defaultDashboardData: ArtisanDashboardData = {
+  stats: defaultStats,
+  recentActivity: [],
+  profile: null,
+  user: null,
 }
 
 // Query keys
@@ -61,12 +86,25 @@ export const artisanStatsKeys = {
 
 // Fetch artisan dashboard data
 async function fetchArtisanDashboard(): Promise<ArtisanDashboardData> {
-  const response = await fetch('/api/artisan/stats')
-  if (!response.ok) {
-    const error = await response.json().catch(() => ({}))
-    throw new Error(error.error || 'Failed to fetch artisan data')
+  try {
+    const response = await fetch('/api/artisan/stats')
+    
+    // Handle 403 (wrong role) and 404 (user not found) gracefully
+    if (response.status === 403 || response.status === 404) {
+      console.warn('[useArtisanDashboard] User not authorized as artisan or not found, returning defaults')
+      return defaultDashboardData
+    }
+    
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({}))
+      throw new Error(error.error || 'Failed to fetch artisan data')
+    }
+    
+    return response.json()
+  } catch (error) {
+    console.error('[useArtisanDashboard] Error fetching dashboard:', error)
+    return defaultDashboardData
   }
-  return response.json()
 }
 
 /**
@@ -76,5 +114,7 @@ export function useArtisanDashboard() {
   return useQuery({
     queryKey: artisanStatsKeys.dashboard(),
     queryFn: fetchArtisanDashboard,
+    staleTime: 30000, // 30 seconds
+    retry: 1, // Only retry once since 403/404 won't change
   })
 }

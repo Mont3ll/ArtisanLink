@@ -36,9 +36,9 @@ const cards = [
     title: "Direct communication",
     desc: "Message artisans directly through the platform to agree on scope and pricing.",
     icon: MessageSquare,
-    color: "from-purple-50 to-purple-100",
-    iconColor: "text-purple-600",
-    borderColor: "border-purple-200/50",
+    color: "from-teal-50 to-teal-100",
+    iconColor: "text-teal-600",
+    borderColor: "border-teal-200/50",
     benefits: ["In-platform messaging", "Scope agreement", "Transparent pricing"]
   },
   {
@@ -77,7 +77,7 @@ export default function Features() {
       if (container) {
         for (let i = 0; i < 4; i++) {
           const orb = document.createElement('div');
-          orb.className = `floating-orb-${i} absolute rounded-full bg-gradient-to-br from-blue-400/10 to-purple-500/10 blur-xl pointer-events-none`;
+          orb.className = `floating-orb-${i} absolute rounded-full bg-gradient-to-br from-blue-400/10 to-sky-500/10 blur-xl pointer-events-none`;
           
           const size = Math.random() * 100 + 50;
           orb.style.width = `${size}px`;
@@ -95,9 +95,9 @@ export default function Features() {
     <section className="features-section relative py-20 lg:py-32 bg-gradient-section overflow-hidden">
       {/* Enhanced Background Effects */}
       <div className="absolute inset-0 bg-animated-grid opacity-30" />
-      <div className="absolute inset-0 bg-gradient-to-r from-blue-500/5 via-transparent to-purple-500/5" />
+      <div className="absolute inset-0 bg-gradient-to-r from-blue-500/5 via-transparent to-sky-500/5" />
       <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl animate-float" />
-      <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-purple-500/10 rounded-full blur-3xl animate-float-delayed" />
+      <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-amber-500/10 rounded-full blur-3xl animate-float-delayed" />
       
       <div ref={containerRef} className="container mx-auto px-6 md:px-8 lg:px-12 relative z-10">
         {/* Enhanced Header */}

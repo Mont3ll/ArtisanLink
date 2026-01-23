@@ -65,7 +65,7 @@ export default function Testimonials() {
             <div className="flex items-start gap-4 mb-4">
               <Avatar className="ring-2 ring-blue-100 group-hover:ring-blue-200 transition-all">
                 <AvatarImage src={testimonial.avatar} alt={testimonial.name} />
-                <AvatarFallback className="bg-gradient-to-br from-blue-100 to-purple-100 text-slate-700 dark:text-slate-300">
+                <AvatarFallback className="bg-gradient-to-br from-blue-100 to-sky-100 text-slate-700 dark:text-slate-300">
                   {testimonial.name[0]}
                 </AvatarFallback>
               </Avatar>

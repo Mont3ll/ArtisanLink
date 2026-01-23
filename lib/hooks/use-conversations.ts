@@ -53,6 +53,18 @@ export interface ConversationFilters {
   status?: 'ACTIVE' | 'ARCHIVED'
 }
 
+// Default values
+const defaultConversationsResponse: ConversationsResponse = {
+  conversations: [],
+  unreadCount: 0,
+  pagination: {
+    page: 1,
+    limit: 20,
+    total: 0,
+    totalPages: 0,
+  },
+}
+
 // Query keys
 export const conversationKeys = {
   all: ['conversations'] as const,
@@ -63,17 +75,29 @@ export const conversationKeys = {
 
 // Fetch conversations
 async function fetchConversations(filters: ConversationFilters): Promise<ConversationsResponse> {
-  const params = new URLSearchParams({
-    page: String(filters.page ?? 1),
-    limit: String(filters.limit ?? 20),
-    status: filters.status ?? 'ACTIVE',
-  })
+  try {
+    const params = new URLSearchParams({
+      page: String(filters.page ?? 1),
+      limit: String(filters.limit ?? 20),
+      status: filters.status ?? 'ACTIVE',
+    })
 
-  const response = await fetch(`/api/conversations?${params.toString()}`)
-  if (!response.ok) {
-    throw new Error('Failed to fetch conversations')
+    const response = await fetch(`/api/conversations?${params.toString()}`)
+    
+    // Handle 403/404 gracefully
+    if (response.status === 403 || response.status === 404) {
+      console.warn('[useConversations] User not authorized or not found, returning defaults')
+      return defaultConversationsResponse
+    }
+    
+    if (!response.ok) {
+      throw new Error('Failed to fetch conversations')
+    }
+    return response.json()
+  } catch (error) {
+    console.error('[useConversations] Error fetching conversations:', error)
+    return defaultConversationsResponse
   }
-  return response.json()
 }
 
 /**

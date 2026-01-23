@@ -12,6 +12,7 @@ import {
   Check,
   CheckCheck,
   Paperclip,
+  Briefcase,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -23,6 +24,7 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -33,6 +35,7 @@ import {
   useArchiveConversationDetail,
   type Message,
 } from "@/lib/hooks/use-conversation-messages";
+import { CreateJobRequestDialog } from "@/components/shared/create-job-request-dialog";
 
 // Message Bubble Component
 function MessageBubble({
@@ -205,6 +208,7 @@ export default function ConversationPage() {
   const id = params.id as string;
 
   const [newMessage, setNewMessage] = useState("");
+  const [isJobDialogOpen, setIsJobDialogOpen] = useState(false);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -264,6 +268,11 @@ export default function ConversationPage() {
     });
   };
 
+  // Handle job request success
+  const handleJobRequestSuccess = (jobId: string) => {
+    router.push(`/client-dashboard/jobs/${jobId}`);
+  };
+
   // Loading state
   if (isLoading) {
     return <ConversationSkeleton />;
@@ -310,6 +319,16 @@ export default function ConversationPage() {
 
   return (
     <div className="flex-1 flex flex-col h-[calc(100vh-8rem)]">
+      {/* Job Request Dialog */}
+      <CreateJobRequestDialog
+        open={isJobDialogOpen}
+        onOpenChange={setIsJobDialogOpen}
+        artisanId={otherParty.id}
+        artisanName={otherPartyName}
+        conversationId={id}
+        onSuccess={handleJobRequestSuccess}
+      />
+
       {/* Header */}
       <div className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-10">
         <div className="flex items-center justify-between p-4">
@@ -345,22 +364,44 @@ export default function ConversationPage() {
             </div>
           </div>
 
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon">
-                <MoreVertical className="h-5 w-5" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem
-                onClick={handleArchive}
-                disabled={archiveMutation.isPending}
-              >
-                <Archive className="h-4 w-4 mr-2" />
-                {archiveMutation.isPending ? "Archiving..." : "Archive Conversation"}
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <div className="flex items-center gap-2">
+            {/* Prominent Job Request Button */}
+            <Button
+              variant="default"
+              size="sm"
+              onClick={() => setIsJobDialogOpen(true)}
+              className="hidden sm:flex"
+            >
+              <Briefcase className="h-4 w-4 mr-2" />
+              Request Job
+            </Button>
+
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon">
+                  <MoreVertical className="h-5 w-5" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                {/* Mobile job request option */}
+                <DropdownMenuItem
+                  onClick={() => setIsJobDialogOpen(true)}
+                  className="sm:hidden"
+                >
+                  <Briefcase className="h-4 w-4 mr-2" />
+                  Request Job
+                </DropdownMenuItem>
+                <DropdownMenuSeparator className="sm:hidden" />
+                <DropdownMenuItem
+                  onClick={handleArchive}
+                  disabled={archiveMutation.isPending}
+                >
+                  <Archive className="h-4 w-4 mr-2" />
+                  {archiveMutation.isPending ? "Archiving..." : "Archive Conversation"}
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
         </div>
       </div>
 
@@ -370,9 +411,16 @@ export default function ConversationPage() {
           <div className="h-full flex items-center justify-center">
             <div className="text-center">
               <p className="text-muted-foreground mb-2">No messages yet</p>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-sm text-muted-foreground mb-4">
                 Start the conversation by sending a message
               </p>
+              <Button
+                variant="outline"
+                onClick={() => setIsJobDialogOpen(true)}
+              >
+                <Briefcase className="h-4 w-4 mr-2" />
+                Or create a job request
+              </Button>
             </div>
           </div>
         ) : (

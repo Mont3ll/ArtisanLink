@@ -96,6 +96,10 @@ model User {
   notifications        Notification[]
   notificationPreferences NotificationPreferences?
 
+  // Job relationships (Phase 9)
+  clientJobs  Job[] @relation("ClientJobs")
+  artisanJobs Job[] @relation("ArtisanJobs")
+
   // Indexes for common queries
   @@index([role, status]) // Filter users by role and status
   @@index([createdAt]) // Sort users by creation date
@@ -130,11 +134,24 @@ model Profile {
   isAvailable   Boolean        @default(false) // Toggle for map visibility
   artisanStatus ArtisanStatus?
 
+  // Capacity Management (Phase 9)
+  maxConcurrentJobs Int     @default(5)  // Maximum jobs artisan can handle
+  currentJobCount   Int     @default(0)  // Current active jobs
+  autoToggleAvailability Boolean @default(true) // Auto-toggle availability when at capacity
+
   // Certificate and verification
   certificateUrl        String? // URL to uploaded certificate
   certificateUploadedAt DateTime?
   verifiedAt            DateTime?
   verifiedBy            String? // Admin user ID who verified
+
+  // ID Document Verification (Phase 10)
+  idDocumentUrl         String?         // URL to uploaded ID document
+  idDocumentType        IdDocumentType? // Type of ID document
+  idDocumentUploadedAt  DateTime?
+  rejectionReason       String?         // Detailed reason if rejected
+  resubmissionCount     Int             @default(0) // Track verification attempts
+  verificationNotes     String?         // Admin internal notes
 
   // Ratings and reviews
   averageRating Float @default(0.0)
@@ -145,11 +162,12 @@ model Profile {
   updatedAt DateTime @updatedAt
 
   // Relationships
-  portfolioItems  PortfolioItem[]
-  subscription    Subscription?
-  reviews         Review[]
-  specializations Specialization[]
-  savedBy         SavedArtisan[]
+  portfolioItems       PortfolioItem[]
+  subscription         Subscription?
+  reviews              Review[]
+  specializations      Specialization[]
+  savedBy              SavedArtisan[]
+  verificationHistory  VerificationHistory[]
 
   // Indexes for common queries
   @@index([userId]) // User lookup
@@ -309,6 +327,7 @@ model Conversation {
 
   // Relationships
   messages Message[]
+  jobs     Job[]     // Jobs created from this conversation (Phase 9)
 
   // Indexes for common queries
   @@index([clientId]) // Client's conversations
@@ -482,6 +501,8 @@ enum NotificationType {
   SYSTEM        // System announcements
   PROMOTION     // Promotional notifications
   BOOKING       // Booking/inquiry notifications
+  JOB           // Job request, quote, status changes (Phase 9)
+  PAYMENT       // Payment notifications (Phase 9)
 }
 
 // Notifications System
@@ -537,4 +558,265 @@ model NotificationPreferences {
   updatedAt DateTime @updatedAt
 
   @@map("notification_preferences")
+}
+
+// ============================================================================
+// Phase 9: Job Request & Booking System
+// ============================================================================
+
+// Job Status Enum
+enum JobStatus {
+  REQUESTED     // Client sent request
+  QUOTED        // Artisan sent quote
+  ACCEPTED      // Both parties agreed
+  DEPOSIT_PAID  // Client paid deposit
+  IN_PROGRESS   // Work started
+  COMPLETED     // Work finished
+  PAID          // Final payment made
+  CANCELLED     // Either party cancelled
+  DECLINED      // Artisan declined
+  DISPUTED      // Payment or work dispute
+}
+
+// Quote Status Enum
+enum QuoteStatus {
+  DRAFT              // Artisan drafting quote
+  SENT               // Quote sent to client
+  ACCEPTED           // Client accepted quote
+  REVISION_REQUESTED // Client requested revision (round 1 only)
+  DECLINED           // Client declined quote (final)
+  EXPIRED            // Quote validity expired
+}
+
+// Job Payment Type Enum
+enum JobPaymentType {
+  DEPOSIT       // Initial deposit payment
+  FINAL         // Final payment on completion
+  MILESTONE     // Milestone payment (future)
+  REFUND        // Refund to client
+}
+
+// Job Model
+model Job {
+  id String @id @default(cuid())
+
+  // Participants
+  clientId  String
+  artisanId String
+  client    User @relation("ClientJobs", fields: [clientId], references: [id], onDelete: Cascade)
+  artisan   User @relation("ArtisanJobs", fields: [artisanId], references: [id], onDelete: Cascade)
+
+  // Optional link to conversation where job was created
+  conversationId String?
+  conversation   Conversation? @relation(fields: [conversationId], references: [id], onDelete: SetNull)
+
+  // Job Details
+  title       String
+  description String
+  category    String?
+  location    String? // Where the work will be done
+
+  // Pricing
+  clientBudget Float?  // Client's proposed budget
+  agreedPrice  Float?  // Final agreed price (from accepted quote)
+  depositAmount Float? // Calculated deposit amount
+  depositPercent Float @default(30) // Deposit percentage (default 30%)
+
+  // Scheduling
+  requestedStartDate DateTime? // When client wants work to start
+  requestedEndDate   DateTime? // Client's deadline
+  scheduledStartDate DateTime? // Agreed start date
+  scheduledEndDate   DateTime? // Agreed end date
+  startedAt          DateTime? // When work actually started
+  completedAt        DateTime? // When work was completed
+
+  // Payment tracking (convenience fields derived from payments)
+  depositPaid        Boolean   @default(false)
+  depositPaidAt      DateTime?
+  finalPaid          Boolean   @default(false)
+  finalPaidAt        DateTime?
+
+  // Status
+  status         JobStatus @default(REQUESTED)
+  declineReason  String?   // Reason if artisan declined
+  cancelReason   String?   // Reason if cancelled
+  cancelledBy    String?   // UserId of who cancelled
+
+  // Completion
+  completionNotes String?  // Notes from artisan on completion
+  clientFeedback  String?  // Feedback from client
+
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relationships
+  quotes      Quote[]
+  payments    JobPayment[]
+
+  // Indexes for common queries
+  @@index([clientId])
+  @@index([artisanId])
+  @@index([status])
+  @@index([conversationId])
+  @@index([createdAt])
+  @@index([artisanId, status])
+  @@index([clientId, status])
+  @@map("jobs")
+}
+
+// Quote Model
+model Quote {
+  id    String @id @default(cuid())
+  jobId String
+  job   Job    @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+  // Quote Details
+  amount      Float   // Quoted price (total)
+  description String? // What's included
+  notes       String? // Additional notes
+
+  // Scheduling
+  estimatedStartDate DateTime?
+  estimatedEndDate   DateTime?
+  estimatedDuration  String? // e.g., "2 weeks", "3 days"
+
+  // Terms
+  validUntil         DateTime? // Quote expiry date
+  paymentTerms       String?   // Payment terms description
+  materialsIncluded  Boolean   @default(false)
+  materialsCost      Float?    // Separate materials cost if not included
+
+  // Deposit negotiation - artisan can request different deposit %
+  requestedDepositPercent Float? // Artisan's requested deposit percentage (10-80%)
+
+  // Status
+  status   QuoteStatus @default(DRAFT)
+  isDraft  Boolean     @default(true) // true = draft, false = final
+  round    Int         @default(1) // 1 = first quote, 2 = final quote
+
+  // Response
+  clientResponse String?   // Client's response/feedback
+  respondedAt    DateTime? // When client responded
+
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  sentAt    DateTime? // When quote was sent to client
+
+  // Relationships
+  lineItems QuoteLineItem[]
+
+  // Indexes
+  @@index([jobId])
+  @@index([status])
+  @@index([jobId, round])
+  @@map("quotes")
+}
+
+// Quote Line Item Model - Itemized breakdown for transparency
+model QuoteLineItem {
+  id      String @id @default(cuid())
+  quoteId String
+  quote   Quote  @relation(fields: [quoteId], references: [id], onDelete: Cascade)
+
+  // Item Details
+  category    String  // LABOR, MATERIALS, EQUIPMENT, TRANSPORT, CONSUMABLES, OPERATION_COST, OTHER, DISCOUNT, MISCELLANEOUS
+  name        String  // e.g., "Skilled Labor", "PVC Pipes", "Scaffolding Rental"
+  description String? // Optional details
+
+  // Pricing
+  quantity  Float  @default(1)
+  unit      String? // e.g., "hours", "pieces", "days", "trips"
+  unitPrice Float   // Price per unit in KES
+  total     Float   // quantity × unitPrice (can be negative for discounts)
+
+  // Metadata
+  isSystemGenerated Boolean @default(false) // True for auto-added Discount/Miscellaneous
+  sortOrder         Int     @default(0)
+
+  createdAt DateTime @default(now())
+
+  @@index([quoteId])
+  @@index([category])
+  @@map("quote_line_items")
+}
+
+// Job Payment Model
+model JobPayment {
+  id    String @id @default(cuid())
+  jobId String
+  job   Job    @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+  // Payment Details
+  type     JobPaymentType
+  amount   Float
+  currency String         @default("KES")
+  status   PaymentStatus  @default(PENDING)
+
+  // M-Pesa specific fields
+  mpesaRequestId     String?
+  mpesaCheckoutId    String?
+  mpesaTransactionId String?
+  mpesaReceiptNumber String?
+  phoneNumber        String?
+
+  // Metadata
+  description   String?
+  failureReason String?
+
+  // For refunds
+  refundReason  String?
+  refundedAt    DateTime?
+
+  // Timestamps
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  paidAt    DateTime?
+
+  // Indexes
+  @@index([jobId])
+  @@index([status])
+  @@index([type])
+  @@index([mpesaCheckoutId])
+  @@index([createdAt])
+  @@map("job_payments")
+}
+
+// ============================================================================
+// Phase 10: Enhanced Verification System
+// ============================================================================
+
+// ID Document Type Enum
+enum IdDocumentType {
+  NATIONAL_ID
+  PASSPORT
+  DRIVING_LICENSE
+  ALIEN_ID
+}
+
+// Verification History Model (tracks all verification attempts)
+model VerificationHistory {
+  id        String @id @default(cuid())
+  profileId String
+  profile   Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  // Submission details
+  certificateUrl  String?
+  idDocumentUrl   String?
+  idDocumentType  IdDocumentType?
+
+  // Decision
+  status          ArtisanStatus
+  processedBy     String?        // Admin user ID
+  processedAt     DateTime?
+  rejectionReason String?
+  adminNotes      String?        // Internal notes
+
+  // Timestamps
+  submittedAt DateTime @default(now())
+
+  @@index([profileId])
+  @@index([status])
+  @@map("verification_history")
 }

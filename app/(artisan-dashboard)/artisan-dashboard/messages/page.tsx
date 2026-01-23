@@ -81,7 +81,7 @@ function ConversationItem({
     conversation.lastMessage.status !== "READ";
 
   return (
-    <Link href={`/artisan-dashboard/messages/${conversation.id}`}>
+    <Link href={`/artisan-dashboard/messages/${conversation.id}`} className="block">
       <Card
         className={cn(
           "hover:bg-accent/50 transition-colors cursor-pointer",

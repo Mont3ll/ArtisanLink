@@ -18,6 +18,8 @@ import {
   Loader2,
   History,
   Trash2,
+  MoreHorizontal,
+  Briefcase,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -52,11 +54,13 @@ import {
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Separator } from "@/components/ui/separator";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
+import { CreateJobRequestDialog } from "@/components/shared/create-job-request-dialog";
 import {
   useArtisanSearch,
   useSearchHistory,
@@ -75,10 +79,12 @@ function ArtisanCard({
   artisan,
   onSave,
   isSaved,
+  onRequestJob,
 }: {
   artisan: Artisan;
   onSave?: (id: string) => void;
   isSaved?: boolean;
+  onRequestJob?: (artisan: Artisan) => void;
 }) {
   const initials = artisan.name
     .split(" ")
@@ -192,12 +198,32 @@ function ArtisanCard({
               Available
             </Badge>
           )}
-          <Button size="sm" asChild>
-            <Link href={`/client-dashboard/messages?artisan=${artisan.id}`}>
-              <MessageSquare className="h-3 w-3 mr-1" />
-              Contact
-            </Link>
-          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button size="sm">
+                Actions
+                <MoreHorizontal className="h-3 w-3 ml-1" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem asChild>
+                <Link href={`/client-dashboard/messages?artisan=${artisan.id}`}>
+                  <MessageSquare className="h-4 w-4 mr-2" />
+                  Contact
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => onRequestJob?.(artisan)}>
+                <Briefcase className="h-4 w-4 mr-2" />
+                Request Job
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link href={`/client-dashboard/reviews?artisan=${artisan.id}`}>
+                  <Star className="h-4 w-4 mr-2" />
+                  Write Review
+                </Link>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </CardFooter>
     </Card>
@@ -402,6 +428,10 @@ export default function FindArtisansPage() {
   const [sortBy, setSortBy] = useState(searchParams.get("sortBy") || "rating");
   const [page, setPage] = useState(1);
 
+  // Job request dialog state
+  const [jobRequestDialogOpen, setJobRequestDialogOpen] = useState(false);
+  const [selectedArtisan, setSelectedArtisan] = useState<Artisan | null>(null);
+
   // Filters
   const [filters, setFilters] = useState({
     profession: searchParams.get("profession") || "",
@@ -484,6 +514,12 @@ export default function FindArtisansPage() {
   const handleSaveArtisan = (profileId: string) => {
     const isSaved = savedArtisans.has(profileId);
     toggleSaveMutation.mutate({ profileId, isSaved });
+  };
+
+  // Handle request job from artisan card
+  const handleRequestJob = (artisan: Artisan) => {
+    setSelectedArtisan(artisan);
+    setJobRequestDialogOpen(true);
   };
 
   // Apply search from history
@@ -817,6 +853,7 @@ export default function FindArtisansPage() {
                   artisan={artisan}
                   onSave={handleSaveArtisan}
                   isSaved={savedArtisans.has(artisan.profileId)}
+                  onRequestJob={handleRequestJob}
                 />
               ))}
             </div>
@@ -877,6 +914,16 @@ export default function FindArtisansPage() {
           )}
         </div>
       </div>
+
+      {/* Job Request Dialog */}
+      {selectedArtisan && (
+        <CreateJobRequestDialog
+          open={jobRequestDialogOpen}
+          onOpenChange={setJobRequestDialogOpen}
+          artisanId={selectedArtisan.id}
+          artisanName={selectedArtisan.name}
+        />
+      )}
     </div>
   );
 }

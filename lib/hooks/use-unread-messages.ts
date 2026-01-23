@@ -9,6 +9,12 @@ interface UnreadResponse {
   }[]
 }
 
+// Default value
+const defaultUnreadResponse: UnreadResponse = {
+  total: 0,
+  byConversation: [],
+}
+
 // Query keys
 export const unreadMessagesKeys = {
   all: ['unread-messages'] as const,
@@ -17,13 +23,24 @@ export const unreadMessagesKeys = {
 
 // Fetch function
 async function fetchUnreadCount(): Promise<UnreadResponse> {
-  const response = await fetch('/api/conversations/unread')
-  
-  if (!response.ok) {
-    throw new Error('Failed to fetch unread count')
+  try {
+    const response = await fetch('/api/conversations/unread')
+    
+    // Handle 403/404 gracefully
+    if (response.status === 403 || response.status === 404) {
+      // Don't log warning for unread count - it's called frequently
+      return defaultUnreadResponse
+    }
+    
+    if (!response.ok) {
+      throw new Error('Failed to fetch unread count')
+    }
+    
+    return response.json()
+  } catch (error) {
+    console.error('[useUnreadMessages] Error fetching unread count:', error)
+    return defaultUnreadResponse
   }
-  
-  return response.json()
 }
 
 /**

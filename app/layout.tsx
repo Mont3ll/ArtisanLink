@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { ClerkProvider } from '@clerk/nextjs';
-import { RoleSync } from "@/components/role/role-sync";
+import { UserSyncProvider } from "@/components/providers/user-sync-provider";
 import { ThemeProvider } from "@/components/theme-provider";
 import { QueryProvider } from "@/lib/react-query";
 import { Toaster } from "sonner";
@@ -40,8 +40,9 @@ export default function RootLayout({
             disableTransitionOnChange
           >
             <QueryProvider>
-              <RoleSync />
-              {children}
+              <UserSyncProvider>
+                {children}
+              </UserSyncProvider>
               <Toaster />
             </QueryProvider>
           </ThemeProvider>

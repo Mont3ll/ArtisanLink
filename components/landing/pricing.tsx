@@ -70,13 +70,13 @@ export default function Pricing() {
           return (
             <Card 
               key={plan.name} 
-              className={`pricing-card relative p-6 lg:p-8 glass-card-light hover:glow-primary transition-all duration-500 hover:-translate-y-2 group overflow-hidden ${
-                plan.popular ? 'ring-2 ring-amber-400 glow-amber' : ''
+              className={`pricing-card relative p-6 lg:p-8 glass-card-light hover:glow-primary transition-all duration-500 hover:-translate-y-2 group overflow-visible ${
+                plan.popular ? 'ring-2 ring-amber-400 glow-amber mt-4' : ''
               }`}
             >
               {plan.popular && (
-                <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
-                  <div className="bg-gradient-to-r from-amber-400 to-orange-500 text-white px-4 py-1 rounded-full text-xs font-bold">
+                <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 z-10">
+                  <div className="bg-gradient-to-r from-amber-400 to-orange-500 text-white px-4 py-1 rounded-full text-xs font-bold shadow-md">
                     MOST POPULAR
                   </div>
                 </div>

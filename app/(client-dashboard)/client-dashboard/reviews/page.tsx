@@ -2,6 +2,8 @@
 
 import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
+import { useSearchParams, useRouter } from "next/navigation";
+import { useQuery } from "@tanstack/react-query";
 import {
   Star,
   Search,
@@ -13,6 +15,8 @@ import {
   CheckCircle,
   AlertCircle,
   MessageSquare,
+  MapPin,
+  User,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -57,6 +61,22 @@ import {
   useDeleteReview,
   type ClientReview,
 } from "@/lib/hooks";
+
+// Type for artisan details fetched from API
+interface ArtisanDetails {
+  id: string;
+  firstName: string;
+  lastName: string;
+  profile?: {
+    id: string;
+    profession?: string;
+    profileImage?: string;
+    city?: string;
+    county?: string;
+    averageRating?: number;
+    isAvailable?: boolean;
+  };
+}
 
 // Star Rating Component
 function StarRating({
@@ -294,13 +314,14 @@ function ReviewDialog({
   onOpenChange,
   review,
   onSuccess,
+  initialArtisanId,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   review: ClientReview | null;
   onSuccess: () => void;
+  initialArtisanId?: string;
 }) {
-  const [profileId, setProfileId] = useState(review?.profileId || "");
   const [rating, setRating] = useState(review?.rating || 0);
   const [comment, setComment] = useState(review?.comment || "");
   const [projectTitle, setProjectTitle] = useState(review?.projectTitle || "");
@@ -315,10 +336,23 @@ function ReviewDialog({
   const isEdit = !!review;
   const isSaving = createMutation.isPending || updateMutation.isPending;
 
+  // Fetch artisan details when initialArtisanId is provided (for new reviews)
+  const { data: artisan, isLoading: isLoadingArtisan, error: artisanError } = useQuery<ArtisanDetails>({
+    queryKey: ["artisan-details", initialArtisanId],
+    queryFn: async () => {
+      const res = await fetch(`/api/client/artisans/${initialArtisanId}`);
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.error || "Artisan not found");
+      }
+      return res.json();
+    },
+    enabled: !!initialArtisanId && !isEdit && open,
+  });
+
   // Reset form when dialog opens/closes
   useEffect(() => {
     if (open) {
-      setProfileId(review?.profileId || "");
       setRating(review?.rating || 0);
       setComment(review?.comment || "");
       setProjectTitle(review?.projectTitle || "");
@@ -330,8 +364,11 @@ function ReviewDialog({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!isEdit && !profileId.trim()) {
-      setError("Artisan profile ID is required");
+    // For new reviews, we need the artisan's profile ID
+    const profileId = isEdit ? review.profileId : artisan?.profile?.id;
+    
+    if (!isEdit && !profileId) {
+      setError("No artisan selected");
       return;
     }
 
@@ -355,7 +392,7 @@ function ReviewDialog({
         });
       } else {
         await createMutation.mutateAsync({
-          profileId: profileId.trim(),
+          profileId: profileId!,
           rating,
           comment: comment.trim() || undefined,
           projectTitle: projectTitle.trim() || undefined,
@@ -369,6 +406,27 @@ function ReviewDialog({
       setError(err instanceof Error ? err.message : "Failed to save review");
     }
   };
+
+  // Get artisan display info (from review for edit mode, from fetched data for new review)
+  const displayArtisan = isEdit && review ? {
+    firstName: review.profile.user.firstName,
+    lastName: review.profile.user.lastName,
+    profileImage: review.profile.profileImage,
+    profession: review.profile.profession,
+  } : artisan ? {
+    firstName: artisan.firstName,
+    lastName: artisan.lastName,
+    profileImage: artisan.profile?.profileImage,
+    profession: artisan.profile?.profession,
+    city: artisan.profile?.city,
+    county: artisan.profile?.county,
+    averageRating: artisan.profile?.averageRating,
+    isAvailable: artisan.profile?.isAvailable,
+  } : null;
+
+  const artisanInitials = displayArtisan 
+    ? `${displayArtisan.firstName[0]}${displayArtisan.lastName[0]}`
+    : "?";
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -390,40 +448,74 @@ function ReviewDialog({
             </div>
           )}
 
-          {!isEdit && (
-            <div className="space-y-2">
-              <Label htmlFor="profileId">Artisan Profile ID</Label>
-              <Input
-                id="profileId"
-                placeholder="Enter the artisan's profile ID"
-                value={profileId}
-                onChange={(e) => setProfileId(e.target.value)}
-              />
-              <p className="text-xs text-muted-foreground">
-                You can find this on the artisan&apos;s profile page
-              </p>
+          {artisanError && (
+            <div className="flex items-center gap-2 text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950 p-3 rounded-md">
+              <AlertCircle className="h-4 w-4" />
+              {artisanError instanceof Error ? artisanError.message : "Failed to load artisan details"}
             </div>
           )}
 
-          {isEdit && review && (
-            <div className="flex items-center gap-3 p-3 bg-muted rounded-lg">
-              <Avatar className="h-10 w-10">
-                <AvatarImage src={review.profile.profileImage || undefined} />
-                <AvatarFallback>
-                  {review.profile.user.firstName[0]}
-                  {review.profile.user.lastName[0]}
-                </AvatarFallback>
-              </Avatar>
-              <div>
-                <p className="font-medium">
-                  {review.profile.user.firstName} {review.profile.user.lastName}
-                </p>
-                <p className="text-sm text-muted-foreground">
-                  {review.profile.profession || "Artisan"}
-                </p>
+          {/* Artisan Info Card */}
+          <div className="space-y-2">
+            <Label>Reviewing</Label>
+            {!isEdit && isLoadingArtisan ? (
+              <div className="flex items-center gap-3 p-3 border rounded-lg bg-muted/30">
+                <Skeleton className="h-12 w-12 rounded-full" />
+                <div className="space-y-2">
+                  <Skeleton className="h-4 w-32" />
+                  <Skeleton className="h-3 w-24" />
+                </div>
               </div>
-            </div>
-          )}
+            ) : displayArtisan ? (
+              <div className="flex items-center gap-3 p-3 border rounded-lg bg-muted/30">
+                <Avatar className="h-12 w-12">
+                  <AvatarImage
+                    src={displayArtisan.profileImage || undefined}
+                    alt={`${displayArtisan.firstName} ${displayArtisan.lastName}`}
+                  />
+                  <AvatarFallback className="bg-primary/10 text-primary">
+                    {artisanInitials}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2">
+                    <span className="font-medium">
+                      {displayArtisan.firstName} {displayArtisan.lastName}
+                    </span>
+                    {'isAvailable' in displayArtisan && displayArtisan.isAvailable && (
+                      <Badge variant="outline" className="text-green-600 border-green-600 text-xs">
+                        Available
+                      </Badge>
+                    )}
+                  </div>
+                  {displayArtisan.profession && (
+                    <p className="text-sm text-muted-foreground">
+                      {displayArtisan.profession}
+                    </p>
+                  )}
+                  {'city' in displayArtisan && displayArtisan.city && displayArtisan.county && (
+                    <div className="flex items-center gap-3 text-xs text-muted-foreground mt-1">
+                      <span className="flex items-center gap-1">
+                        <MapPin className="h-3 w-3" />
+                        {displayArtisan.city}, {displayArtisan.county}
+                      </span>
+                      {'averageRating' in displayArtisan && displayArtisan.averageRating !== undefined && displayArtisan.averageRating > 0 && (
+                        <span className="flex items-center gap-1">
+                          <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
+                          {displayArtisan.averageRating.toFixed(1)}
+                        </span>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </div>
+            ) : !initialArtisanId && !isEdit ? (
+              <div className="flex items-center justify-center gap-2 p-6 border rounded-lg border-dashed text-muted-foreground">
+                <User className="h-5 w-5" />
+                <span>Find an artisan first to write a review</span>
+              </div>
+            ) : null}
+          </div>
 
           <div className="space-y-2">
             <Label>Rating</Label>
@@ -486,7 +578,10 @@ function ReviewDialog({
             >
               Cancel
             </Button>
-            <Button type="submit" disabled={isSaving || rating === 0}>
+            <Button 
+              type="submit" 
+              disabled={isSaving || rating === 0 || (!isEdit && (isLoadingArtisan || !displayArtisan))}
+            >
               {isSaving && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
               {isEdit ? "Update Review" : "Submit Review"}
             </Button>
@@ -498,13 +593,26 @@ function ReviewDialog({
 }
 
 export default function ReviewsPage() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const [page, setPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingReview, setEditingReview] = useState<ClientReview | null>(null);
+  const [selectedArtisanId, setSelectedArtisanId] = useState<string | undefined>();
 
   const { data, isLoading, isError, refetch } = useClientReviews({ page, limit: 20 });
   const deleteMutation = useDeleteReview();
+
+  // Check if coming from artisan profile "Write Review" link
+  useEffect(() => {
+    const artisanId = searchParams.get("artisan");
+    if (artisanId) {
+      setSelectedArtisanId(artisanId);
+      setEditingReview(null);
+      setDialogOpen(true);
+    }
+  }, [searchParams]);
 
   // Filter reviews based on search (client-side)
   const filteredReviews = useMemo(() => {
@@ -531,18 +639,39 @@ export default function ReviewsPage() {
   // Handle edit
   const handleEdit = (review: ClientReview) => {
     setEditingReview(review);
+    setSelectedArtisanId(undefined);
     setDialogOpen(true);
   };
 
-  // Handle new review
+  // Handle new review button click - redirect to find artisans
   const handleNewReview = () => {
-    setEditingReview(null);
-    setDialogOpen(true);
+    router.push("/client-dashboard/find-artisans");
   };
 
   // Handle delete
   const handleDelete = (id: string) => {
     deleteMutation.mutate(id);
+  };
+
+  // Handle dialog close
+  const handleDialogClose = (open: boolean) => {
+    setDialogOpen(open);
+    if (!open) {
+      setEditingReview(null);
+      setSelectedArtisanId(undefined);
+      // Clear URL param when closing
+      if (searchParams.get("artisan")) {
+        router.replace("/client-dashboard/reviews");
+      }
+    }
+  };
+
+  // Handle review success
+  const handleReviewSuccess = () => {
+    // Clear URL param after successful review
+    if (searchParams.get("artisan")) {
+      router.replace("/client-dashboard/reviews");
+    }
   };
 
   // Stats calculations
@@ -652,13 +781,13 @@ export default function ReviewsPage() {
             </h3>
             <p className="text-muted-foreground mb-4">
               {reviews.length === 0
-                ? "Share your experience by writing a review for an artisan"
+                ? "Find an artisan to write a review"
                 : "Try adjusting your search query"}
             </p>
             {reviews.length === 0 && (
               <Button onClick={handleNewReview}>
-                <Plus className="h-4 w-4 mr-2" />
-                Write a Review
+                <Search className="h-4 w-4 mr-2" />
+                Find Artisans
               </Button>
             )}
           </CardContent>
@@ -705,11 +834,10 @@ export default function ReviewsPage() {
       {/* Review Dialog */}
       <ReviewDialog
         open={dialogOpen}
-        onOpenChange={setDialogOpen}
+        onOpenChange={handleDialogClose}
         review={editingReview}
-        onSuccess={() => {
-          // Dialog handles closing itself
-        }}
+        onSuccess={handleReviewSuccess}
+        initialArtisanId={selectedArtisanId}
       />
     </div>
   );

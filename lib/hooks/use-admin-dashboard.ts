@@ -59,6 +59,25 @@ export interface RecentUser {
   portfolioItems: number
 }
 
+// Default values
+const defaultStats: AdminStats = {
+  totalUsers: 0,
+  totalArtisans: 0,
+  activeArtisans: 0,
+  pendingVerifications: 0,
+  activeSubscriptions: 0,
+  monthlyRevenue: 0,
+  monthlyGrowth: 0,
+  systemUptime: 100,
+  totalReviews: 0,
+}
+
+const defaultTasks: SystemTasks = {
+  pendingVerifications: [],
+  recentActivity: [],
+  systemAlerts: [],
+}
+
 // Query keys
 export const adminDashboardKeys = {
   all: ['admin-dashboard'] as const,
@@ -69,35 +88,66 @@ export const adminDashboardKeys = {
 
 // Fetch admin stats
 async function fetchAdminStats(): Promise<AdminStats> {
-  // TODO: Remove this artificial delay after testing skeleton animations
-  await new Promise(resolve => setTimeout(resolve, 2000))
-  
-  const response = await fetch('/api/admin/stats')
-  if (!response.ok) {
-    const error = await response.json().catch(() => ({}))
-    throw new Error(error.error || `Failed to fetch stats: ${response.statusText}`)
+  try {
+    const response = await fetch('/api/admin/stats')
+    
+    // Handle 403 (wrong role) and 404 (user not found) gracefully
+    if (response.status === 403 || response.status === 404) {
+      console.warn('[useAdminStats] User not authorized as admin or not found, returning defaults')
+      return defaultStats
+    }
+    
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({}))
+      throw new Error(error.error || `Failed to fetch stats: ${response.statusText}`)
+    }
+    return response.json()
+  } catch (error) {
+    console.error('[useAdminStats] Error fetching stats:', error)
+    return defaultStats
   }
-  return response.json()
 }
 
 // Fetch system tasks
 async function fetchSystemTasks(): Promise<SystemTasks> {
-  const response = await fetch('/api/admin/tasks')
-  if (!response.ok) {
-    const error = await response.json().catch(() => ({}))
-    throw new Error(error.error || `Failed to fetch tasks: ${response.statusText}`)
+  try {
+    const response = await fetch('/api/admin/tasks')
+    
+    if (response.status === 403 || response.status === 404) {
+      console.warn('[useSystemTasks] User not authorized as admin or not found, returning defaults')
+      return defaultTasks
+    }
+    
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({}))
+      throw new Error(error.error || `Failed to fetch tasks: ${response.statusText}`)
+    }
+    return response.json()
+  } catch (error) {
+    console.error('[useSystemTasks] Error fetching tasks:', error)
+    return defaultTasks
   }
-  return response.json()
 }
 
 // Fetch recent users
 async function fetchRecentUsers(): Promise<RecentUser[]> {
-  const response = await fetch('/api/admin/users')
-  if (!response.ok) {
-    const error = await response.json().catch(() => ({}))
-    throw new Error(error.error || `Failed to fetch users: ${response.statusText}`)
+  try {
+    const response = await fetch('/api/admin/users')
+    
+    if (response.status === 403 || response.status === 404) {
+      console.warn('[useRecentUsers] User not authorized as admin or not found, returning empty array')
+      return []
+    }
+    
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({}))
+      throw new Error(error.error || `Failed to fetch users: ${response.statusText}`)
+    }
+    return response.json()
+  } catch (error) {
+    console.error('[useRecentUsers] Error fetching users:', error)
+    return []
   }
-  return response.json()
 }
 
 /**
@@ -107,6 +157,8 @@ export function useAdminStats() {
   return useQuery({
     queryKey: adminDashboardKeys.stats(),
     queryFn: fetchAdminStats,
+    staleTime: 30000,
+    retry: 1,
   })
 }
 
@@ -117,6 +169,8 @@ export function useSystemTasks() {
   return useQuery({
     queryKey: adminDashboardKeys.tasks(),
     queryFn: fetchSystemTasks,
+    staleTime: 30000,
+    retry: 1,
   })
 }
 
@@ -127,5 +181,7 @@ export function useRecentUsers() {
   return useQuery({
     queryKey: adminDashboardKeys.recentUsers(),
     queryFn: fetchRecentUsers,
+    staleTime: 30000,
+    retry: 1,
   })
 }

@@ -85,16 +85,30 @@ export const artisanSubscriptionKeys = {
     [...artisanSubscriptionKeys.all, 'payment-status', checkoutRequestId] as const,
 }
 
+// Default value
+const defaultSubscriptionData: { subscription: SubscriptionData | null } = { subscription: null }
+
 // Fetch functions
 async function fetchSubscription(): Promise<{ subscription: SubscriptionData | null }> {
-  const response = await fetch('/api/artisan/stats')
-  
-  if (!response.ok) {
-    throw new Error('Failed to fetch subscription status')
+  try {
+    const response = await fetch('/api/artisan/stats')
+    
+    // Handle 403/404 gracefully - user may not be synced yet or not an artisan
+    if (response.status === 403 || response.status === 404) {
+      console.warn('[useArtisanSubscription] User not authorized or not found, returning null subscription')
+      return defaultSubscriptionData
+    }
+    
+    if (!response.ok) {
+      throw new Error('Failed to fetch subscription status')
+    }
+    
+    const data = await response.json()
+    return { subscription: data.profile?.subscription || null }
+  } catch (error) {
+    console.error('[useArtisanSubscription] Error fetching subscription:', error)
+    return defaultSubscriptionData
   }
-  
-  const data = await response.json()
-  return { subscription: data.profile?.subscription || null }
 }
 
 async function initiatePayment(data: InitiatePaymentData): Promise<InitiatePaymentResponse> {
@@ -132,6 +146,9 @@ export function useArtisanSubscription() {
   return useQuery({
     queryKey: artisanSubscriptionKeys.data(),
     queryFn: fetchSubscription,
+    staleTime: 30000,
+    retry: 2, // Retry a couple times in case sync is still in progress
+    retryDelay: 1000, // Wait 1 second between retries
   })
 }
 

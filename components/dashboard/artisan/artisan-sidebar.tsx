@@ -12,6 +12,7 @@ import {
   IconCrown,
   IconReceipt,
   IconInnerShadowTop,
+  IconBriefcase,
 } from "@tabler/icons-react"
 import { useUser } from "@clerk/nextjs"
 
@@ -73,6 +74,11 @@ export function ArtisanSidebar({ ...props }: React.ComponentProps<typeof Sidebar
       title: "Dashboard",
       url: "/artisan-dashboard",
       icon: IconDashboard,
+    },
+    {
+      title: "Jobs",
+      url: "/artisan-dashboard/jobs",
+      icon: IconBriefcase,
     },
     {
       title: "Portfolio",

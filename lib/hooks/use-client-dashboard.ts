@@ -49,85 +49,106 @@ export const clientDashboardKeys = {
   saved: () => [...clientDashboardKeys.all, 'saved'] as const,
 }
 
+// Default empty stats
+const defaultStats: ClientStats = {
+  totalProjects: 0,
+  activeProjects: 0,
+  completedProjects: 0,
+  savedArtisans: 0,
+}
+
 // Fetch functions
 async function fetchClientStats(): Promise<ClientStats> {
   const response = await fetch('/api/client/stats')
   if (!response.ok) {
-    // Return mock data for now if API doesn't exist
-    return {
-      totalProjects: 12,
-      activeProjects: 2,
-      completedProjects: 10,
-      savedArtisans: 8,
-    }
+    // Return empty stats if API fails (user might not be synced yet)
+    return defaultStats
   }
-  return response.json()
+  const data = await response.json()
+  
+  // Map API response to expected format
+  return {
+    totalProjects: data.stats?.reviewsGiven ?? 0,
+    activeProjects: data.stats?.activeConversations ?? 0,
+    completedProjects: data.stats?.reviewsGiven ?? 0,
+    savedArtisans: 0, // Will be fetched separately
+  }
 }
 
 async function fetchRecentSearches(): Promise<RecentSearch[]> {
   const response = await fetch('/api/client/search-history?limit=3')
   if (!response.ok) {
-    // Return mock data if API fails
-    return [
-      { id: '1', query: 'Carpenter in Nairobi', timestamp: '2 hours ago' },
-      { id: '2', query: 'Electrician near me', timestamp: '1 day ago' },
-      { id: '3', query: 'Plumber in Mombasa', timestamp: '3 days ago' },
-    ]
+    // Return empty array if API fails
+    return []
   }
   const data = await response.json()
-  return data.searches || []
+  
+  // Transform API response to expected format
+  const items = data.items || []
+  return items.map((item: {
+    id: string
+    query?: string
+    profession?: string
+    location?: string
+    createdAt: string
+  }) => ({
+    id: item.id,
+    query: item.query || item.profession || item.location || 'Search',
+    timestamp: formatRelativeTime(item.createdAt),
+    filters: {},
+  }))
 }
 
 async function fetchActiveProjects(): Promise<ActiveProject[]> {
-  const response = await fetch('/api/client/projects?status=active&limit=3')
-  if (!response.ok) {
-    // Return mock data if API fails
-    return [
-      {
-        id: '1',
-        artisan: 'John Kamau',
-        service: 'Kitchen Cabinet Installation',
-        status: 'IN_PROGRESS',
-        startDate: '2024-08-25',
-        location: 'Nairobi',
-      },
-      {
-        id: '2',
-        artisan: 'Mary Wanjiku',
-        service: 'House Painting',
-        status: 'SCHEDULED',
-        startDate: '2024-09-01',
-        location: 'Kiambu',
-      },
-    ]
-  }
-  const data = await response.json()
-  return data.projects || []
+  // Note: There's no /api/client/projects endpoint yet
+  // Return empty array - projects are tracked via conversations/reviews
+  return []
 }
 
 async function fetchSavedArtisans(): Promise<SavedArtisan[]> {
   const response = await fetch('/api/client/saved-artisans?limit=3')
   if (!response.ok) {
-    // Return mock data if API fails
-    return [
-      {
-        id: '1',
-        name: 'Peter Ochieng',
-        profession: 'Electrician',
-        rating: 4.9,
-        location: 'Nairobi',
-      },
-      {
-        id: '2',
-        name: 'Grace Muthoni',
-        profession: 'Tailor',
-        rating: 4.8,
-        location: 'Mombasa',
-      },
-    ]
+    // Return empty array if API fails
+    return []
   }
   const data = await response.json()
-  return data.artisans || []
+  
+  // Transform API response to expected format
+  const items = data.items || []
+  return items.map((item: {
+    id: string
+    artisan: {
+      id: string
+      name: string
+      profession?: string
+      rating?: { average: number }
+      location?: { city?: string }
+      profileImage?: string
+    }
+  }) => ({
+    id: item.id,
+    name: item.artisan.name,
+    profession: item.artisan.profession || 'Artisan',
+    rating: item.artisan.rating?.average || 0,
+    location: item.artisan.location?.city || 'Kenya',
+    avatar: item.artisan.profileImage,
+  }))
+}
+
+// Helper function to format relative time
+function formatRelativeTime(dateString: string): string {
+  const date = new Date(dateString)
+  const now = new Date()
+  const diffMs = now.getTime() - date.getTime()
+  const diffMins = Math.floor(diffMs / (1000 * 60))
+  const diffHours = Math.floor(diffMs / (1000 * 60 * 60))
+  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24))
+
+  if (diffMins < 1) return 'just now'
+  if (diffMins < 60) return `${diffMins} minute${diffMins === 1 ? '' : 's'} ago`
+  if (diffHours < 24) return `${diffHours} hour${diffHours === 1 ? '' : 's'} ago`
+  if (diffDays < 7) return `${diffDays} day${diffDays === 1 ? '' : 's'} ago`
+  return date.toLocaleDateString()
 }
 
 // Hooks - separate queries for independent loading
@@ -135,6 +156,8 @@ export function useClientStats() {
   return useQuery({
     queryKey: clientDashboardKeys.stats(),
     queryFn: fetchClientStats,
+    retry: 1, // Only retry once
+    staleTime: 30000, // Consider data fresh for 30 seconds
   })
 }
 
@@ -142,6 +165,8 @@ export function useRecentSearches() {
   return useQuery({
     queryKey: clientDashboardKeys.searches(),
     queryFn: fetchRecentSearches,
+    retry: 1,
+    staleTime: 30000,
   })
 }
 
@@ -149,6 +174,8 @@ export function useActiveProjects() {
   return useQuery({
     queryKey: clientDashboardKeys.projects(),
     queryFn: fetchActiveProjects,
+    retry: 1,
+    staleTime: 30000,
   })
 }
 
@@ -156,5 +183,7 @@ export function useSavedArtisans() {
   return useQuery({
     queryKey: clientDashboardKeys.saved(),
     queryFn: fetchSavedArtisans,
+    retry: 1,
+    staleTime: 30000,
   })
 }

@@ -372,3 +372,54 @@ export {
   useUnreadCount,
   unreadMessagesKeys,
 } from './use-unread-messages'
+
+// Client jobs hooks
+export {
+  useClientJobs,
+  useClientJobDetails,
+  useAcceptQuote,
+  useDeclineQuote,
+  useCancelJob,
+  useCreateJobRequest,
+  clientJobsKeys,
+  type ClientJob,
+  type ClientJobDetails,
+  type ClientJobsResponse,
+} from './use-client-jobs'
+
+// Artisan jobs hooks
+export {
+  useArtisanJobs,
+  useArtisanJobDetails,
+  useCreateQuote,
+  useDeclineJob,
+  useStartJob,
+  useCompleteJob,
+  artisanJobsKeys,
+  type ArtisanJob,
+  type ArtisanJobDetails,
+  type ArtisanJobsResponse,
+  type QuoteLineItem,
+  type QuoteLineItemInput,
+} from './use-artisan-jobs'
+
+// Current user hooks
+export {
+  useCurrentUser,
+  currentUserKeys,
+  type CurrentUser,
+  type CurrentUserProfile,
+  type CurrentUserResponse,
+} from './use-current-user'
+
+// Job payments hooks
+export {
+  useInitiateJobPayment,
+  useJobPaymentStatus,
+  useJobPaymentFlow,
+  jobPaymentKeys,
+  type InitiateJobPaymentData,
+  type InitiateJobPaymentResponse,
+  type JobPaymentStatus,
+} from './use-job-payments'
+
