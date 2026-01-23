@@ -11,6 +11,7 @@ import {
   IconHelp,
   IconInnerShadowTop,
   IconStar,
+  IconBriefcase,
 } from "@tabler/icons-react"
 import { useUser } from "@clerk/nextjs"
 
@@ -72,6 +73,11 @@ export function ClientSidebar({ ...props }: React.ComponentProps<typeof Sidebar>
       title: "Find Artisans",
       url: "/client-dashboard/find-artisans",
       icon: IconSearch,
+    },
+    {
+      title: "My Jobs",
+      url: "/client-dashboard/jobs",
+      icon: IconBriefcase,
     },
     {
       title: "Map View",
