@@ -580,11 +580,12 @@ enum JobStatus {
 
 // Quote Status Enum
 enum QuoteStatus {
-  DRAFT     // Artisan drafting quote
-  SENT      // Quote sent to client
-  ACCEPTED  // Client accepted quote
-  DECLINED  // Client declined quote
-  EXPIRED   // Quote validity expired
+  DRAFT              // Artisan drafting quote
+  SENT               // Quote sent to client
+  ACCEPTED           // Client accepted quote
+  REVISION_REQUESTED // Client requested revision (round 1 only)
+  DECLINED           // Client declined quote (final)
+  EXPIRED            // Quote validity expired
 }
 
 // Job Payment Type Enum
@@ -626,8 +627,14 @@ model Job {
   requestedEndDate   DateTime? // Client's deadline
   scheduledStartDate DateTime? // Agreed start date
   scheduledEndDate   DateTime? // Agreed end date
-  actualStartDate    DateTime? // When work actually started
+  startedAt          DateTime? // When work actually started
   completedAt        DateTime? // When work was completed
+
+  // Payment tracking (convenience fields derived from payments)
+  depositPaid        Boolean   @default(false)
+  depositPaidAt      DateTime?
+  finalPaid          Boolean   @default(false)
+  finalPaidAt        DateTime?
 
   // Status
   status         JobStatus @default(REQUESTED)
@@ -665,7 +672,7 @@ model Quote {
   job   Job    @relation(fields: [jobId], references: [id], onDelete: Cascade)
 
   // Quote Details
-  amount      Float   // Quoted price
+  amount      Float   // Quoted price (total)
   description String? // What's included
   notes       String? // Additional notes
 
@@ -679,6 +686,9 @@ model Quote {
   paymentTerms       String?   // Payment terms description
   materialsIncluded  Boolean   @default(false)
   materialsCost      Float?    // Separate materials cost if not included
+
+  // Deposit negotiation - artisan can request different deposit %
+  requestedDepositPercent Float? // Artisan's requested deposit percentage (10-80%)
 
   // Status
   status   QuoteStatus @default(DRAFT)
@@ -694,11 +704,42 @@ model Quote {
   updatedAt DateTime @updatedAt
   sentAt    DateTime? // When quote was sent to client
 
+  // Relationships
+  lineItems QuoteLineItem[]
+
   // Indexes
   @@index([jobId])
   @@index([status])
   @@index([jobId, round])
   @@map("quotes")
+}
+
+// Quote Line Item Model - Itemized breakdown for transparency
+model QuoteLineItem {
+  id      String @id @default(cuid())
+  quoteId String
+  quote   Quote  @relation(fields: [quoteId], references: [id], onDelete: Cascade)
+
+  // Item Details
+  category    String  // LABOR, MATERIALS, EQUIPMENT, TRANSPORT, CONSUMABLES, OPERATION_COST, OTHER, DISCOUNT, MISCELLANEOUS
+  name        String  // e.g., "Skilled Labor", "PVC Pipes", "Scaffolding Rental"
+  description String? // Optional details
+
+  // Pricing
+  quantity  Float  @default(1)
+  unit      String? // e.g., "hours", "pieces", "days", "trips"
+  unitPrice Float   // Price per unit in KES
+  total     Float   // quantity × unitPrice (can be negative for discounts)
+
+  // Metadata
+  isSystemGenerated Boolean @default(false) // True for auto-added Discount/Miscellaneous
+  sortOrder         Int     @default(0)
+
+  createdAt DateTime @default(now())
+
+  @@index([quoteId])
+  @@index([category])
+  @@map("quote_line_items")
 }
 
 // Job Payment Model
