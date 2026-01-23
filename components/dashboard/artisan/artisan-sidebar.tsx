@@ -13,6 +13,7 @@ import {
   IconReceipt,
   IconInnerShadowTop,
   IconBriefcase,
+  IconWallet,
 } from "@tabler/icons-react"
 import { useUser } from "@clerk/nextjs"
 
@@ -46,6 +47,11 @@ const navSecondary = [
 ]
 
 const documents = [
+  {
+    name: "Earnings",
+    url: "/artisan-dashboard/earnings",
+    icon: IconWallet,
+  },
   {
     name: "Profile Analytics",
     url: "/artisan-dashboard/analytics",
