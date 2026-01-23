@@ -236,6 +236,225 @@ MPESA_ENVIRONMENT=production
 
 ---
 
+### M-Pesa B2C (Artisan Payouts)
+
+These are required for automatic artisan payouts.
+
+#### MPESA_B2C_SHORTCODE
+
+**Required for B2C payouts** | String
+
+M-Pesa B2C business shortcode.
+
+```bash
+MPESA_B2C_SHORTCODE=600000  # Sandbox
+MPESA_B2C_SHORTCODE=123456  # Production
+```
+
+**How to get**: Apply for B2C API access on Safaricom Developer Portal
+
+#### MPESA_B2C_INITIATOR_NAME
+
+**Required for B2C payouts** | String
+
+B2C initiator username registered with Safaricom.
+
+```bash
+MPESA_B2C_INITIATOR_NAME=testapi
+```
+
+**How to get**: Provided by Safaricom during B2C onboarding
+
+#### MPESA_B2C_INITIATOR_PASSWORD
+
+**Required for B2C payouts** | String
+
+B2C initiator password (encrypted using Safaricom certificate).
+
+```bash
+MPESA_B2C_INITIATOR_PASSWORD=your_initiator_password
+```
+
+**Notes**:
+- **Never expose or commit to version control**
+- Password is RSA encrypted before sending to M-Pesa API
+
+#### MPESA_B2C_RESULT_URL
+
+**Required for B2C payouts** | String
+
+Callback URL for B2C payment results.
+
+```bash
+# Development (use ngrok or similar)
+MPESA_B2C_RESULT_URL=https://xxxx.ngrok.io/api/payments/b2c/result
+
+# Production
+MPESA_B2C_RESULT_URL=https://yourdomain.com/api/payments/b2c/result
+```
+
+**Requirements**:
+- Must be HTTPS
+- Must be publicly accessible
+- Must respond within 30 seconds
+
+#### MPESA_B2C_TIMEOUT_URL
+
+**Required for B2C payouts** | String
+
+Callback URL for B2C timeout notifications.
+
+```bash
+# Development
+MPESA_B2C_TIMEOUT_URL=https://xxxx.ngrok.io/api/payments/b2c/timeout
+
+# Production
+MPESA_B2C_TIMEOUT_URL=https://yourdomain.com/api/payments/b2c/timeout
+```
+
+#### ENABLE_B2C_PAYOUTS
+
+Optional | Boolean
+
+Enable/disable B2C payout processing.
+
+```bash
+ENABLE_B2C_PAYOUTS=false  # Development
+ENABLE_B2C_PAYOUTS=true   # Production
+```
+
+**Default**: `false`
+
+**Notes**:
+- Set to `true` only when B2C credentials are configured
+- When `false`, payouts are created but not processed
+
+---
+
+### Commission & Payout Settings
+
+Configuration for platform commission and payout processing.
+
+#### PLATFORM_COMMISSION_RATE
+
+Optional | Number
+
+Standard platform commission rate (decimal).
+
+```bash
+PLATFORM_COMMISSION_RATE=0.10  # 10%
+```
+
+**Default**: `0.10` (10%)
+
+#### PROMOTIONAL_COMMISSION_RATE
+
+Optional | Number
+
+Promotional commission rate for new artisans (decimal).
+
+```bash
+PROMOTIONAL_COMMISSION_RATE=0.05  # 5%
+```
+
+**Default**: `0.05` (5%)
+
+#### PROMOTIONAL_JOB_COUNT
+
+Optional | Number
+
+Number of jobs at promotional rate before switching to standard rate.
+
+```bash
+PROMOTIONAL_JOB_COUNT=5
+```
+
+**Default**: `5`
+
+**Notes**:
+- Artisans get 5% commission on their first 5 completed jobs
+- After 5 jobs, commission increases to 10%
+
+#### ARTISAN_DEPOSIT_SHARE
+
+Optional | Number
+
+Percentage of deposit paid immediately to artisan (decimal).
+
+```bash
+ARTISAN_DEPOSIT_SHARE=0.80  # 80%
+```
+
+**Default**: `0.80` (80%)
+
+**Notes**:
+- 80% of deposit goes to artisan immediately for materials
+- 20% held as escrow until job completion
+
+#### MINIMUM_PAYOUT_AMOUNT
+
+Optional | Number
+
+Minimum payout amount in KES (M-Pesa minimum).
+
+```bash
+MINIMUM_PAYOUT_AMOUNT=10
+```
+
+**Default**: `10` (KES 10)
+
+**Notes**:
+- Payouts below this amount are held until they accumulate
+- KES 10 is M-Pesa's minimum transfer amount
+
+#### PAYOUT_MAX_RETRIES
+
+Optional | Number
+
+Maximum retry attempts for failed payouts before manual review.
+
+```bash
+PAYOUT_MAX_RETRIES=3
+```
+
+**Default**: `3`
+
+**Notes**:
+- Retries use exponential backoff: 5min, 30min, 2hr
+- After max retries, payout is flagged for admin review
+
+#### PAYOUT_BATCH_SIZE
+
+Optional | Number
+
+Maximum payouts to process per cron run.
+
+```bash
+PAYOUT_BATCH_SIZE=10
+```
+
+**Default**: `10`
+
+**Notes**:
+- Prevents timeout on large batches
+- Cron runs hourly, so large backlogs process over time
+
+#### PAYOUT_ADMIN_EMAIL
+
+Optional | String
+
+Email address for payout failure notifications.
+
+```bash
+PAYOUT_ADMIN_EMAIL=admin@artisanlink.co.ke
+```
+
+**Notes**:
+- Receives alerts when payouts require manual review
+- Leave empty to disable email notifications
+
+---
+
 ### Application Settings
 
 #### NEXT_PUBLIC_APP_URL
@@ -663,7 +882,7 @@ NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL=/after-sign-up
 NEXT_PUBLIC_APP_URL=https://artisanlink.co.ke
 LOG_LEVEL=info
 
-# Payments (production)
+# M-Pesa STK Push (production)
 MPESA_CONSUMER_KEY=xxxxx
 MPESA_CONSUMER_SECRET=xxxxx
 MPESA_PASSKEY=xxxxx
@@ -671,6 +890,26 @@ MPESA_SHORT_CODE=xxxxx
 MPESA_CALLBACK_URL=https://artisanlink.co.ke/api/payments/mpesa/callback
 MPESA_ENVIRONMENT=production
 ENABLE_MPESA_PAYMENTS=true
+
+# M-Pesa B2C Payouts (production)
+MPESA_B2C_SHORTCODE=xxxxx
+MPESA_B2C_INITIATOR_NAME=xxxxx
+MPESA_B2C_INITIATOR_PASSWORD=xxxxx
+MPESA_B2C_RESULT_URL=https://artisanlink.co.ke/api/payments/b2c/result
+MPESA_B2C_TIMEOUT_URL=https://artisanlink.co.ke/api/payments/b2c/timeout
+ENABLE_B2C_PAYOUTS=true
+
+# Commission Settings
+PLATFORM_COMMISSION_RATE=0.10
+PROMOTIONAL_COMMISSION_RATE=0.05
+PROMOTIONAL_JOB_COUNT=5
+ARTISAN_DEPOSIT_SHARE=0.80
+MINIMUM_PAYOUT_AMOUNT=10
+
+# Payout Processing
+PAYOUT_MAX_RETRIES=3
+PAYOUT_BATCH_SIZE=10
+PAYOUT_ADMIN_EMAIL=admin@artisanlink.co.ke
 
 # Monitoring
 SENTRY_DSN=https://xxxxx@sentry.io/xxxxx

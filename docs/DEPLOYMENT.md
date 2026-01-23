@@ -77,10 +77,18 @@ Vercel provides the best experience for Next.js applications with automatic depl
        {
          "path": "/api/cron/subscriptions",
          "schedule": "0 0 * * *"
+       },
+       {
+         "path": "/api/cron/process-payouts",
+         "schedule": "0 * * * *"
        }
      ]
    }
    ```
+   
+   **Cron Schedule Reference**:
+   - `/api/cron/subscriptions` - Daily at midnight (subscription renewals/expirations)
+   - `/api/cron/process-payouts` - Hourly (artisan B2C payouts)
 
 7. **Deploy**
    ```bash
@@ -290,7 +298,7 @@ datasource db {
 
 ## M-Pesa Configuration
 
-### Production Setup
+### STK Push Setup (Client Payments)
 
 1. **Go Live on Safaricom**
    - Apply for production credentials at [developer.safaricom.co.ke](https://developer.safaricom.co.ke)
@@ -307,6 +315,52 @@ datasource db {
    - Verify callback handling
    - Monitor payment logs
 
+### B2C Setup (Artisan Payouts)
+
+B2C (Business to Customer) enables automatic payouts to artisans.
+
+1. **Apply for B2C API Access**
+   - Log in to [developer.safaricom.co.ke](https://developer.safaricom.co.ke)
+   - Apply for B2C API access for your app
+   - Complete B2C onboarding requirements
+
+2. **Download Safaricom Certificates**
+   - Download certificates from Safaricom Developer Portal
+   - Sandbox: `SandboxCertificate.cer`
+   - Production: `ProductionCertificate.cer`
+   - Place in `lib/mpesa/certificates/` directory
+
+3. **Configure B2C Environment Variables**
+   ```
+   MPESA_B2C_SHORTCODE=your_b2c_shortcode
+   MPESA_B2C_INITIATOR_NAME=your_initiator_name
+   MPESA_B2C_INITIATOR_PASSWORD=your_initiator_password
+   MPESA_B2C_RESULT_URL=https://yourdomain.com/api/payments/b2c/result
+   MPESA_B2C_TIMEOUT_URL=https://yourdomain.com/api/payments/b2c/timeout
+   ENABLE_B2C_PAYOUTS=true
+   ```
+
+4. **Configure Commission Settings**
+   ```
+   PLATFORM_COMMISSION_RATE=0.10
+   PROMOTIONAL_COMMISSION_RATE=0.05
+   PROMOTIONAL_JOB_COUNT=5
+   ARTISAN_DEPOSIT_SHARE=0.80
+   MINIMUM_PAYOUT_AMOUNT=10
+   ```
+
+5. **Test B2C Flow in Sandbox**
+   - Use sandbox credentials first
+   - Test with small amounts
+   - Verify callbacks are received
+   - Check payout status updates
+
+6. **B2C Security Notes**
+   - Initiator password is RSA encrypted before sending
+   - Callback URLs must be HTTPS
+   - Store certificates securely (not in version control)
+   - Rotate credentials periodically
+
 ---
 
 ## Security Checklist
@@ -314,17 +368,21 @@ datasource db {
 Before going live:
 
 - [ ] All environment variables set (no defaults)
-- [ ] HTTPS enforced (redirect HTTP → HTTPS)
+- [ ] HTTPS enforced (redirect HTTP -> HTTPS)
 - [ ] CORS configured for your domain only
 - [ ] Rate limiting enabled
 - [ ] Security headers configured (CSP, HSTS, etc.)
 - [ ] Database access restricted (no public access)
 - [ ] Clerk production keys used
-- [ ] M-Pesa production credentials used
+- [ ] M-Pesa STK Push production credentials used
+- [ ] M-Pesa B2C production credentials used
+- [ ] B2C callback URLs configured and accessible
+- [ ] Safaricom certificates stored securely
 - [ ] Error tracking configured (Sentry)
 - [ ] Logs don't expose sensitive data
 - [ ] ADMIN_PROMOTION_SECRET removed or empty
 - [ ] CRON_SECRET is strong and unique
+- [ ] Payout cron job configured and tested
 
 ---
 
@@ -520,7 +578,10 @@ psql $DATABASE_URL < backup.sql
 - [ ] Production environment variables set
 - [ ] Database migrated and seeded
 - [ ] Clerk production instance configured
-- [ ] M-Pesa production credentials configured
+- [ ] M-Pesa STK Push production credentials configured
+- [ ] M-Pesa B2C production credentials configured
+- [ ] B2C certificates downloaded and stored
+- [ ] Payout cron job configured (hourly)
 - [ ] SSL certificate valid
 - [ ] DNS configured correctly
 - [ ] Monitoring and alerting set up
@@ -528,3 +589,4 @@ psql $DATABASE_URL < backup.sql
 - [ ] First admin account created
 - [ ] Load testing completed
 - [ ] Security audit completed
+- [ ] B2C payout flow tested end-to-end
