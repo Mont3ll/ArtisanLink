@@ -1,6 +1,6 @@
 # ArtisanLink Development Audit & Task Tracker
 
-> **Last Updated**: January 21, 2026
+> **Last Updated**: January 23, 2026
 > **Status**: Active Development (Phase 9-10 In Progress)
 > **Next.js Version**: 16.1.3 | **Prisma**: 7.2.0 | **React**: 19.2.3
 > **Tests**: 467 passing (unit/component/integration) + 93 E2E tests
@@ -312,7 +312,8 @@ This document serves as the source of truth for all development tasks. Mark task
 | **Phases 0-8 TOTAL** | **155** | **153** | **98%** |
 | Phase 9: Job System | 42 | 7 | 17% |
 | Phase 10: Verification Enhanced | 24 | 7 | 29% |
-| **GRAND TOTAL** | **221** | **167** | **76%** |
+| Phase 11: B2C Payouts | 53 | 0 | 0% |
+| **GRAND TOTAL** | **274** | **167** | **61%** |
 
 ---
 
@@ -440,6 +441,156 @@ This document serves as the source of truth for all development tasks. Mark task
 
 ---
 
+## Phase 11: Payment System with B2C Artisan Payouts (High Priority)
+
+> **Goal**: Implement a complete payment distribution system where clients pay the platform, and artisans receive automatic payouts via M-Pesa B2C.
+> 
+> **Key Decisions**:
+> - Platform Commission: 10% (standard), 5% promotional rate for first 5 jobs per artisan
+> - Deposit Split: 80% to artisan immediately, 20% held until job completion
+> - Payout Method: M-Pesa B2C API (automatic, hourly batch processing)
+> - Minimum Payout: KES 10 (M-Pesa minimum)
+> - Failed Payouts: Auto-retry 3x with exponential backoff, then notify admin
+
+### Payment Flow Diagram
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                         DEPOSIT PAYMENT (e.g., KES 10,000)                  │
+├─────────────────────────────────────────────────────────────────────────────┤
+│  1. Client pays via STK Push → Platform receives KES 10,000                 │
+│  2. System creates ArtisanPayout record:                                    │
+│     ├── DEPOSIT_SHARE: KES 8,000 (80%) - status: PENDING                    │
+│     └── Job.heldAmount: KES 2,000 (20%) - tracked for escrow                │
+│  3. Hourly cron job processes PENDING payouts → B2C to artisan              │
+│  4. Artisan receives KES 8,000 on their M-Pesa                              │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                         FINAL PAYMENT (e.g., KES 15,000)                    │
+├─────────────────────────────────────────────────────────────────────────────┤
+│  1. Client pays via STK Push → Platform receives KES 15,000                 │
+│  2. System calculates:                                                      │
+│     ├── Total job value: KES 25,000                                         │
+│     ├── Commission (10% or 5%): KES 2,500 or KES 1,250                      │
+│     ├── Available: KES 15,000 (final) + KES 2,000 (held) = KES 17,000       │
+│     └── Artisan payout: KES 17,000 - KES 2,500 = KES 14,500                 │
+│  3. Creates ArtisanPayout: KES 14,500, PlatformEarning: KES 2,500           │
+│  4. Hourly cron job processes → B2C to artisan                              │
+│  5. Artisan receives KES 14,500 on their M-Pesa                             │
+├─────────────────────────────────────────────────────────────────────────────┤
+│  TOTALS (10% commission):                                                   │
+│  ├── Artisan receives: KES 8,000 + KES 14,500 = KES 22,500                  │
+│  └── Platform keeps: KES 2,500 (10% commission)                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
+
+### 11.1 Database Schema Updates
+- [ ] Add `PayoutStatus` enum (PENDING, PROCESSING, COMPLETED, FAILED, CANCELLED)
+- [ ] Add `PayoutType` enum (DEPOSIT_SHARE, FINAL_PAYMENT, REFUND, ADJUSTMENT)
+- [ ] Add `ArtisanPayout` model with M-Pesa B2C fields and retry tracking
+- [ ] Add `PlatformEarning` model for commission tracking
+- [ ] Add `heldAmount` and `heldReleasedAt` fields to Job model
+- [ ] Add `completedJobCount` field to User model (for promotional rate tracking)
+- [ ] Add `payouts` relation to User and Job models
+- [ ] Add `earnings` relation to Job model
+- [ ] Run migration and update Prisma client
+
+### 11.2 M-Pesa B2C Integration
+- [ ] Download Safaricom certificates (sandbox.cer, production.cer)
+- [ ] Create `lib/mpesa/b2c.ts` - B2C API functions:
+  - [ ] `getB2CConfig()` - Get B2C environment configuration
+  - [ ] `validateB2CConfig()` - Validate B2C credentials
+  - [ ] `isB2CEnabled()` - Check if B2C payouts are enabled
+  - [ ] `encryptSecurityCredential()` - RSA encrypt initiator password
+  - [ ] `initiateB2C()` - Send B2C payment request
+  - [ ] `parseB2CCallback()` - Parse B2C result callback
+  - [ ] `getB2CResultDescription()` - Human-readable error descriptions
+- [ ] Create `app/api/payments/b2c/result/route.ts` - B2C success/failure callback
+- [ ] Create `app/api/payments/b2c/timeout/route.ts` - B2C timeout callback
+
+### 11.3 Payment Processor Logic
+- [ ] Create `lib/payment-processor.ts` with core functions:
+  - [ ] `getArtisanCommissionRate()` - Get rate (5% promo or 10% standard)
+  - [ ] `calculateDepositSplit()` - Calculate 80/20 deposit distribution
+  - [ ] `calculateFinalPayment()` - Calculate commission and artisan payout
+  - [ ] `processDepositReceived()` - Create payout record after deposit
+  - [ ] `processFinalPaymentReceived()` - Create payout + earnings records
+  - [ ] `meetsMinimumPayout()` - Check if amount >= KES 10
+- [ ] Create `lib/constants/payment.ts` - Payment configuration constants
+
+### 11.4 Batch Payout Processing (Cron Job)
+- [ ] Create `app/api/cron/process-payouts/route.ts` - Hourly batch processor:
+  - [ ] Query PENDING payouts and FAILED with nextRetryAt <= now
+  - [ ] Check minimum payout threshold (KES 10)
+  - [ ] Initiate B2C for each eligible payout
+  - [ ] Update status to PROCESSING
+  - [ ] Handle failures with exponential backoff (5min, 30min, 2hr)
+  - [ ] Flag for manual review after 3 retries
+  - [ ] Send admin notification for failed payouts
+- [ ] Add cron job documentation to env.example
+
+### 11.5 Update Existing Payment Callback
+- [ ] Modify `app/api/payments/job/callback/route.ts`:
+  - [ ] After DEPOSIT payment confirmed → call `processDepositReceived()`
+  - [ ] After FINAL payment confirmed → call `processFinalPaymentReceived()`
+  - [ ] Increment artisan's `completedJobCount` after final payment
+
+### 11.6 Admin Payout Management
+- [ ] Create `app/api/admin/payouts/route.ts` - List payouts with filters
+- [ ] Create `app/api/admin/payouts/[id]/route.ts` - Get/update single payout
+- [ ] Create `app/api/admin/payouts/[id]/retry/route.ts` - Manual retry
+- [ ] Create `app/api/admin/payouts/[id]/resolve/route.ts` - Mark as manually resolved
+- [ ] Create `app/api/admin/earnings/route.ts` - Platform earnings summary
+- [ ] Add Payouts menu item to admin sidebar
+
+### 11.7 Artisan Earnings Dashboard
+- [ ] Create `app/api/artisan/earnings/route.ts` - Artisan earnings API
+- [ ] Create `lib/hooks/use-artisan-earnings.ts` - Client-side hook
+- [ ] Create `app/(artisan-dashboard)/artisan-dashboard/earnings/page.tsx`:
+  - [ ] Total earnings (all time, this month)
+  - [ ] Pending payouts with status
+  - [ ] Payout history with receipts
+  - [ ] Commission rate status (promotional vs standard)
+  - [ ] Jobs remaining at promotional rate
+- [ ] Create `components/dashboard/artisan/earnings-summary.tsx`
+- [ ] Add Earnings menu item to artisan sidebar
+
+### 11.8 Admin Payouts Dashboard UI
+- [ ] Create `app/(admin-dashboard)/admin-dashboard/payouts/page.tsx`:
+  - [ ] Payouts table with filters (status, date, artisan)
+  - [ ] Highlight payouts requiring manual review
+  - [ ] Retry and resolve action buttons
+- [ ] Create `components/dashboard/admin/payouts-table.tsx`
+- [ ] Create `app/(admin-dashboard)/admin-dashboard/earnings/page.tsx`:
+  - [ ] Platform earnings summary
+  - [ ] Earnings by time period
+  - [ ] Top earning jobs
+
+### 11.9 Environment Configuration
+- [ ] Add B2C environment variables to `env.example`:
+  - [ ] `MPESA_B2C_SHORTCODE`
+  - [ ] `MPESA_B2C_INITIATOR_NAME`
+  - [ ] `MPESA_B2C_INITIATOR_PASSWORD`
+  - [ ] `MPESA_B2C_RESULT_URL`
+  - [ ] `MPESA_B2C_TIMEOUT_URL`
+  - [ ] `ENABLE_B2C_PAYOUTS`
+- [ ] Add commission settings to `env.example`:
+  - [ ] `PLATFORM_COMMISSION_RATE` (0.10)
+  - [ ] `PROMOTIONAL_COMMISSION_RATE` (0.05)
+  - [ ] `PROMOTIONAL_JOB_COUNT` (5)
+  - [ ] `ARTISAN_DEPOSIT_SHARE` (0.80)
+  - [ ] `MINIMUM_PAYOUT_AMOUNT` (10)
+- [ ] Add payout processing settings:
+  - [ ] `PAYOUT_MAX_RETRIES` (3)
+  - [ ] `PAYOUT_ADMIN_EMAIL`
+
+### 11.10 Testing
+- [ ] Create `__tests__/payment-processor.test.ts` - Unit tests for payment calculations
+- [ ] Create `__tests__/mpesa-b2c.test.ts` - Unit tests for B2C functions
+- [ ] Create `__tests__/integration/payouts.test.ts` - Integration tests for payout flow
+- [ ] Add E2E tests for payout admin page
+
+---
+
 ## Progress Summary
 
 | Phase | Total Tasks | Completed | Progress |
@@ -453,7 +604,11 @@ This document serves as the source of truth for all development tasks. Mark task
 | Phase 6: Payment Integration | 12 | 12 | 100% |
 | Phase 7: Testing | 17 | 17 | 100% |
 | Phase 8: Production | 17 | 17 | 100% |
-| **TOTAL** | **155** | **153** | **98%** |
+| **Phases 0-8 TOTAL** | **155** | **153** | **98%** |
+| Phase 9: Job System | 42 | 7 | 17% |
+| Phase 10: Verification Enhanced | 24 | 7 | 29% |
+| Phase 11: B2C Payouts | 53 | 0 | 0% |
+| **GRAND TOTAL** | **274** | **167** | **61%** |
 
 ---
 
@@ -496,6 +651,17 @@ This document serves as the source of truth for all development tasks. Mark task
 - **Email Service**: Using Resend or Nodemailer for transactional emails
 - **Image Storage**: Cloudinary for portfolio images, certificates, and ID documents
 
+### Phase 11 Architecture Decisions
+- **Payment Flow**: Client → Platform (STK Push) → Artisan (B2C) - platform intermediary model
+- **Commission Model**: 10% standard, 5% promotional for first 5 jobs per artisan
+- **Deposit Split**: 80% immediate to artisan (for materials), 20% held as escrow
+- **Escrow Release**: Held amount released with final payment after job completion
+- **Payout Timing**: Hourly batch processing via cron job (not real-time)
+- **Payout Phone**: Uses `user.phone` from artisan's profile
+- **Retry Strategy**: Exponential backoff (5min → 30min → 2hr) then manual review
+- **Minimum Payout**: KES 10 (M-Pesa minimum) - smaller amounts accumulate
+- **B2C Security**: Initiator password encrypted with Safaricom RSA certificate
+
 ### Phase 9-10 New Files (Planned)
 - `lib/cloudinary.ts` - Cloudinary upload/delete utilities
 - `lib/email.ts` - Email sending service
@@ -506,6 +672,28 @@ This document serves as the source of truth for all development tasks. Mark task
 - `app/api/upload/` - Image upload endpoints
 - `app/(client-dashboard)/client-dashboard/jobs/` - Client jobs UI
 - `app/(artisan-dashboard)/artisan-dashboard/jobs/` - Artisan jobs UI
+
+### Phase 11 New Files (Planned)
+- `lib/mpesa/b2c.ts` - M-Pesa B2C API integration
+- `lib/mpesa/certificates/sandbox.cer` - Safaricom sandbox certificate
+- `lib/mpesa/certificates/production.cer` - Safaricom production certificate
+- `lib/payment-processor.ts` - Payment distribution business logic
+- `lib/constants/payment.ts` - Payment configuration constants
+- `lib/hooks/use-artisan-earnings.ts` - Artisan earnings client hook
+- `app/api/payments/b2c/result/route.ts` - B2C result callback handler
+- `app/api/payments/b2c/timeout/route.ts` - B2C timeout callback handler
+- `app/api/cron/process-payouts/route.ts` - Hourly payout batch processor
+- `app/api/admin/payouts/route.ts` - Admin payouts list API
+- `app/api/admin/payouts/[id]/route.ts` - Admin payout detail API
+- `app/api/admin/payouts/[id]/retry/route.ts` - Manual retry API
+- `app/api/admin/payouts/[id]/resolve/route.ts` - Manual resolution API
+- `app/api/admin/earnings/route.ts` - Platform earnings API
+- `app/api/artisan/earnings/route.ts` - Artisan earnings API
+- `app/(artisan-dashboard)/artisan-dashboard/earnings/page.tsx` - Artisan earnings page
+- `app/(admin-dashboard)/admin-dashboard/payouts/page.tsx` - Admin payouts page
+- `app/(admin-dashboard)/admin-dashboard/earnings/page.tsx` - Admin earnings page
+- `components/dashboard/artisan/earnings-summary.tsx` - Artisan earnings component
+- `components/dashboard/admin/payouts-table.tsx` - Admin payouts table component
 
 ---
 
@@ -679,3 +867,8 @@ This document serves as the source of truth for all development tasks. Mark task
 | 2026-01-21 | Phase 10: Enhanced Verification System - 24 tasks planned |
 | 2026-01-21 | New features: Job lifecycle, quotes, job payments, ID verification, email notifications |
 | 2026-01-21 | Cloudinary integration already configured - will implement upload library |
+| 2026-01-23 | **Phase 11 Planning**: Added Payment System with B2C Artisan Payouts |
+| 2026-01-23 | Phase 11: B2C Payouts - 53 tasks planned |
+| 2026-01-23 | Key decisions: 10% commission (5% promo for first 5 jobs), 80/20 deposit split |
+| 2026-01-23 | Architecture: Hourly batch payouts, exponential backoff retries, KES 10 minimum |
+| 2026-01-23 | New models planned: ArtisanPayout, PlatformEarning with full M-Pesa B2C integration |
