@@ -247,7 +247,7 @@ These are required for automatic artisan payouts.
 M-Pesa B2C business shortcode.
 
 ```bash
-MPESA_B2C_SHORTCODE=600000  # Sandbox
+MPESA_B2C_SHORTCODE=600000  # Sandbox default
 MPESA_B2C_SHORTCODE=123456  # Production
 ```
 
@@ -260,24 +260,34 @@ MPESA_B2C_SHORTCODE=123456  # Production
 B2C initiator username registered with Safaricom.
 
 ```bash
-MPESA_B2C_INITIATOR_NAME=testapi
+MPESA_B2C_INITIATOR_NAME=testapi  # Sandbox default
 ```
 
 **How to get**: Provided by Safaricom during B2C onboarding
 
-#### MPESA_B2C_INITIATOR_PASSWORD
+#### MPESA_B2C_SECURITY_CREDENTIAL
 
 **Required for B2C payouts** | String
 
-B2C initiator password (encrypted using Safaricom certificate).
+Pre-encrypted security credential generated from the Daraja portal.
 
 ```bash
-MPESA_B2C_INITIATOR_PASSWORD=your_initiator_password
+MPESA_B2C_SECURITY_CREDENTIAL=K7gL8n...very_long_base64_string...
 ```
+
+**How to generate**:
+1. Go to [Daraja Test Credentials](https://developer.safaricom.co.ke/dashboard/testcredentials)
+2. Enter your initiator password (sandbox default: `Safaricom999!*!`)
+3. Select environment: `sandbox` or `production`
+4. Click the **Generate** button
+5. Copy the long Base64 string from the "Your security credential" card
+6. Paste the entire string as this environment variable
 
 **Notes**:
 - **Never expose or commit to version control**
-- Password is RSA encrypted before sending to M-Pesa API
+- The credential is already RSA-encrypted by Safaricom's portal
+- You need to regenerate this if you change your initiator password
+- Generate separate credentials for sandbox and production
 
 #### MPESA_B2C_RESULT_URL
 
@@ -894,7 +904,7 @@ ENABLE_MPESA_PAYMENTS=true
 # M-Pesa B2C Payouts (production)
 MPESA_B2C_SHORTCODE=xxxxx
 MPESA_B2C_INITIATOR_NAME=xxxxx
-MPESA_B2C_INITIATOR_PASSWORD=xxxxx
+MPESA_B2C_SECURITY_CREDENTIAL=xxxxx  # Generated from Daraja portal
 MPESA_B2C_RESULT_URL=https://artisanlink.co.ke/api/payments/b2c/result
 MPESA_B2C_TIMEOUT_URL=https://artisanlink.co.ke/api/payments/b2c/timeout
 ENABLE_B2C_PAYOUTS=true

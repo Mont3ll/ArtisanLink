@@ -5,11 +5,15 @@
  * Used for automatic artisan payments when clients pay for jobs.
  * 
  * Documentation: https://developer.safaricom.co.ke/APIs/BusinessToCustomer
+ * 
+ * Security Credential Setup:
+ * 1. Go to https://developer.safaricom.co.ke/dashboard/testcredentials
+ * 2. Enter your initiator password
+ * 3. Select environment (sandbox/production)
+ * 4. Click generate to get the pre-encrypted security credential
+ * 5. Copy and set as MPESA_B2C_SECURITY_CREDENTIAL env variable
  */
 
-import crypto from 'crypto'
-import fs from 'fs'
-import path from 'path'
 import { createLogger } from '@/lib/logger'
 import { formatPhoneNumber, isValidKenyanPhone, getMpesaAccessToken, MpesaConfig, getMpesaConfig } from '@/lib/mpesa'
 
@@ -34,7 +38,7 @@ export interface B2CConfig {
   consumerSecret: string
   shortCode: string
   initiatorName: string
-  initiatorPassword: string
+  securityCredential: string // Pre-encrypted credential from Daraja portal
   resultUrl: string
   timeoutUrl: string
   environment: 'sandbox' | 'production'
@@ -107,7 +111,7 @@ export function getB2CConfig(): B2CConfig {
     consumerSecret: process.env.MPESA_CONSUMER_SECRET || '',
     shortCode: process.env.MPESA_B2C_SHORTCODE || '',
     initiatorName: process.env.MPESA_B2C_INITIATOR_NAME || '',
-    initiatorPassword: process.env.MPESA_B2C_INITIATOR_PASSWORD || '',
+    securityCredential: process.env.MPESA_B2C_SECURITY_CREDENTIAL || '',
     resultUrl: process.env.MPESA_B2C_RESULT_URL || '',
     timeoutUrl: process.env.MPESA_B2C_TIMEOUT_URL || '',
     environment: (process.env.MPESA_ENVIRONMENT as 'sandbox' | 'production') || 'sandbox',
@@ -123,7 +127,7 @@ export function validateB2CConfig(config: B2CConfig): { valid: boolean; missing:
     'consumerSecret', 
     'shortCode',
     'initiatorName',
-    'initiatorPassword',
+    'securityCredential',
     'resultUrl',
     'timeoutUrl',
   ] as const
@@ -141,56 +145,6 @@ export function validateB2CConfig(config: B2CConfig): { valid: boolean; missing:
  */
 export function isB2CEnabled(): boolean {
   return process.env.ENABLE_B2C_PAYOUTS === 'true'
-}
-
-/**
- * Get certificate content - from env var or file
- */
-function getCertificate(environment: 'sandbox' | 'production'): string {
-  // First, check environment variable
-  const envCert = process.env.MPESA_B2C_CERTIFICATE
-  if (envCert) {
-    // Replace escaped newlines
-    return envCert.replace(/\\n/g, '\n')
-  }
-
-  // Fall back to file
-  const certFileName = environment === 'production' ? 'production.cer' : 'sandbox.cer'
-  const certPath = path.join(process.cwd(), 'lib', 'mpesa', 'certificates', certFileName)
-  
-  try {
-    return fs.readFileSync(certPath, 'utf8')
-  } catch (error) {
-    logger.error(`Failed to read certificate from ${certPath}`, error)
-    throw new Error(
-      `M-Pesa B2C certificate not found. Please either:\n` +
-      `1. Set MPESA_B2C_CERTIFICATE environment variable, or\n` +
-      `2. Place ${certFileName} in lib/mpesa/certificates/`
-    )
-  }
-}
-
-/**
- * Encrypt security credential using Safaricom's public certificate
- * This encrypts the initiator password for secure transmission
- */
-export function encryptSecurityCredential(password: string, environment: 'sandbox' | 'production'): string {
-  try {
-    const certificate = getCertificate(environment)
-    
-    const encrypted = crypto.publicEncrypt(
-      {
-        key: certificate,
-        padding: crypto.constants.RSA_PKCS1_PADDING,
-      },
-      Buffer.from(password)
-    )
-    
-    return encrypted.toString('base64')
-  } catch (error) {
-    logger.error('Failed to encrypt security credential', error)
-    throw new Error('Failed to encrypt security credential. Check certificate configuration.')
-  }
 }
 
 /**
@@ -227,11 +181,16 @@ export async function initiateB2C(
     throw new Error('Maximum single payout amount is KES 70,000')
   }
 
-  // Generate security credential
-  const securityCredential = encryptSecurityCredential(
-    config.initiatorPassword,
-    config.environment
-  )
+  // Use the pre-encrypted security credential from Daraja portal
+  // This credential is already encrypted using Safaricom's certificate
+  const securityCredential = config.securityCredential
+
+  if (!securityCredential) {
+    throw new Error(
+      'B2C security credential not configured. ' +
+      'Generate it from https://developer.safaricom.co.ke/dashboard/testcredentials'
+    )
+  }
 
   // Get access token using the shared function
   const mpesaConfig: MpesaConfig = {

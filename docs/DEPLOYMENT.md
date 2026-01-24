@@ -319,47 +319,69 @@ datasource db {
 
 B2C (Business to Customer) enables automatic payouts to artisans.
 
+#### Sandbox Setup (Testing)
+
+1. **Create/Select Your App**
+   - Log in to [developer.safaricom.co.ke](https://developer.safaricom.co.ke)
+   - Go to **My Apps** and select your app (or create one)
+   - Ensure **B2C API** is enabled for the app
+
+2. **Generate Security Credential**
+   - Go to [Test Credentials](https://developer.safaricom.co.ke/dashboard/testcredentials)
+   - Enter the initiator password (sandbox default: `Safaricom999!*!`)
+   - Select environment: **sandbox**
+   - Click **Generate**
+   - Copy the long Base64 string from "Your security credential"
+
+3. **Configure Environment Variables**
+   ```
+   MPESA_B2C_SHORTCODE=600000
+   MPESA_B2C_INITIATOR_NAME=testapi
+   MPESA_B2C_SECURITY_CREDENTIAL=<paste_the_long_base64_string_here>
+   MPESA_B2C_RESULT_URL=https://your-ngrok-url.ngrok.io/api/payments/b2c/result
+   MPESA_B2C_TIMEOUT_URL=https://your-ngrok-url.ngrok.io/api/payments/b2c/timeout
+   ENABLE_B2C_PAYOUTS=true
+   ```
+
+4. **Set Up Callback URL Tunnel**
+   - For local development, use ngrok: `ngrok http 3000`
+   - Copy the HTTPS URL and update the callback URLs above
+
+#### Production Setup
+
 1. **Apply for B2C API Access**
    - Log in to [developer.safaricom.co.ke](https://developer.safaricom.co.ke)
    - Apply for B2C API access for your app
-   - Complete B2C onboarding requirements
+   - Complete B2C onboarding requirements:
+     - Business registration documents
+     - KRA PIN certificate
+     - Bank account details (for B2C float)
 
-2. **Download Safaricom Certificates**
-   - Download certificates from Safaricom Developer Portal
-   - Sandbox: `SandboxCertificate.cer`
-   - Production: `ProductionCertificate.cer`
-   - Place in `lib/mpesa/certificates/` directory
+2. **Generate Production Security Credential**
+   - Go to [Test Credentials](https://developer.safaricom.co.ke/dashboard/testcredentials)
+   - Enter your production initiator password
+   - Select environment: **production**
+   - Click **Generate**
+   - Copy and securely store the credential
 
-3. **Configure B2C Environment Variables**
+3. **Configure Production Environment Variables**
    ```
-   MPESA_B2C_SHORTCODE=your_b2c_shortcode
+   MPESA_B2C_SHORTCODE=your_production_shortcode
    MPESA_B2C_INITIATOR_NAME=your_initiator_name
-   MPESA_B2C_INITIATOR_PASSWORD=your_initiator_password
+   MPESA_B2C_SECURITY_CREDENTIAL=<production_credential>
    MPESA_B2C_RESULT_URL=https://yourdomain.com/api/payments/b2c/result
    MPESA_B2C_TIMEOUT_URL=https://yourdomain.com/api/payments/b2c/timeout
    ENABLE_B2C_PAYOUTS=true
    ```
 
-4. **Configure Commission Settings**
-   ```
-   PLATFORM_COMMISSION_RATE=0.10
-   PROMOTIONAL_COMMISSION_RATE=0.05
-   PROMOTIONAL_JOB_COUNT=5
-   ARTISAN_DEPOSIT_SHARE=0.80
-   MINIMUM_PAYOUT_AMOUNT=10
-   ```
+4. **Fund Your B2C Float Account**
+   - This is the money that gets sent to artisans
+   - Safaricom provides instructions during onboarding
 
-5. **Test B2C Flow in Sandbox**
-   - Use sandbox credentials first
-   - Test with small amounts
-   - Verify callbacks are received
-   - Check payout status updates
-
-6. **B2C Security Notes**
-   - Initiator password is RSA encrypted before sending
-   - Callback URLs must be HTTPS
-   - Store certificates securely (not in version control)
-   - Rotate credentials periodically
+5. **Test the Flow**
+   - Create a test job and complete payment
+   - Verify payout is created and processed
+   - Check M-Pesa for receipt confirmation
 
 ---
 
