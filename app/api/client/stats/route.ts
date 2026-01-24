@@ -111,12 +111,20 @@ export async function GET() {
       }
     })
 
+    // Get saved artisans count
+    const savedArtisansCount = await prisma.savedArtisan.count({
+      where: {
+        userId: user.id
+      }
+    })
+
     const stats = {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       activeConversations: user.clientConversations.filter((c: any) => c.status === 'ACTIVE').length,
       totalConversations,
       reviewsGiven: user.reviews.length,
       unreadMessages,
+      savedArtisans: savedArtisansCount,
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       totalSpent: user.reviews.reduce((sum: number, review: any) => sum + (review.projectCost || 0), 0)
     }

@@ -14,6 +14,9 @@ import { JobStatus, QuoteStatus } from '@/app/generated/prisma'
 
 const logger = createLogger('api:client:jobs:id')
 
+// Payment timeout: 5 minutes (STK push expires after ~1-2 minutes)
+const PAYMENT_TIMEOUT_MS = 5 * 60 * 1000
+
 interface RouteParams {
   params: Promise<{ id: string }>
 }
@@ -103,6 +106,32 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       return NextResponse.json({ error: 'Access denied' }, { status: 403 })
     }
 
+    // Auto-expire stale PENDING payments (older than 5 minutes)
+    const now = new Date()
+    const stalePaymentIds: string[] = []
+    
+    for (const payment of job.payments) {
+      if (payment.status === 'PENDING') {
+        const paymentAge = now.getTime() - new Date(payment.createdAt).getTime()
+        if (paymentAge > PAYMENT_TIMEOUT_MS) {
+          stalePaymentIds.push(payment.id)
+        }
+      }
+    }
+
+    // Update stale payments to FAILED in background (don't await to keep response fast)
+    if (stalePaymentIds.length > 0) {
+      prisma.jobPayment.updateMany({
+        where: { id: { in: stalePaymentIds } },
+        data: { 
+          status: 'FAILED',
+          failureReason: 'Payment timed out - M-Pesa prompt expired or was cancelled',
+        },
+      }).catch((err: Error) => {
+        logger.error('Failed to expire stale payments', err)
+      })
+    }
+
     // Format response
     const formattedJob = {
       id: job.id,
@@ -170,15 +199,20 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
         createdAt: quote.createdAt,
         updatedAt: quote.updatedAt,
       })),
-      payments: job.payments.map((payment: typeof job.payments[number]) => ({
-        id: payment.id,
-        amount: payment.amount,
-        type: payment.type,
-        mpesaReceiptNumber: payment.mpesaReceiptNumber,
-        status: payment.status,
-        paidAt: payment.paidAt,
-        createdAt: payment.createdAt,
-      })),
+      payments: job.payments.map((payment: typeof job.payments[number]) => {
+        // Check if this payment is stale and should show as FAILED
+        const isStale = payment.status === 'PENDING' && stalePaymentIds.includes(payment.id)
+        return {
+          id: payment.id,
+          amount: payment.amount,
+          type: payment.type,
+          mpesaReceiptNumber: payment.mpesaReceiptNumber,
+          status: isStale ? 'FAILED' : payment.status,
+          failureReason: isStale ? 'Payment timed out - M-Pesa prompt expired or was cancelled' : payment.failureReason,
+          paidAt: payment.paidAt,
+          createdAt: payment.createdAt,
+        }
+      }),
       conversationId: job.conversation?.id,
     }
 
