@@ -27,23 +27,18 @@ import {
 // ============================================================================
 
 /**
- * Check if URL is from a known/configured domain that can be optimized by Next.js
- * URLs from unknown domains will use unoptimized mode to avoid server-side fetch errors
+ * Check if URL can be optimized by Next.js Image component server-side.
+ * 
+ * Due to network issues where the server cannot reach external hosts reliably,
+ * we disable Next.js image optimization for ALL external URLs and serve them
+ * directly (unoptimized). This prevents server-side fetch timeouts.
+ * 
+ * Cloudinary already provides excellent image optimization, so this is fine.
  */
-function isOptimizableUrl(url: string): boolean {
-  try {
-    const hostname = new URL(url).hostname
-    const optimizableDomains = [
-      'res.cloudinary.com',
-      'images.unsplash.com',
-      'lh3.googleusercontent.com',
-      'img.clerk.com',
-      'avatars.githubusercontent.com',
-    ]
-    return optimizableDomains.some(domain => hostname.includes(domain))
-  } catch {
-    return false
-  }
+function isOptimizableUrl(_url: string): boolean {
+  // Disable server-side optimization for all external URLs due to network issues
+  // Images will be served directly from their source (Cloudinary handles optimization)
+  return false
 }
 
 // ============================================================================

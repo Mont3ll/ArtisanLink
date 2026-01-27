@@ -29,6 +29,10 @@ import {
   CheckCircle2,
 } from 'lucide-react'
 
+// Skip Next.js image optimization for all external URLs to avoid server-side fetch timeouts
+// Cloudinary already provides image optimization
+const UNOPTIMIZED = true
+
 interface FileUploadProps {
   folder: UploadFolder
   value?: string
@@ -171,6 +175,7 @@ export function FileUpload({
                 fill
                 className="object-cover"
                 onError={() => setPreviewError(true)}
+                unoptimized={UNOPTIMIZED}
               />
             )}
           </div>
@@ -392,6 +397,7 @@ export function MultiFileUpload({
                     const target = e.target as HTMLImageElement
                     target.style.display = 'none'
                   }}
+                  unoptimized={UNOPTIMIZED}
                 />
               </div>
               <Button

@@ -21,6 +21,9 @@ import {
 } from "lucide-react"
 import { isValidImageUrl } from "@/lib/utils"
 
+// Skip Next.js image optimization for external URLs to avoid server-side fetch timeouts
+const UNOPTIMIZED_EXTERNAL = true
+
 // Types for API responses
 interface ClientStats {
   activeProjects: number
@@ -305,6 +308,7 @@ export function ClientDashboardContent() {
                           width={300}
                           height={128}
                           className="w-full h-32 object-cover rounded"
+                          unoptimized={UNOPTIMIZED_EXTERNAL}
                         />
                       ) : (
                         <div className="w-full h-32 bg-gray-100 dark:bg-gray-800 rounded flex items-center justify-center">
