@@ -22,6 +22,34 @@ import {
   AlertCircle,
 } from 'lucide-react'
 
+// ============================================================================
+// Utility Functions
+// ============================================================================
+
+/**
+ * Check if URL is from a known/configured domain that can be optimized by Next.js
+ * URLs from unknown domains will use unoptimized mode to avoid server-side fetch errors
+ */
+function isOptimizableUrl(url: string): boolean {
+  try {
+    const hostname = new URL(url).hostname
+    const optimizableDomains = [
+      'res.cloudinary.com',
+      'images.unsplash.com',
+      'lh3.googleusercontent.com',
+      'img.clerk.com',
+      'avatars.githubusercontent.com',
+    ]
+    return optimizableDomains.some(domain => hostname.includes(domain))
+  } catch {
+    return false
+  }
+}
+
+// ============================================================================
+// ImageUpload Component
+// ============================================================================
+
 interface ImageUploadProps {
   value: string
   onChange: (url: string, publicId?: string) => void
@@ -124,6 +152,8 @@ export function ImageUpload({
 
   // Show preview if we have a value and not in input mode
   if (value && !showUrlInput) {
+    const shouldOptimize = isOptimizableUrl(value)
+    
     return (
       <div className={cn('space-y-2', className)}>
         {label && <Label>{label}</Label>}
@@ -141,6 +171,7 @@ export function ImageUpload({
                 fill
                 className="object-cover"
                 onError={() => setPreviewError(true)}
+                unoptimized={!shouldOptimize}
               />
             )}
           </div>
@@ -442,32 +473,36 @@ export function MultiImageUpload({
       {/* Existing images */}
       {images.length > 0 && (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {images.map((image, index) => (
-            <div key={index} className="relative group">
-              <div className="relative aspect-square overflow-hidden rounded-lg border bg-muted">
-                <Image
-                  src={image.url}
-                  alt={`Image ${index + 1}`}
-                  fill
-                  className="object-cover"
-                  onError={(e) => {
-                    const target = e.target as HTMLImageElement
-                    target.style.display = 'none'
-                  }}
-                />
+          {images.map((image, index) => {
+            const shouldOptimize = isOptimizableUrl(image.url)
+            return (
+              <div key={index} className="relative group">
+                <div className="relative aspect-square overflow-hidden rounded-lg border bg-muted">
+                  <Image
+                    src={image.url}
+                    alt={`Image ${index + 1}`}
+                    fill
+                    className="object-cover"
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement
+                      target.style.display = 'none'
+                    }}
+                    unoptimized={!shouldOptimize}
+                  />
+                </div>
+                <Button
+                  type="button"
+                  size="icon"
+                  variant="destructive"
+                  className="absolute -top-2 -right-2 h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
+                  onClick={() => handleRemove(index)}
+                  disabled={disabled || isUploading}
+                >
+                  <X className="h-3 w-3" />
+                </Button>
               </div>
-              <Button
-                type="button"
-                size="icon"
-                variant="destructive"
-                className="absolute -top-2 -right-2 h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
-                onClick={() => handleRemove(index)}
-                disabled={disabled || isUploading}
-              >
-                <X className="h-3 w-3" />
-              </Button>
-            </div>
-          ))}
+            )
+          })}
         </div>
       )}
 
