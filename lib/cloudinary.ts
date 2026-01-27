@@ -7,6 +7,10 @@
 
 import { v2 as cloudinary, UploadApiResponse, UploadApiErrorResponse } from 'cloudinary'
 import { createLogger } from './logger'
+import dns from 'dns'
+
+// Force Node.js to prefer IPv4 over IPv6 (fixes connectivity issues on some networks)
+dns.setDefaultResultOrder('ipv4first')
 
 const logger = createLogger('cloudinary')
 
@@ -216,13 +220,47 @@ export async function uploadImage(
       resourceType: result.resource_type,
     }
   } catch (error) {
-    const cloudinaryError = error as UploadApiErrorResponse
-    logger.error('Cloudinary upload error:', cloudinaryError)
+    // Extract error message - Cloudinary errors can have various structures
+    let errorMessage = 'Failed to upload image'
+    let errorCode: string | undefined
+    
+    // Log the raw error for debugging
+    console.error('[Cloudinary Debug] Raw error:', error)
+    console.error('[Cloudinary Debug] Error type:', typeof error)
+    console.error('[Cloudinary Debug] Error constructor:', error?.constructor?.name)
+    
+    if (error instanceof Error) {
+      errorMessage = error.message
+      logger.error('Cloudinary upload error:', error)
+    } else if (typeof error === 'object' && error !== null) {
+      // Handle Cloudinary error response object
+      const errObj = error as Record<string, unknown>
+      console.error('[Cloudinary Debug] Error object keys:', Object.keys(errObj))
+      
+      // Try to extract message from various possible locations
+      if (errObj.message && typeof errObj.message === 'string') {
+        errorMessage = errObj.message
+      } else if (errObj.error && typeof errObj.error === 'object') {
+        const innerError = errObj.error as Record<string, unknown>
+        if (innerError.message && typeof innerError.message === 'string') {
+          errorMessage = innerError.message
+        }
+      }
+      
+      // Extract HTTP code if available
+      if (errObj.http_code) {
+        errorCode = String(errObj.http_code)
+      }
+      
+      logger.error(`Cloudinary upload error: ${errorMessage}`)
+    } else {
+      logger.error(`Cloudinary upload error: ${String(error)}`)
+    }
 
     return {
       success: false,
-      error: cloudinaryError.message || 'Failed to upload image',
-      code: cloudinaryError.http_code?.toString(),
+      error: errorMessage,
+      code: errorCode,
     }
   }
 }

@@ -19,10 +19,16 @@ export interface ArtisanProfile {
   experience: number | null
   hourlyRate: number | null
   isAvailable: boolean
+  profileImage: string | null
+  coverImage: string | null
   certificateUrl: string | null
   certificateUploadedAt: string | null
+  idDocumentUrl: string | null
+  idDocumentType: string | null
+  idDocumentUploadedAt: string | null
   artisanStatus: string | null
   verifiedAt: string | null
+  rejectionReason: string | null
   latitude: number | null
   longitude: number | null
   address: string | null

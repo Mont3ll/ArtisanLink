@@ -30,6 +30,12 @@ const nextConfig: NextConfig = {
         hostname: 'avatars.githubusercontent.com',
         pathname: '/**',
       },
+      // Production CDN for ArtisanLink images
+      {
+        protocol: 'https',
+        hostname: 'images.artisanlink.co.ke',
+        pathname: '/**',
+      },
       // Add your production CDN/storage domain here
       {
         protocol: 'https',

@@ -1,5 +1,6 @@
 'use client'
 
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -14,7 +15,8 @@ import {
   MapPin,
   FileText,
   Image,
-  ArrowRight
+  ArrowRight,
+  X
 } from 'lucide-react'
 
 interface Profile {
@@ -49,7 +51,21 @@ interface CompletionItem {
   weight: number // For percentage calculation
 }
 
+const STORAGE_KEY = 'artisanlink_profile_completion_dismissed'
+
 export function ProfileCompletion({ profile }: ProfileCompletionProps) {
+  const [isDismissed, setIsDismissed] = useState(false)
+  const [isHydrated, setIsHydrated] = useState(false)
+
+  // Check localStorage on mount
+  useEffect(() => {
+    const dismissed = localStorage.getItem(STORAGE_KEY)
+    if (dismissed === 'true') {
+      setIsDismissed(true)
+    }
+    setIsHydrated(true)
+  }, [])
+
   if (!profile) {
     return null
   }
@@ -116,7 +132,7 @@ export function ProfileCompletion({ profile }: ProfileCompletionProps) {
       description: 'Verify your credentials for trust badges',
       completed: Boolean(profile.certificateUrl),
       icon: <Award className="h-4 w-4" />,
-      href: '/artisan-dashboard/certificates',
+      href: '/artisan-dashboard/settings?tab=verification',
       weight: 10
     }
   ]
@@ -128,6 +144,16 @@ export function ProfileCompletion({ profile }: ProfileCompletionProps) {
   
   const totalWeight = completionItems.reduce((sum, item) => sum + item.weight, 0)
   const completionPercentage = Math.round((completedWeight / totalWeight) * 100)
+  
+  // Hide the card if profile is complete AND user dismissed it
+  if (completionPercentage === 100 && isDismissed) {
+    return null
+  }
+
+  // Don't render until hydrated to avoid flicker
+  if (!isHydrated) {
+    return null
+  }
   
   // Get the next incomplete item
   const nextItem = completionItems.find(item => !item.completed)
@@ -142,6 +168,11 @@ export function ProfileCompletion({ profile }: ProfileCompletionProps) {
   
   const status = getStatusLabel()
 
+  const handleDismiss = () => {
+    localStorage.setItem(STORAGE_KEY, 'true')
+    setIsDismissed(true)
+  }
+
   return (
     <Card>
       <CardHeader className="pb-3">
@@ -150,7 +181,20 @@ export function ProfileCompletion({ profile }: ProfileCompletionProps) {
             <CardTitle className="text-lg">Profile Completion</CardTitle>
             <CardDescription>Complete your profile to attract more clients</CardDescription>
           </div>
-          <Badge className={status.color}>{status.label}</Badge>
+          <div className="flex items-center gap-2">
+            <Badge className={status.color}>{status.label}</Badge>
+            {completionPercentage === 100 && (
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                className="h-6 w-6" 
+                onClick={handleDismiss}
+                title="Dismiss"
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            )}
+          </div>
         </div>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -222,6 +266,14 @@ export function ProfileCompletion({ profile }: ProfileCompletionProps) {
             <p className="text-sm text-muted-foreground mt-1">
               Your profile is now ready to attract clients
             </p>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="mt-3"
+              onClick={handleDismiss}
+            >
+              Dismiss this card
+            </Button>
           </div>
         )}
       </CardContent>

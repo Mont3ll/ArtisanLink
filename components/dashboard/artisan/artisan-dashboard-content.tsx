@@ -268,7 +268,7 @@ export function ArtisanDashboardContent() {
               <ActivitySkeleton key={i} />
             ))
           ) : recentActivity.length > 0 ? (
-            recentActivity.map((activity) => (
+            recentActivity.slice(0, 5).map((activity) => (
               <div key={activity.id} className="flex items-start gap-3 p-4 border rounded-lg">
                 <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
                   {activity.icon === 'message' && <MessageSquare className="w-4 h-4 text-blue-600" />}

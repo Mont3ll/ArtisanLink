@@ -196,7 +196,7 @@ export function ClientDashboardContent() {
           </CardHeader>
           <CardContent className="space-y-4">
             {recentActivity.length > 0 ? (
-              recentActivity.map((activity) => (
+              recentActivity.slice(0, 5).map((activity) => (
                 <div key={activity.id} className="flex items-start gap-3 p-3 border rounded-lg">
                   <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center">
                     {getActivityIcon(activity.icon)}
