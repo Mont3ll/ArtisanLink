@@ -76,6 +76,8 @@ interface ArtisanDetails {
     averageRating?: number;
     isAvailable?: boolean;
   };
+  canReview?: boolean;
+  hasReviewed?: boolean;
 }
 
 // Star Rating Component
@@ -424,6 +426,10 @@ function ReviewDialog({
     isAvailable: artisan.profile?.isAvailable,
   } : null;
 
+  // Check review eligibility (only for new reviews)
+  const canReview = isEdit || artisan?.canReview === true;
+  const hasReviewed = !isEdit && artisan?.hasReviewed === true;
+
   const artisanInitials = displayArtisan 
     ? `${displayArtisan.firstName[0]}${displayArtisan.lastName[0]}`
     : "?";
@@ -517,6 +523,21 @@ function ReviewDialog({
             ) : null}
           </div>
 
+          {/* Review eligibility messages */}
+          {!isEdit && !isLoadingArtisan && displayArtisan && hasReviewed && (
+            <div className="flex items-center gap-2 text-sm text-yellow-600 dark:text-yellow-400 bg-yellow-50 dark:bg-yellow-950 p-3 rounded-md">
+              <AlertCircle className="h-4 w-4 flex-shrink-0" />
+              <span>You have already reviewed this artisan. You can edit your existing review from the list below.</span>
+            </div>
+          )}
+
+          {!isEdit && !isLoadingArtisan && displayArtisan && !hasReviewed && !canReview && (
+            <div className="flex items-center gap-2 text-sm text-yellow-600 dark:text-yellow-400 bg-yellow-50 dark:bg-yellow-950 p-3 rounded-md">
+              <AlertCircle className="h-4 w-4 flex-shrink-0" />
+              <span>You can only review artisans after completing a job with them. Request a job first to work with this artisan.</span>
+            </div>
+          )}
+
           <div className="space-y-2">
             <Label>Rating</Label>
             <div className="flex items-center gap-3">
@@ -580,7 +601,7 @@ function ReviewDialog({
             </Button>
             <Button 
               type="submit" 
-              disabled={isSaving || rating === 0 || (!isEdit && (isLoadingArtisan || !displayArtisan))}
+              disabled={isSaving || rating === 0 || (!isEdit && (isLoadingArtisan || !displayArtisan || !canReview || hasReviewed))}
             >
               {isSaving && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
               {isEdit ? "Update Review" : "Submit Review"}

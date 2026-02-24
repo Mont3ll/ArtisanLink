@@ -152,6 +152,22 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Artisan not found' }, { status: 404 })
     }
 
+    // Check if client has a COMPLETED job with this artisan
+    const completedJob = await prisma.job.findFirst({
+      where: {
+        clientId: user.id,
+        artisanId: profile.userId, // Get artisan's user ID from profile
+        status: 'COMPLETED'
+      }
+    })
+
+    if (!completedJob) {
+      return NextResponse.json(
+        { error: 'You can only review artisans after completing a job with them' },
+        { status: 403 }
+      )
+    }
+
     // Check if user already reviewed this artisan
     const existingReview = await prisma.review.findUnique({
       where: {
