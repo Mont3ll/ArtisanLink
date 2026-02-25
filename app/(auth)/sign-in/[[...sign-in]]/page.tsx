@@ -27,7 +27,7 @@ export default function SignInPage() {
                 <Card className="w-full sm:w-96">
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
-                      <Hammer className="w-6 h-6 text-blue-600" />
+                      <Hammer className="w-6 h-6 text-emerald-700" />
                       Welcome back to ArtisanLink
                     </CardTitle>
                     <CardDescription>

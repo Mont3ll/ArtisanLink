@@ -18,6 +18,8 @@ import {
   IconActivity,
   IconAlertTriangle,
   IconDatabase,
+  IconCash,
+  IconReportMoney,
 } from "@tabler/icons-react"
 import { useUser } from "@clerk/nextjs"
 
@@ -61,6 +63,16 @@ const adminNavData = {
       title: "Subscriptions",
       url: "/admin-dashboard/subscriptions",
       icon: IconCurrencyDollar,
+    },
+    {
+      title: "Payouts",
+      url: "/admin-dashboard/payouts",
+      icon: IconCash,
+    },
+    {
+      title: "Earnings",
+      url: "/admin-dashboard/earnings",
+      icon: IconReportMoney,
     },
     {
       title: "System Monitoring",

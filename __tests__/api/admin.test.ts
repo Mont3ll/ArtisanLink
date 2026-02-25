@@ -46,6 +46,13 @@ vi.mock('@/lib/prisma', () => ({
     specialization: {
       count: vi.fn(),
     },
+    notification: {
+      create: vi.fn(),
+    },
+    verificationHistory: {
+      create: vi.fn(),
+    },
+    $transaction: vi.fn(),
   },
 }))
 
@@ -385,13 +392,32 @@ describe('Admin API Routes', () => {
 
     it('should approve artisan successfully', async () => {
       vi.mocked(auth).mockResolvedValue({ userId: 'clerk-admin-1' } as never)
-      vi.mocked(prisma.user.findUnique).mockResolvedValue({ role: 'ADMIN', email: 'admin@test.com' } as never)
-      vi.mocked(prisma.profile.update).mockResolvedValue({
+      // First call returns admin, second call returns artisan with profile
+      vi.mocked(prisma.user.findUnique)
+        .mockResolvedValueOnce({ role: 'ADMIN', email: 'admin@test.com' } as never)
+        .mockResolvedValueOnce({
+          id: 'user-1',
+          email: 'artisan@test.com',
+          firstName: 'Test',
+          lastName: 'Artisan',
+          profile: {
+            id: 'profile-1',
+            certificateUrl: 'https://example.com/cert.pdf',
+            idDocumentUrl: 'https://example.com/id.pdf',
+            idDocumentType: 'NATIONAL_ID',
+          },
+        } as never)
+      const updatedProfile = {
         id: 'profile-1',
         artisanStatus: 'VERIFIED',
         verifiedAt: new Date(),
-      } as never)
+      }
+      vi.mocked(prisma.$transaction).mockResolvedValue([
+        updatedProfile,
+        { id: 'history-1' },
+      ] as never)
       vi.mocked(prisma.activityLog.create).mockResolvedValue({} as never)
+      vi.mocked(prisma.notification.create).mockResolvedValue({} as never)
 
       const request = new Request('http://localhost/api/admin/verification/process', {
         method: 'POST',
@@ -403,21 +429,35 @@ describe('Admin API Routes', () => {
       expect(response.status).toBe(200)
       expect(data.success).toBe(true)
       expect(data.message).toContain('approved')
-      expect(prisma.profile.update).toHaveBeenCalledWith(
-        expect.objectContaining({
-          data: expect.objectContaining({ artisanStatus: 'VERIFIED' }),
-        })
-      )
     })
 
     it('should reject artisan with reason', async () => {
       vi.mocked(auth).mockResolvedValue({ userId: 'clerk-admin-1' } as never)
-      vi.mocked(prisma.user.findUnique).mockResolvedValue({ role: 'ADMIN', email: 'admin@test.com' } as never)
-      vi.mocked(prisma.profile.update).mockResolvedValue({
+      // First call returns admin, second call returns artisan with profile
+      vi.mocked(prisma.user.findUnique)
+        .mockResolvedValueOnce({ role: 'ADMIN', email: 'admin@test.com' } as never)
+        .mockResolvedValueOnce({
+          id: 'user-1',
+          email: 'artisan@test.com',
+          firstName: 'Test',
+          lastName: 'Artisan',
+          profile: {
+            id: 'profile-1',
+            certificateUrl: 'https://example.com/cert.pdf',
+            idDocumentUrl: 'https://example.com/id.pdf',
+            idDocumentType: 'NATIONAL_ID',
+          },
+        } as never)
+      const updatedProfile = {
         id: 'profile-1',
         artisanStatus: 'REJECTED',
-      } as never)
+      }
+      vi.mocked(prisma.$transaction).mockResolvedValue([
+        updatedProfile,
+        { id: 'history-1' },
+      ] as never)
       vi.mocked(prisma.activityLog.create).mockResolvedValue({} as never)
+      vi.mocked(prisma.notification.create).mockResolvedValue({} as never)
 
       const request = new Request('http://localhost/api/admin/verification/process', {
         method: 'POST',

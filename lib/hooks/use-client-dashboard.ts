@@ -71,7 +71,7 @@ async function fetchClientStats(): Promise<ClientStats> {
     totalProjects: data.stats?.reviewsGiven ?? 0,
     activeProjects: data.stats?.activeConversations ?? 0,
     completedProjects: data.stats?.reviewsGiven ?? 0,
-    savedArtisans: 0, // Will be fetched separately
+    savedArtisans: data.stats?.savedArtisans ?? 0,
   }
 }
 

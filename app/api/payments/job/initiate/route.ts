@@ -208,11 +208,16 @@ export async function POST(request: NextRequest) {
         ? `Job Deposit: ${job.title.substring(0, 20)}`
         : `Job Payment: ${job.title.substring(0, 20)}`
 
+      // Use job-specific callback URL
+      const jobCallbackUrl = process.env.MPESA_JOB_CALLBACK_URL || 
+        mpesaConfig.callbackUrl.replace('/mpesa/callback', '/job/callback')
+
       const stkResponse = await initiateSTKPush(mpesaConfig, {
         phoneNumber: formattedPhone,
         amount: Math.round(amount), // M-Pesa requires whole numbers
         accountReference: accountRef,
         transactionDesc,
+        callbackUrl: jobCallbackUrl,
       })
 
       // Update job payment with M-Pesa request details
@@ -285,10 +290,7 @@ export async function GET(request: NextRequest) {
     const searchParams = request.nextUrl.searchParams
     const jobId = searchParams.get('jobId')
     const paymentId = searchParams.get('paymentId')
-
-    if (!jobId && !paymentId) {
-      return NextResponse.json({ error: 'Job ID or Payment ID required' }, { status: 400 })
-    }
+    const checkoutRequestId = searchParams.get('checkoutRequestId')
 
     // Get user
     const user = await prisma.user.findUnique({
@@ -298,6 +300,55 @@ export async function GET(request: NextRequest) {
 
     if (!user) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 })
+    }
+
+    // Query by checkout request ID (for polling status after STK push)
+    if (checkoutRequestId) {
+      const payment = await prisma.jobPayment.findFirst({
+        where: { mpesaCheckoutId: checkoutRequestId },
+        include: {
+          job: {
+            select: { 
+              id: true, 
+              status: true, 
+              clientId: true, 
+              artisanId: true 
+            },
+          },
+        },
+      })
+
+      if (!payment) {
+        return NextResponse.json({ error: 'Payment not found' }, { status: 404 })
+      }
+
+      // Verify user has access
+      if (payment.job.clientId !== user.id && payment.job.artisanId !== user.id) {
+        return NextResponse.json({ error: 'Access denied' }, { status: 403 })
+      }
+
+      // Map status - if still PENDING, keep as PENDING for polling
+      // The callback will update to COMPLETED or FAILED
+      return NextResponse.json({
+        status: payment.status,
+        payment: {
+          id: payment.id,
+          amount: payment.amount,
+          type: payment.type,
+          status: payment.status,
+          mpesaReceiptNumber: payment.mpesaReceiptNumber,
+          paidAt: payment.paidAt,
+        },
+        job: {
+          id: payment.job.id,
+          status: payment.job.status,
+        },
+        error: payment.failureReason,
+      })
+    }
+
+    if (!jobId && !paymentId) {
+      return NextResponse.json({ error: 'Job ID, Payment ID, or Checkout Request ID required' }, { status: 400 })
     }
 
     if (paymentId) {

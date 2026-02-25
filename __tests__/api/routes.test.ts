@@ -40,6 +40,9 @@ vi.mock('@/lib/prisma', () => ({
     profile: {
       findUnique: vi.fn(),
     },
+    job: {
+      findFirst: vi.fn(),
+    },
     notification: {
       findMany: vi.fn(),
       create: vi.fn(),
@@ -238,12 +241,14 @@ describe('Reviews API', () => {
 
     it('should return 409 when duplicate review exists', async () => {
       const mockUser = { id: 'user_1', clerkId: 'clerk_123', role: 'CLIENT' }
-      const mockProfile = { id: 'clxyz123456789012345678', user: { role: 'ARTISAN' } }
+      const mockProfile = { id: 'clxyz123456789012345678', userId: 'artisan_1', user: { role: 'ARTISAN' } }
       const existingReview = { id: 'review_1' }
+      const completedJob = { id: 'job_1', status: 'COMPLETED' }
 
       vi.mocked(auth).mockResolvedValue({ userId: 'clerk_123' } as ReturnType<typeof auth> extends Promise<infer T> ? T : never)
       vi.mocked(prisma.user.findUnique).mockResolvedValue(mockUser as never)
       vi.mocked(prisma.profile.findUnique).mockResolvedValue(mockProfile as never)
+      vi.mocked(prisma.job.findFirst).mockResolvedValue(completedJob as never)
       vi.mocked(prisma.review.findUnique).mockResolvedValue(existingReview as never)
 
       const request = new Request('http://localhost:3000/api/reviews', {
@@ -257,9 +262,30 @@ describe('Reviews API', () => {
       expect(data.error).toBe('You have already reviewed this artisan')
     })
 
+    it('should return 403 when no completed job exists', async () => {
+      const mockUser = { id: 'user_1', clerkId: 'clerk_123', role: 'CLIENT' }
+      const mockProfile = { id: 'clxyz123456789012345678', userId: 'artisan_1', user: { role: 'ARTISAN' } }
+
+      vi.mocked(auth).mockResolvedValue({ userId: 'clerk_123' } as ReturnType<typeof auth> extends Promise<infer T> ? T : never)
+      vi.mocked(prisma.user.findUnique).mockResolvedValue(mockUser as never)
+      vi.mocked(prisma.profile.findUnique).mockResolvedValue(mockProfile as never)
+      vi.mocked(prisma.job.findFirst).mockResolvedValue(null)
+
+      const request = new Request('http://localhost:3000/api/reviews', {
+        method: 'POST',
+        body: JSON.stringify({ profileId: 'clxyz123456789012345678', rating: 5 }),
+      })
+      const response = await reviewsPOST(request)
+      const data = await response.json()
+
+      expect(response.status).toBe(403)
+      expect(data.error).toBe('You can only review artisans after completing a job with them')
+    })
+
     it('should create review successfully', async () => {
       const mockUser = { id: 'user_1', clerkId: 'clerk_123', role: 'CLIENT' }
-      const mockProfile = { id: 'clxyz123456789012345678', user: { role: 'ARTISAN' } }
+      const mockProfile = { id: 'clxyz123456789012345678', userId: 'artisan_1', user: { role: 'ARTISAN' } }
+      const completedJob = { id: 'job_1', status: 'COMPLETED' }
       const newReview = {
         id: 'review_new',
         rating: 5,
@@ -271,6 +297,7 @@ describe('Reviews API', () => {
       vi.mocked(auth).mockResolvedValue({ userId: 'clerk_123' } as ReturnType<typeof auth> extends Promise<infer T> ? T : never)
       vi.mocked(prisma.user.findUnique).mockResolvedValue(mockUser as never)
       vi.mocked(prisma.profile.findUnique).mockResolvedValue(mockProfile as never)
+      vi.mocked(prisma.job.findFirst).mockResolvedValue(completedJob as never)
       vi.mocked(prisma.review.findUnique).mockResolvedValue(null)
       vi.mocked(prisma.review.create).mockResolvedValue(newReview as never)
 

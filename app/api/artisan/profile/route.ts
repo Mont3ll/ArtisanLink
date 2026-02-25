@@ -26,6 +26,10 @@ const updateProfileSchema = z.object({
   // Availability
   isAvailable: z.boolean().optional(),
   
+  // Profile images
+  profileImage: z.string().url().optional().nullable(),
+  coverImage: z.string().url().optional().nullable(),
+  
   // Certificate/Verification
   certificateUrl: z.string().url().optional().nullable(),
   
@@ -151,6 +155,14 @@ export async function PATCH(request: Request) {
     // Handle availability toggle
     if (typeof data.isAvailable === 'boolean') {
       updateData.isAvailable = data.isAvailable
+    }
+
+    // Handle profile images
+    if (data.profileImage !== undefined) {
+      updateData.profileImage = data.profileImage
+    }
+    if (data.coverImage !== undefined) {
+      updateData.coverImage = data.coverImage
     }
 
     // Handle capacity management

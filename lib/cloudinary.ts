@@ -7,15 +7,29 @@
 
 import { v2 as cloudinary, UploadApiResponse, UploadApiErrorResponse } from 'cloudinary'
 import { createLogger } from './logger'
+import dns from 'dns'
+import https from 'https'
+
+// Force Node.js to prefer IPv4 over IPv6 (fixes connectivity issues on some networks)
+dns.setDefaultResultOrder('ipv4first')
 
 const logger = createLogger('cloudinary')
 
-// Configure Cloudinary
+// Create HTTPS agent that forces IPv4
+const httpsAgent = new https.Agent({
+  family: 4, // Force IPv4
+  keepAlive: true,
+  timeout: 30000,
+})
+
+// Configure Cloudinary with custom agent
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
   api_key: process.env.CLOUDINARY_API_KEY,
   api_secret: process.env.CLOUDINARY_API_SECRET,
   secure: true,
+  // Use custom HTTPS agent that forces IPv4
+  agent: httpsAgent,
 })
 
 // ============================================================================
@@ -147,7 +161,31 @@ export function validateFile(
 // ============================================================================
 
 /**
- * Upload an image from a base64 string or URL
+ * Helper to check if an error is a network timeout
+ */
+function isTimeoutError(error: unknown): boolean {
+  if (typeof error === 'object' && error !== null) {
+    const errObj = error as Record<string, unknown>
+    // Check for ETIMEDOUT code
+    if (errObj.code === 'ETIMEDOUT') return true
+    // Check nested error
+    if (errObj.error && typeof errObj.error === 'object') {
+      const innerError = errObj.error as Record<string, unknown>
+      if (innerError.code === 'ETIMEDOUT') return true
+    }
+  }
+  return false
+}
+
+/**
+ * Sleep for a given number of milliseconds
+ */
+function sleep(ms: number): Promise<void> {
+  return new Promise(resolve => setTimeout(resolve, ms))
+}
+
+/**
+ * Upload an image from a base64 string or URL with retry logic
  */
 export async function uploadImage(
   fileData: string, // base64 data URI or URL
@@ -163,67 +201,126 @@ export async function uploadImage(
   }
 
   const { folder, publicId, transformation, tags, context } = options
+  const MAX_RETRIES = 3
+  const BASE_DELAY = 1000 // 1 second
 
-  try {
-    const uploadOptions: Record<string, unknown> = {
-      folder: `artisanlink/${folder}`,
-      resource_type: 'auto',
-      allowed_formats: FOLDER_CONFIG[folder].allowedFormats,
-      max_bytes: FOLDER_CONFIG[folder].maxSize,
+  const uploadOptions: Record<string, unknown> = {
+    folder: `artisanlink/${folder}`,
+    resource_type: 'auto',
+    allowed_formats: FOLDER_CONFIG[folder].allowedFormats,
+    max_bytes: FOLDER_CONFIG[folder].maxSize,
+    timeout: 60000, // 60 second timeout
+  }
+
+  if (publicId) {
+    uploadOptions.public_id = publicId
+    uploadOptions.overwrite = true
+  } else {
+    uploadOptions.unique_filename = true
+  }
+
+  if (transformation) {
+    uploadOptions.transformation = [
+      {
+        width: transformation.width,
+        height: transformation.height,
+        crop: transformation.crop || 'fill',
+        quality: transformation.quality || 'auto',
+      },
+    ]
+  }
+
+  if (tags && tags.length > 0) {
+    uploadOptions.tags = tags
+  }
+
+  if (context) {
+    uploadOptions.context = context
+  }
+
+  let lastError: unknown = null
+
+  for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+    try {
+      logger.info(`Uploading image to folder: ${folder} (attempt ${attempt}/${MAX_RETRIES})`)
+
+      const result: UploadApiResponse = await cloudinary.uploader.upload(fileData, uploadOptions)
+
+      logger.info(`Image uploaded successfully: ${result.public_id}`)
+
+      return {
+        success: true,
+        url: result.url,
+        secureUrl: result.secure_url,
+        publicId: result.public_id,
+        format: result.format,
+        width: result.width,
+        height: result.height,
+        bytes: result.bytes,
+        resourceType: result.resource_type,
+      }
+    } catch (error) {
+      lastError = error
+      
+      // Check if it's a timeout error and we should retry
+      if (isTimeoutError(error) && attempt < MAX_RETRIES) {
+        const delay = BASE_DELAY * Math.pow(2, attempt - 1) // Exponential backoff: 1s, 2s, 4s
+        logger.warn(`Upload timeout, retrying in ${delay}ms... (attempt ${attempt}/${MAX_RETRIES})`)
+        await sleep(delay)
+        continue
+      }
+      
+      // If not a timeout or out of retries, break out of loop
+      break
     }
+  }
 
-    if (publicId) {
-      uploadOptions.public_id = publicId
-      uploadOptions.overwrite = true
-    } else {
-      uploadOptions.unique_filename = true
+  // Extract error message from last error
+  let errorMessage = 'Failed to upload image'
+  let errorCode: string | undefined
+  
+  // Log the raw error for debugging
+  console.error('[Cloudinary Debug] Raw error:', lastError)
+  console.error('[Cloudinary Debug] Error type:', typeof lastError)
+  console.error('[Cloudinary Debug] Error constructor:', lastError?.constructor?.name)
+  
+  if (lastError instanceof Error) {
+    errorMessage = lastError.message
+    logger.error('Cloudinary upload error:', lastError)
+  } else if (typeof lastError === 'object' && lastError !== null) {
+    // Handle Cloudinary error response object
+    const errObj = lastError as Record<string, unknown>
+    console.error('[Cloudinary Debug] Error object keys:', Object.keys(errObj))
+    
+    // Try to extract message from various possible locations
+    if (errObj.message && typeof errObj.message === 'string') {
+      errorMessage = errObj.message
+    } else if (errObj.error && typeof errObj.error === 'object') {
+      const innerError = errObj.error as Record<string, unknown>
+      if (innerError.message && typeof innerError.message === 'string') {
+        errorMessage = innerError.message
+      }
     }
-
-    if (transformation) {
-      uploadOptions.transformation = [
-        {
-          width: transformation.width,
-          height: transformation.height,
-          crop: transformation.crop || 'fill',
-          quality: transformation.quality || 'auto',
-        },
-      ]
+    
+    // Extract HTTP code if available
+    if (errObj.http_code) {
+      errorCode = String(errObj.http_code)
     }
-
-    if (tags && tags.length > 0) {
-      uploadOptions.tags = tags
+    
+    // Add timeout info to message
+    if (isTimeoutError(lastError)) {
+      errorMessage = 'Upload timed out after multiple retries. Please check your network connection and try again.'
     }
+    
+    logger.error(`Cloudinary upload error: ${errorMessage}`)
+  } else {
+    logger.error(`Cloudinary upload error: ${String(lastError)}`)
+  }
 
-    if (context) {
-      uploadOptions.context = context
-    }
-
-    logger.info(`Uploading image to folder: ${folder}`)
-
-    const result: UploadApiResponse = await cloudinary.uploader.upload(fileData, uploadOptions)
-
-    logger.info(`Image uploaded successfully: ${result.public_id}`)
-
-    return {
-      success: true,
-      url: result.url,
-      secureUrl: result.secure_url,
-      publicId: result.public_id,
-      format: result.format,
-      width: result.width,
-      height: result.height,
-      bytes: result.bytes,
-      resourceType: result.resource_type,
-    }
-  } catch (error) {
-    const cloudinaryError = error as UploadApiErrorResponse
-    logger.error('Cloudinary upload error:', cloudinaryError)
-
-    return {
-      success: false,
-      error: cloudinaryError.message || 'Failed to upload image',
-      code: cloudinaryError.http_code?.toString(),
-    }
+  return {
+    success: false,
+    error: errorMessage,
+    code: errorCode,
   }
 }
 

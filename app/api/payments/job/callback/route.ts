@@ -13,6 +13,10 @@ import {
   getResultCodeDescription,
   type STKCallbackData,
 } from '@/lib/mpesa'
+import {
+  processDepositPayment,
+  processFinalPayment,
+} from '@/lib/payment-processor'
 
 const logger = createLogger('api/payments/job/callback')
 
@@ -97,6 +101,8 @@ export async function POST(request: Request) {
                 id: true, 
                 firstName: true, 
                 lastName: true,
+                phone: true,
+                completedJobCount: true,
                 profile: {
                   select: { currentJobCount: true, maxConcurrentJobs: true },
                 },
@@ -142,6 +148,34 @@ export async function POST(request: Request) {
             },
           })
 
+          // Create artisan payout record for deposit share
+          if (jobPayment.job.artisan.phone) {
+            try {
+              const payoutResult = await processDepositPayment(tx, {
+                jobId: jobPayment.jobId,
+                jobPaymentId: jobPayment.id,
+                depositAmount: jobPayment.amount,
+                artisanId: jobPayment.job.artisanId,
+                artisanPhone: jobPayment.job.artisan.phone,
+                artisanCompletedJobs: jobPayment.job.artisan.completedJobCount || 0,
+              })
+              
+              logger.info('Deposit payout created', {
+                payoutId: payoutResult.payoutId,
+                details: payoutResult.details,
+              })
+            } catch (payoutError) {
+              // Log but don't fail the transaction - payout can be created manually
+              logger.error('Failed to create deposit payout', payoutError as Error, {
+                jobId: jobPayment.jobId,
+              })
+            }
+          } else {
+            logger.warn('Artisan phone not available for payout', {
+              artisanId: jobPayment.job.artisanId,
+            })
+          }
+
           // Notify artisan about deposit
           await tx.notification.create({
             data: {
@@ -177,7 +211,7 @@ export async function POST(request: Request) {
           })
         } else if (jobPayment.type === 'FINAL') {
           // Final payment - mark job as fully paid
-          await tx.job.update({
+          const job = await tx.job.update({
             where: { id: jobPayment.jobId },
             data: {
               status: 'PAID',
@@ -185,6 +219,40 @@ export async function POST(request: Request) {
               finalPaidAt: new Date(),
             },
           })
+
+          // Create artisan payout record for final payment
+          if (jobPayment.job.artisan.phone) {
+            try {
+              const totalJobPrice = jobPayment.job.agreedPrice || 
+                (jobPayment.job.depositAmount ? jobPayment.job.depositAmount + jobPayment.amount : jobPayment.amount)
+              
+              const payoutResult = await processFinalPayment(tx, {
+                jobId: jobPayment.jobId,
+                jobPaymentId: jobPayment.id,
+                finalAmount: jobPayment.amount,
+                heldAmount: job.heldAmount || 0,
+                artisanId: jobPayment.job.artisanId,
+                artisanPhone: jobPayment.job.artisan.phone,
+                artisanCompletedJobs: jobPayment.job.artisan.completedJobCount || 0,
+                totalJobPrice,
+              })
+              
+              logger.info('Final payout created', {
+                payoutId: payoutResult.payoutId,
+                earningId: payoutResult.earningId,
+                details: payoutResult.details,
+              })
+            } catch (payoutError) {
+              // Log but don't fail the transaction - payout can be created manually
+              logger.error('Failed to create final payout', payoutError as Error, {
+                jobId: jobPayment.jobId,
+              })
+            }
+          } else {
+            logger.warn('Artisan phone not available for final payout', {
+              artisanId: jobPayment.job.artisanId,
+            })
+          }
 
           // Notify artisan about final payment
           await tx.notification.create({

@@ -40,6 +40,9 @@ import {
 } from '@/lib/hooks'
 import { isValidImageUrl } from '@/lib/utils'
 
+// Skip Next.js image optimization for external URLs to avoid server-side fetch timeouts
+const UNOPTIMIZED_EXTERNAL = true
+
 const formatCurrency = (amount: number) => {
   return new Intl.NumberFormat('en-KE', {
     style: 'currency',
@@ -183,6 +186,7 @@ export default function PortfolioDetailPage() {
                   alt={item.title}
                   fill
                   className="object-cover"
+                  unoptimized={UNOPTIMIZED_EXTERNAL}
                 />
               ) : (
                 <div className="flex items-center justify-center h-full">
@@ -231,6 +235,7 @@ export default function PortfolioDetailPage() {
                       alt={`${item.title} ${index + 1}`}
                       fill
                       className="object-cover"
+                      unoptimized={UNOPTIMIZED_EXTERNAL}
                     />
                   </button>
                 ))}

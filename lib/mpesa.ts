@@ -40,6 +40,7 @@ export interface STKPushRequest {
   amount: number
   accountReference: string
   transactionDesc: string
+  callbackUrl?: string // Optional override for callback URL
 }
 
 export interface STKPushResponse {
@@ -238,7 +239,7 @@ export async function initiateSTKPush(
     PartyA: phoneNumber,
     PartyB: config.shortCode,
     PhoneNumber: phoneNumber,
-    CallBackURL: config.callbackUrl,
+    CallBackURL: request.callbackUrl || config.callbackUrl,
     AccountReference: request.accountReference.substring(0, 12), // Max 12 chars
     TransactionDesc: request.transactionDesc.substring(0, 13), // Max 13 chars
   }

@@ -835,6 +835,315 @@ Process subscription renewals and expirations.
 Authorization: Bearer <CRON_SECRET>
 ```
 
+#### POST /api/cron/process-payouts
+
+Process pending artisan payouts via M-Pesa B2C. Runs hourly.
+
+**Authentication**: Requires `CRON_SECRET` header
+
+```
+Authorization: Bearer <CRON_SECRET>
+```
+
+**Process**:
+1. Queries PENDING payouts and FAILED payouts with `nextRetryAt <= now`
+2. Filters payouts meeting minimum amount (KES 10)
+3. Initiates B2C transfer for each eligible payout
+4. Updates status to PROCESSING
+5. Handles failures with exponential backoff (5min, 30min, 2hr)
+6. Flags for manual review after 3 retries
+
+**Response**:
+```json
+{
+  "message": "Payout processing completed",
+  "processed": 5,
+  "successful": 4,
+  "failed": 1,
+  "skipped": 0
+}
+```
+
+---
+
+### M-Pesa B2C Payouts
+
+#### POST /api/payments/b2c/result
+
+M-Pesa B2C result callback (called by Safaricom on success/failure).
+
+**Authentication**: None (validated by M-Pesa)
+
+**Process**:
+- Updates `ArtisanPayout` status based on result
+- On success: marks COMPLETED, records transaction details
+- On failure: increments retry count, schedules next retry or flags for review
+
+#### POST /api/payments/b2c/timeout
+
+M-Pesa B2C timeout callback (called if B2C request times out).
+
+**Authentication**: None (validated by M-Pesa)
+
+**Process**:
+- Marks payout as FAILED with timeout reason
+- Schedules retry with exponential backoff
+
+---
+
+### Artisan Earnings
+
+#### GET /api/artisan/earnings
+
+Get artisan's earnings summary and payout history.
+
+**Authentication**: Required (Artisan role)
+
+**Query Parameters**:
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| page | number | Page number (default: 1) |
+| limit | number | Items per page (default: 20, max: 50) |
+| status | string | Filter by payout status |
+| startDate | string | Start date filter (ISO) |
+| endDate | string | End date filter (ISO) |
+
+**Response**:
+```json
+{
+  "summary": {
+    "totalEarnings": 125000,
+    "thisMonth": 45000,
+    "pendingPayouts": 8000,
+    "completedPayouts": 117000,
+    "commissionRate": 0.05,
+    "completedJobCount": 3,
+    "promotionalJobsRemaining": 2
+  },
+  "payouts": [
+    {
+      "id": "clxxxxxxxxxx",
+      "amount": 8000,
+      "type": "DEPOSIT_SHARE",
+      "status": "COMPLETED",
+      "jobId": "clxxxxxxxxxx",
+      "jobTitle": "Kitchen Renovation",
+      "mpesaReceiptNumber": "QHJ7X8Y9Z0",
+      "completedAt": "2026-01-20T14:30:00.000Z",
+      "createdAt": "2026-01-20T12:00:00.000Z"
+    }
+  ],
+  "pagination": {
+    "page": 1,
+    "limit": 20,
+    "total": 15,
+    "totalPages": 1
+  }
+}
+```
+
+---
+
+### Admin Payouts Management
+
+#### GET /api/admin/payouts
+
+List all artisan payouts with filters.
+
+**Authentication**: Required (Admin role)
+
+**Query Parameters**:
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| page | number | Page number |
+| limit | number | Items per page |
+| status | string | Filter by status (PENDING, PROCESSING, COMPLETED, FAILED, CANCELLED) |
+| type | string | Filter by type (DEPOSIT_SHARE, FINAL_PAYMENT, REFUND, ADJUSTMENT) |
+| artisanId | string | Filter by artisan |
+| requiresReview | boolean | Only payouts needing manual review |
+| startDate | string | Start date filter |
+| endDate | string | End date filter |
+| search | string | Search by artisan name or job title |
+
+**Response**:
+```json
+{
+  "payouts": [
+    {
+      "id": "clxxxxxxxxxx",
+      "amount": 8000,
+      "type": "DEPOSIT_SHARE",
+      "status": "PENDING",
+      "artisan": {
+        "id": "clxxxxxxxxxx",
+        "firstName": "John",
+        "lastName": "Doe",
+        "phone": "+254712345678",
+        "profile": {
+          "profession": "Carpenter"
+        }
+      },
+      "job": {
+        "id": "clxxxxxxxxxx",
+        "title": "Kitchen Cabinets",
+        "totalAmount": 25000
+      },
+      "mpesaReceiptNumber": null,
+      "retryCount": 0,
+      "requiresManualReview": false,
+      "lastError": null,
+      "adminNotes": null,
+      "createdAt": "2026-01-23T10:00:00.000Z"
+    }
+  ],
+  "summary": {
+    "totalPaid": 500000,
+    "pendingAmount": 45000,
+    "failedAmount": 8000,
+    "requiresReviewCount": 2
+  },
+  "pagination": {
+    "page": 1,
+    "limit": 20,
+    "total": 150,
+    "totalPages": 8
+  }
+}
+```
+
+#### GET /api/admin/payouts/[id]
+
+Get single payout details.
+
+**Authentication**: Required (Admin role)
+
+**Response**:
+```json
+{
+  "payout": {
+    "id": "clxxxxxxxxxx",
+    "amount": 8000,
+    "type": "DEPOSIT_SHARE",
+    "status": "FAILED",
+    "artisan": { ... },
+    "job": { ... },
+    "mpesaConversationId": "AG_xxxxx",
+    "mpesaReceiptNumber": null,
+    "retryCount": 2,
+    "nextRetryAt": "2026-01-23T12:00:00.000Z",
+    "requiresManualReview": false,
+    "lastError": "Insufficient funds in B2C account",
+    "adminNotes": null,
+    "createdAt": "2026-01-23T10:00:00.000Z",
+    "updatedAt": "2026-01-23T11:30:00.000Z",
+    "completedAt": null
+  }
+}
+```
+
+#### PATCH /api/admin/payouts/[id]
+
+Update payout (retry, cancel, mark complete, add notes).
+
+**Authentication**: Required (Admin role)
+
+**Request Body**:
+```json
+{
+  "action": "retry"  // or "cancel", "markComplete", "addNotes"
+}
+```
+
+**Actions**:
+- `retry` - Reset retry count and schedule immediate retry
+- `cancel` - Cancel payout (cannot be undone)
+- `markComplete` - Manually mark as completed (requires `mpesaReceiptNumber`)
+- `addNotes` - Add admin notes (requires `notes` field)
+
+**Request Body for markComplete**:
+```json
+{
+  "action": "markComplete",
+  "mpesaReceiptNumber": "QHJ7X8Y9Z0"
+}
+```
+
+**Request Body for addNotes**:
+```json
+{
+  "action": "addNotes",
+  "notes": "Contacted artisan, confirmed phone number is correct"
+}
+```
+
+---
+
+### Admin Platform Earnings
+
+#### GET /api/admin/earnings
+
+Get platform earnings summary and history.
+
+**Authentication**: Required (Admin role)
+
+**Query Parameters**:
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| page | number | Page number |
+| limit | number | Items per page |
+| startDate | string | Start date filter (ISO) |
+| endDate | string | End date filter (ISO) |
+| groupBy | string | Group by: day, week, month (default: day) |
+
+**Response**:
+```json
+{
+  "summary": {
+    "totalCommission": 250000,
+    "totalJobValue": 2500000,
+    "effectiveRate": 0.10,
+    "promotionalEarnings": 50000,
+    "standardEarnings": 200000,
+    "averageJobValue": 25000,
+    "jobCount": 100
+  },
+  "daily": [
+    {
+      "date": "2026-01-23",
+      "commission": 15000,
+      "jobValue": 150000,
+      "jobCount": 6,
+      "promotionalCommission": 2500,
+      "standardCommission": 12500
+    }
+  ],
+  "earnings": [
+    {
+      "id": "clxxxxxxxxxx",
+      "amount": 2500,
+      "commissionRate": 0.10,
+      "job": {
+        "id": "clxxxxxxxxxx",
+        "title": "Kitchen Renovation",
+        "totalAmount": 25000
+      },
+      "artisan": {
+        "id": "clxxxxxxxxxx",
+        "firstName": "John",
+        "lastName": "Doe"
+      },
+      "createdAt": "2026-01-23T14:00:00.000Z"
+    }
+  ],
+  "pagination": {
+    "page": 1,
+    "limit": 20,
+    "total": 100,
+    "totalPages": 5
+  }
+}
+```
+
 ---
 
 ## Error Handling

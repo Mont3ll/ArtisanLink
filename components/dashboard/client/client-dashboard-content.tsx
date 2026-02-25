@@ -21,6 +21,9 @@ import {
 } from "lucide-react"
 import { isValidImageUrl } from "@/lib/utils"
 
+// Skip Next.js image optimization for external URLs to avoid server-side fetch timeouts
+const UNOPTIMIZED_EXTERNAL = true
+
 // Types for API responses
 interface ClientStats {
   activeProjects: number
@@ -196,7 +199,7 @@ export function ClientDashboardContent() {
           </CardHeader>
           <CardContent className="space-y-4">
             {recentActivity.length > 0 ? (
-              recentActivity.map((activity) => (
+              recentActivity.slice(0, 5).map((activity) => (
                 <div key={activity.id} className="flex items-start gap-3 p-3 border rounded-lg">
                   <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center">
                     {getActivityIcon(activity.icon)}
@@ -305,6 +308,7 @@ export function ClientDashboardContent() {
                           width={300}
                           height={128}
                           className="w-full h-32 object-cover rounded"
+                          unoptimized={UNOPTIMIZED_EXTERNAL}
                         />
                       ) : (
                         <div className="w-full h-32 bg-gray-100 dark:bg-gray-800 rounded flex items-center justify-center">

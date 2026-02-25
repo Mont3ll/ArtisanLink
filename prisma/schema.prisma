@@ -100,6 +100,10 @@ model User {
   clientJobs  Job[] @relation("ClientJobs")
   artisanJobs Job[] @relation("ArtisanJobs")
 
+  // Payout relationships (Phase 11)
+  payouts          ArtisanPayout[] @relation("ArtisanPayouts")
+  completedJobCount Int            @default(0) // For promotional commission tracking
+
   // Indexes for common queries
   @@index([role, status]) // Filter users by role and status
   @@index([createdAt]) // Sort users by creation date
@@ -636,6 +640,10 @@ model Job {
   finalPaid          Boolean   @default(false)
   finalPaidAt        DateTime?
 
+  // Escrow tracking (Phase 11)
+  heldAmount      Float?    // Amount held from deposit (20%)
+  heldReleasedAt  DateTime? // When held amount was released
+
   // Status
   status         JobStatus @default(REQUESTED)
   declineReason  String?   // Reason if artisan declined
@@ -653,6 +661,8 @@ model Job {
   // Relationships
   quotes      Quote[]
   payments    JobPayment[]
+  payouts     ArtisanPayout[]
+  earnings    PlatformEarning[]
 
   // Indexes for common queries
   @@index([clientId])
@@ -781,6 +791,108 @@ model JobPayment {
   @@index([mpesaCheckoutId])
   @@index([createdAt])
   @@map("job_payments")
+}
+
+// ============================================================================
+// Phase 11: B2C Artisan Payouts
+// ============================================================================
+
+// Payout Status Enum
+enum PayoutStatus {
+  PENDING           // Awaiting hourly batch processing
+  PROCESSING        // B2C request sent, awaiting callback
+  COMPLETED         // Successfully paid to artisan
+  FAILED            // B2C failed after all retries
+  CANCELLED         // Cancelled before processing
+}
+
+// Payout Type Enum
+enum PayoutType {
+  DEPOSIT_SHARE     // 80% of deposit sent to artisan
+  FINAL_PAYMENT     // Final payment minus commission
+  REFUND            // Refund to artisan
+  ADJUSTMENT        // Manual adjustment by admin
+}
+
+// Artisan Payout Model - Tracks money sent to artisans via M-Pesa B2C
+model ArtisanPayout {
+  id        String @id @default(cuid())
+  artisanId String
+  artisan   User   @relation("ArtisanPayouts", fields: [artisanId], references: [id], onDelete: Cascade)
+
+  // Link to job (optional - could be adjustment, etc.)
+  jobId String?
+  job   Job?   @relation(fields: [jobId], references: [id], onDelete: SetNull)
+
+  // Payout Details
+  type        PayoutType
+  grossAmount Float        // Amount before any deductions
+  commission  Float        // Commission deducted (0 for deposit share)
+  netAmount   Float        // Amount sent to artisan
+  currency    String       @default("KES")
+
+  // Artisan phone (snapshot at time of payout creation)
+  phoneNumber String
+
+  // M-Pesa B2C fields
+  mpesaConversationId   String?  // M-Pesa conversation ID
+  mpesaOriginatorId     String?  // Our internal tracking ID
+  mpesaTransactionId    String?  // M-Pesa transaction ID on success
+  mpesaReceiptNumber    String?  // M-Pesa receipt number
+
+  // Status & Retry
+  status           PayoutStatus @default(PENDING)
+  failureReason    String?
+  resultCode       Int?         // M-Pesa result code
+  resultDesc       String?      // M-Pesa result description
+  retryCount       Int          @default(0)
+  maxRetries       Int          @default(3)
+  nextRetryAt      DateTime?
+
+  // Admin intervention
+  requiresManualReview Boolean   @default(false)
+  adminNotes           String?
+  reviewedBy           String?   // Admin user ID
+  reviewedAt           DateTime?
+
+  // Timestamps
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  processedAt DateTime? // When B2C was initiated
+  completedAt DateTime? // When B2C succeeded
+
+  @@index([artisanId])
+  @@index([jobId])
+  @@index([status])
+  @@index([status, nextRetryAt]) // For batch processing query
+  @@index([createdAt])
+  @@index([mpesaConversationId])
+  @@map("artisan_payouts")
+}
+
+// Platform Earnings Model - Tracks commission earned by the platform
+model PlatformEarning {
+  id    String @id @default(cuid())
+  jobId String
+  job   Job    @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+  artisanId String // Denormalized for easy querying
+
+  // Earning Details
+  jobValue         Float   // Total job value
+  commissionRate   Float   // Rate applied (0.05 or 0.10)
+  commissionAmount Float   // Actual commission earned
+  isPromotional    Boolean @default(false) // Was promotional rate applied?
+
+  // Source payment type
+  paymentType String // "DEPOSIT" or "FINAL"
+
+  createdAt DateTime @default(now())
+
+  @@index([jobId])
+  @@index([artisanId])
+  @@index([createdAt])
+  @@map("platform_earnings")
 }
 
 // ============================================================================

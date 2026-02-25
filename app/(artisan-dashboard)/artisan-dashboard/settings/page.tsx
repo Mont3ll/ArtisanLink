@@ -45,9 +45,13 @@ import {
   Clock,
   Loader2,
   Save,
-  Bell
+  Bell,
+  User,
+  ImageIcon,
+  FileText
 } from 'lucide-react'
 import NotificationPreferencesCard from '@/components/shared/notification-preferences-card'
+import { FileUpload } from '@/components/ui/file-upload'
 import {
   useArtisanSettingsProfile,
   useArtisanSpecializations,
@@ -73,11 +77,20 @@ export default function SettingsPage() {
   const updateCertificate = useUpdateCertificate()
   const addSpecialization = useAddSpecialization()
   const deleteSpecialization = useDeleteSpecialization()
+  const updateProfile = useUpdateArtisanProfile()
   
   // Local state
   const [deleteId, setDeleteId] = useState<string | null>(null)
   const [successMessage, setSuccessMessage] = useState<string | null>(null)
   const [certificateUrl, setCertificateUrl] = useState('')
+  
+  // Profile image state
+  const [profileImage, setProfileImage] = useState('')
+  const [coverImage, setCoverImage] = useState('')
+  
+  // ID document state
+  const [idDocumentUrl, setIdDocumentUrl] = useState('')
+  const [idDocumentType, setIdDocumentType] = useState<string>('')
   
   // Form state for new specialization
   const [newSpecialization, setNewSpecialization] = useState({
@@ -113,6 +126,10 @@ export default function SettingsPage() {
       longitude: profile.longitude?.toString() || ''
     })
     setCertificateUrl(profile.certificateUrl || '')
+    setProfileImage(profile.profileImage || '')
+    setCoverImage(profile.coverImage || '')
+    setIdDocumentUrl(profile.idDocumentUrl || '')
+    setIdDocumentType(profile.idDocumentType || '')
     setLocationInitialized(true)
   }
 
@@ -185,6 +202,65 @@ export default function SettingsPage() {
       certificateUploadedAt: new Date().toISOString()
     }, {
       onSuccess: () => showSuccess('Certificate saved! It will be reviewed for verification.')
+    })
+  }
+
+  // Handle profile image upload
+  const handleProfileImageChange = (url: string) => {
+    setProfileImage(url)
+    if (url) {
+      updateProfile.mutate({ profileImage: url }, {
+        onSuccess: () => showSuccess('Profile photo updated!')
+      })
+    }
+  }
+
+  // Handle cover image upload
+  const handleCoverImageChange = (url: string) => {
+    setCoverImage(url)
+    if (url) {
+      updateProfile.mutate({ coverImage: url }, {
+        onSuccess: () => showSuccess('Cover image updated!')
+      })
+    }
+  }
+
+  // Handle certificate file upload (replaces URL input)
+  const handleCertificateUpload = (url: string) => {
+    setCertificateUrl(url)
+    if (url) {
+      updateCertificate.mutate({
+        certificateUrl: url,
+        certificateUploadedAt: new Date().toISOString()
+      }, {
+        onSuccess: () => showSuccess('Certificate uploaded! It will be reviewed for verification.')
+      })
+    }
+  }
+
+  // Handle ID document upload
+  const handleIdDocumentUpload = (url: string) => {
+    setIdDocumentUrl(url)
+  }
+
+  // Save ID document with type
+  const handleSaveIdDocument = async () => {
+    if (!idDocumentUrl.trim() || !idDocumentType) {
+      setFormError('Please upload an ID document and select the document type')
+      return
+    }
+    
+    updateProfile.mutate({
+      idDocumentUrl: idDocumentUrl.trim(),
+      idDocumentType: idDocumentType,
+    }, {
+      onSuccess: () => {
+        setFormError(null)
+        showSuccess('ID document saved! It will be reviewed for verification.')
+      },
+      onError: (error) => {
+        setFormError(error instanceof Error ? error.message : 'Failed to save ID document')
+      }
     })
   }
 
@@ -383,6 +459,58 @@ export default function SettingsPage() {
                     </p>
                   </div>
                 </>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Profile Photo Card */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <User className="h-5 w-5" />
+                Profile Photo
+              </CardTitle>
+              <CardDescription>
+                Upload a professional photo to help clients recognize you
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {profileLoading ? (
+                <Skeleton className="h-48 w-full rounded-lg" />
+              ) : (
+                <FileUpload
+                  folder="profile-images"
+                  value={profileImage}
+                  onChange={handleProfileImageChange}
+                  label=""
+                  description="Recommended: Square image, at least 400x400 pixels. Max 2MB."
+                />
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Cover Image Card */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <ImageIcon className="h-5 w-5" />
+                Cover Image
+              </CardTitle>
+              <CardDescription>
+                Add a cover image to personalize your profile page
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {profileLoading ? (
+                <Skeleton className="h-48 w-full rounded-lg" />
+              ) : (
+                <FileUpload
+                  folder="profile-images"
+                  value={coverImage}
+                  onChange={handleCoverImageChange}
+                  label=""
+                  description="Recommended: Wide image (16:9), at least 1200x675 pixels. Max 2MB."
+                />
               )}
             </CardContent>
           </Card>
@@ -752,6 +880,7 @@ export default function SettingsPage() {
 
         {/* Verification Tab */}
         <TabsContent value="verification" className="space-y-6">
+          {/* Verification Status Card */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -759,17 +888,13 @@ export default function SettingsPage() {
                 Verification Status
               </CardTitle>
               <CardDescription>
-                Upload your professional certificate to get verified and build trust with clients
+                Get verified to build trust with clients and appear higher in search results
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               {profileLoading ? (
                 <div className="space-y-6">
                   <Skeleton className="h-16 w-full rounded-lg" />
-                  <div className="space-y-4">
-                    <Skeleton className="h-4 w-48" />
-                    <Skeleton className="h-10 w-full" />
-                  </div>
                   <Skeleton className="h-32 w-full rounded-lg" />
                 </div>
               ) : (
@@ -787,75 +912,49 @@ export default function SettingsPage() {
                     {getVerificationBadge()}
                   </div>
                   
-                  {/* Certificate Upload */}
-                  <div className="space-y-4">
-                    <Label>Professional Certificate / Qualification</Label>
-                    <p className="text-sm text-muted-foreground">
-                      Upload a URL to your certificate image or document. Supported: images or PDF links.
-                    </p>
-                    
-                    <div className="flex gap-2">
-                      <Input
-                        value={certificateUrl}
-                        onChange={(e) => setCertificateUrl(e.target.value)}
-                        placeholder="https://example.com/certificate.pdf"
-                        className="flex-1"
-                      />
-                      <Button 
-                        onClick={handleSaveCertificate} 
-                        disabled={updateCertificate.isPending || !certificateUrl.trim()}
-                      >
-                        {updateCertificate.isPending ? (
-                          <>
-                            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                            Saving...
-                          </>
-                        ) : (
-                          <>
-                            <Upload className="h-4 w-4 mr-2" />
-                            Save
-                          </>
-                        )}
-                      </Button>
-                    </div>
-                    
-                    {profile?.certificateUrl && (
-                      <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
-                        <div className="flex items-center gap-2 text-green-800">
-                          <CheckCircle2 className="h-5 w-5" />
-                          <span className="font-medium">Certificate Uploaded</span>
-                        </div>
-                        <p className="text-sm text-green-700 mt-1 break-all">
-                          {profile.certificateUrl}
-                        </p>
-                        {profile.certificateUploadedAt && (
-                          <p className="text-xs text-green-600 mt-2">
-                            Uploaded on {new Date(profile.certificateUploadedAt).toLocaleString()}
-                          </p>
-                        )}
+                  {/* Rejection Reason */}
+                  {profile?.artisanStatus === 'REJECTED' && profile?.rejectionReason && (
+                    <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
+                      <div className="flex items-center gap-2 text-red-800">
+                        <XCircle className="h-5 w-5" />
+                        <span className="font-medium">Verification Rejected</span>
                       </div>
-                    )}
-                  </div>
+                      <p className="text-sm text-red-700 mt-2">
+                        <strong>Reason:</strong> {profile.rejectionReason}
+                      </p>
+                      <p className="text-xs text-red-600 mt-2">
+                        Please address the issue and re-submit your documents.
+                      </p>
+                    </div>
+                  )}
                   
                   {/* Verification Requirements */}
                   <div className="border rounded-lg p-4">
                     <h4 className="font-medium mb-3">Verification Requirements</h4>
                     <ul className="space-y-2 text-sm text-muted-foreground">
                       <li className="flex items-center gap-2">
-                        <CheckCircle2 className="h-4 w-4 text-green-500" />
-                        Valid professional certificate or qualification
+                        {profile?.profileImage ? (
+                          <CheckCircle2 className="h-4 w-4 text-green-500" />
+                        ) : (
+                          <Clock className="h-4 w-4 text-yellow-500" />
+                        )}
+                        Profile photo uploaded
                       </li>
                       <li className="flex items-center gap-2">
-                        <CheckCircle2 className="h-4 w-4 text-green-500" />
-                        Complete profile with photo and bio
+                        {profile?.certificateUrl ? (
+                          <CheckCircle2 className="h-4 w-4 text-green-500" />
+                        ) : (
+                          <Clock className="h-4 w-4 text-yellow-500" />
+                        )}
+                        Professional certificate or qualification
                       </li>
                       <li className="flex items-center gap-2">
-                        <CheckCircle2 className="h-4 w-4 text-green-500" />
-                        At least one portfolio item
-                      </li>
-                      <li className="flex items-center gap-2">
-                        <CheckCircle2 className="h-4 w-4 text-green-500" />
-                        Valid contact information
+                        {profile?.idDocumentUrl ? (
+                          <CheckCircle2 className="h-4 w-4 text-green-500" />
+                        ) : (
+                          <Clock className="h-4 w-4 text-yellow-500" />
+                        )}
+                        Valid government-issued ID
                       </li>
                     </ul>
                     <p className="text-xs text-muted-foreground mt-3">
@@ -863,6 +962,141 @@ export default function SettingsPage() {
                     </p>
                   </div>
                 </>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Certificate Upload Card */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Award className="h-5 w-5" />
+                Professional Certificate
+              </CardTitle>
+              <CardDescription>
+                Upload your professional certificate, diploma, or qualification document
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {profileLoading ? (
+                <Skeleton className="h-48 w-full rounded-lg" />
+              ) : (
+                <div className="space-y-4">
+                  <FileUpload
+                    folder="certificates"
+                    value={certificateUrl}
+                    onChange={handleCertificateUpload}
+                    label=""
+                    description="Accepted formats: JPEG, PNG, PDF. Max 5MB."
+                  />
+                  
+                  {profile?.certificateUrl && profile.certificateUploadedAt && (
+                    <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
+                      <div className="flex items-center gap-2 text-green-800 text-sm">
+                        <CheckCircle2 className="h-4 w-4" />
+                        <span>Uploaded on {new Date(profile.certificateUploadedAt).toLocaleString()}</span>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* ID Document Upload Card */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <FileText className="h-5 w-5" />
+                Government-Issued ID
+              </CardTitle>
+              <CardDescription>
+                Upload a clear photo or scan of your government-issued identification document
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {profileLoading ? (
+                <div className="space-y-4">
+                  <Skeleton className="h-10 w-full" />
+                  <Skeleton className="h-48 w-full rounded-lg" />
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {/* ID Type Selector */}
+                  <div className="space-y-2">
+                    <Label htmlFor="idDocumentType">Document Type *</Label>
+                    <Select
+                      value={idDocumentType}
+                      onValueChange={(value) => setIdDocumentType(value)}
+                    >
+                      <SelectTrigger id="idDocumentType">
+                        <SelectValue placeholder="Select ID type" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="NATIONAL_ID">National ID (Kenyan)</SelectItem>
+                        <SelectItem value="PASSPORT">Passport</SelectItem>
+                        <SelectItem value="DRIVING_LICENSE">Driving License</SelectItem>
+                        <SelectItem value="ALIEN_ID">Alien ID</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  
+                  {/* ID Document Upload */}
+                  <FileUpload
+                    folder="id-documents"
+                    value={idDocumentUrl}
+                    onChange={handleIdDocumentUpload}
+                    label="ID Document"
+                    description="Accepted formats: JPEG, PNG, PDF. Max 5MB. Ensure all details are clearly visible."
+                  />
+                  
+                  {/* Save Button */}
+                  <Button 
+                    onClick={handleSaveIdDocument} 
+                    disabled={updateProfile.isPending || !idDocumentUrl || !idDocumentType}
+                    className="w-full"
+                  >
+                    {updateProfile.isPending ? (
+                      <>
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        Saving...
+                      </>
+                    ) : (
+                      <>
+                        <Save className="h-4 w-4 mr-2" />
+                        Save ID Document
+                      </>
+                    )}
+                  </Button>
+                  
+                  {/* Form Error */}
+                  {formError && (
+                    <div className="flex items-center gap-2 text-sm text-destructive">
+                      <AlertTriangle className="h-4 w-4" />
+                      <span>{formError}</span>
+                    </div>
+                  )}
+                  
+                  {/* Current ID Document Status */}
+                  {profile?.idDocumentUrl && profile.idDocumentUploadedAt && (
+                    <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
+                      <div className="flex items-center gap-2 text-green-800 text-sm">
+                        <CheckCircle2 className="h-4 w-4" />
+                        <span>
+                          {profile.idDocumentType?.replace('_', ' ')} uploaded on {new Date(profile.idDocumentUploadedAt).toLocaleString()}
+                        </span>
+                      </div>
+                    </div>
+                  )}
+                  
+                  {/* Privacy Notice */}
+                  <div className="p-3 bg-muted rounded-lg">
+                    <p className="text-xs text-muted-foreground">
+                      <strong>Privacy Notice:</strong> Your ID document is securely stored and only used for verification purposes. 
+                      It will not be shared with clients or any third parties.
+                    </p>
+                  </div>
+                </div>
               )}
             </CardContent>
           </Card>

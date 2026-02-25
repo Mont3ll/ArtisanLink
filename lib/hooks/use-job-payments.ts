@@ -95,34 +95,64 @@ export function useInitiateJobPayment() {
 
 /**
  * Hook for polling job payment status
- * Polls every 3 seconds until payment is completed or failed
+ * Polls every 3 seconds until payment is completed, failed, or times out (2 minutes)
  */
 export function useJobPaymentStatus(checkoutRequestId: string | null) {
   const queryClient = useQueryClient()
   const [paymentStatus, setPaymentStatus] = useState<JobPaymentStatus | null>(null)
   const [isPolling, setIsPolling] = useState(false)
+  const [pollStartTime, setPollStartTime] = useState<number | null>(null)
+
+  // Timeout after 2 minutes (120 seconds)
+  const POLL_TIMEOUT_MS = 120000
 
   const startPolling = useCallback(() => {
     setIsPolling(true)
+    setPollStartTime(Date.now())
   }, [])
 
   const stopPolling = useCallback(() => {
     setIsPolling(false)
+    setPollStartTime(null)
   }, [])
 
   const reset = useCallback(() => {
     setPaymentStatus(null)
     setIsPolling(false)
+    setPollStartTime(null)
   }, [])
 
   useEffect(() => {
     if (!checkoutRequestId || !isPolling) return
     if (paymentStatus?.status === 'COMPLETED' || paymentStatus?.status === 'FAILED') {
       setIsPolling(false)
+      setPollStartTime(null)
+      return
+    }
+
+    // Check for timeout
+    if (pollStartTime && Date.now() - pollStartTime > POLL_TIMEOUT_MS) {
+      setPaymentStatus({
+        status: 'FAILED',
+        error: 'Payment timed out. The M-Pesa prompt may have expired or been cancelled.',
+      })
+      setIsPolling(false)
+      setPollStartTime(null)
       return
     }
 
     const pollInterval = setInterval(async () => {
+      // Check timeout in interval too
+      if (pollStartTime && Date.now() - pollStartTime > POLL_TIMEOUT_MS) {
+        setPaymentStatus({
+          status: 'FAILED',
+          error: 'Payment timed out. The M-Pesa prompt may have expired or been cancelled.',
+        })
+        setIsPolling(false)
+        setPollStartTime(null)
+        return
+      }
+
       try {
         const status = await fetchJobPaymentStatus(checkoutRequestId)
         setPaymentStatus(status)
@@ -130,6 +160,7 @@ export function useJobPaymentStatus(checkoutRequestId: string | null) {
         // Stop polling if payment completed or failed
         if (status.status === 'COMPLETED' || status.status === 'FAILED') {
           setIsPolling(false)
+          setPollStartTime(null)
           // Invalidate queries to refresh job data
           queryClient.invalidateQueries({ queryKey: clientJobsKeys.all })
         }
@@ -139,7 +170,7 @@ export function useJobPaymentStatus(checkoutRequestId: string | null) {
     }, 3000) // Poll every 3 seconds
 
     return () => clearInterval(pollInterval)
-  }, [checkoutRequestId, isPolling, paymentStatus?.status, queryClient])
+  }, [checkoutRequestId, isPolling, paymentStatus?.status, queryClient, pollStartTime])
 
   return { 
     paymentStatus, 
@@ -171,14 +202,16 @@ export function useJobPaymentFlow() {
     } catch (error) {
       throw error
     }
-  }, [initiateMutation, startPolling])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [startPolling])
 
   const reset = useCallback(() => {
     setCheckoutRequestId(null)
     setJobId(null)
     resetStatus()
     initiateMutation.reset()
-  }, [resetStatus, initiateMutation])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [resetStatus])
 
   return {
     initiatePayment,

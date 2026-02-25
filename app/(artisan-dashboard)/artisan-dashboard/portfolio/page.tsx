@@ -46,6 +46,9 @@ import {
 } from '@/lib/hooks'
 import { isValidImageUrl } from '@/lib/utils'
 
+// Skip Next.js image optimization for external URLs to avoid server-side fetch timeouts
+const UNOPTIMIZED_EXTERNAL = true
+
 // Portfolio Item Skeleton
 function PortfolioItemSkeleton({ viewMode }: { viewMode: 'grid' | 'list' }) {
   if (viewMode === 'list') {
@@ -325,14 +328,15 @@ export default function PortfolioPage() {
             viewMode === 'grid' ? (
               <Card key={item.id} className="overflow-hidden group">
                 <div className="relative aspect-video bg-gray-100 dark:bg-gray-800">
-                  {isValidImageUrl(item.imageUrl) ? (
-                    <Image
-                      src={item.imageUrl!}
-                      alt={item.title}
-                      fill
-                      className="object-cover"
-                    />
-                  ) : (
+                {isValidImageUrl(item.imageUrl) ? (
+                                    <Image
+                                      src={item.imageUrl!}
+                                      alt={item.title}
+                                      fill
+                                      className="object-cover"
+                                      unoptimized={UNOPTIMIZED_EXTERNAL}
+                                    />
+                                  ) : (
                     <div className="flex items-center justify-center h-full">
                       <ImageIcon className="h-12 w-12 text-gray-300 dark:text-gray-600" />
                     </div>
@@ -404,14 +408,15 @@ export default function PortfolioPage() {
                 <CardContent className="p-4">
                   <div className="flex gap-4">
                     <div className="relative w-32 h-24 bg-gray-100 dark:bg-gray-800 rounded-lg overflow-hidden flex-shrink-0">
-                      {isValidImageUrl(item.imageUrl) ? (
-                        <Image
-                          src={item.imageUrl!}
-                          alt={item.title}
-                          fill
-                          className="object-cover"
-                        />
-                      ) : (
+                    {isValidImageUrl(item.imageUrl) ? (
+                                        <Image
+                                          src={item.imageUrl!}
+                                          alt={item.title}
+                                          fill
+                                          className="object-cover"
+                                          unoptimized={UNOPTIMIZED_EXTERNAL}
+                                        />
+                                      ) : (
                         <div className="flex items-center justify-center h-full">
                           <ImageIcon className="h-8 w-8 text-gray-300 dark:text-gray-600" />
                         </div>

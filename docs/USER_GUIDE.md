@@ -116,6 +116,82 @@ Your **Messages** dashboard shows all conversations:
 - Unread messages show a notification badge
 - Click a conversation to view and reply
 
+### Requesting a Job
+
+Once you've found an artisan you'd like to work with:
+
+#### Creating a Job Request
+
+1. Go to the artisan's profile or your conversation with them
+2. Click **"Request Job"** or **"Create Job Request"**
+3. Fill in job details:
+   - **Title** - Brief description (e.g., "Kitchen Cabinet Installation")
+   - **Description** - Detailed requirements
+   - **Location** - Where the work will be done
+   - **Preferred Start Date** - When you'd like work to begin
+   - **Budget Range** - Your expected budget (optional)
+4. Attach any reference images (optional)
+5. Submit the request
+
+#### Receiving and Accepting Quotes
+
+1. The artisan will review your request and send a quote
+2. Go to **Client Dashboard** -> **Jobs** to view quotes
+3. Review the quote details:
+   - Total cost
+   - Deposit amount (typically 30%)
+   - Estimated timeline
+   - Scope of work
+4. You can:
+   - **Accept Quote** - Proceed to payment
+   - **Request Changes** - Ask for modifications
+   - **Decline** - Cancel the request
+
+### Making Payments
+
+ArtisanLink uses M-Pesa for secure payments.
+
+#### Paying the Deposit
+
+1. After accepting a quote, click **"Pay Deposit"**
+2. Enter your M-Pesa phone number (must be registered with M-Pesa)
+3. Click **"Pay"**
+4. Check your phone for the M-Pesa STK Push prompt
+5. Enter your M-Pesa PIN to confirm payment
+6. Wait for confirmation (usually within 30 seconds)
+
+**Note**: The deposit is typically 30% of the total job cost. This helps the artisan purchase materials.
+
+#### Paying the Final Amount
+
+1. After the artisan marks the job as complete, review the work
+2. If satisfied, go to the job and click **"Pay Final Amount"**
+3. Follow the same M-Pesa payment process
+4. Upon successful payment, the job is marked as complete
+
+#### Payment Protection
+
+- Your deposit is split: 80% goes to the artisan immediately for materials, 20% is held until job completion
+- If there's a dispute, contact support before making the final payment
+- All payments are tracked and receipts are available in your dashboard
+
+### Tracking Job Progress
+
+Monitor your job status:
+
+1. Go to **Client Dashboard** -> **Jobs**
+2. View job status:
+   - **PENDING** - Waiting for artisan's quote
+   - **QUOTED** - Quote received, awaiting your decision
+   - **ACCEPTED** - Quote accepted, awaiting deposit
+   - **DEPOSIT_PAID** - Deposit paid, work starting
+   - **IN_PROGRESS** - Work is underway
+   - **COMPLETED** - Work finished, awaiting final payment
+   - **PAID** - All payments complete
+   - **CANCELLED** - Job was cancelled
+
+3. Click on a job to view details, messages, and payment history
+
 ---
 
 ## For Artisans
@@ -231,6 +307,110 @@ Build good relationships:
    - Terms of work
 4. Move conversations to phone/WhatsApp for quick coordination
 
+### Handling Job Requests
+
+When clients send job requests:
+
+#### Viewing New Requests
+
+1. Go to **Artisan Dashboard** -> **Jobs**
+2. See new requests in the "Pending" tab
+3. Click on a request to view details
+
+#### Sending a Quote
+
+1. Review the client's requirements carefully
+2. Click **"Send Quote"**
+3. Fill in quote details:
+   - **Total Amount** - Your price for the complete job
+   - **Deposit Percentage** - Amount required upfront (default: 30%)
+   - **Estimated Duration** - How long the work will take
+   - **Scope of Work** - Detailed breakdown of what's included
+   - **Notes** - Any important terms or conditions
+4. Submit the quote
+
+**Tips for good quotes:**
+- Be clear about what's included and excluded
+- Account for materials, labor, and your time
+- Set realistic timelines
+- Mention any prerequisites (e.g., "site must be cleared")
+
+#### Managing Quote Revisions
+
+- Clients may request changes to your quote
+- You can submit a revised quote (maximum 2 rounds)
+- Communicate via messages to clarify requirements
+
+### Managing Jobs in Progress
+
+#### When Deposit is Paid
+
+1. You'll receive a notification when the client pays the deposit
+2. 80% of the deposit is sent to your M-Pesa immediately
+3. Begin work according to the agreed timeline
+
+#### Updating Job Status
+
+1. Go to **Artisan Dashboard** -> **Jobs**
+2. Click on the active job
+3. Update status as work progresses:
+   - **Start Work** - Mark as in progress
+   - **Mark Complete** - When work is finished
+4. Add notes or photos to document progress
+
+#### After Completion
+
+1. Mark the job as complete when work is done
+2. The client will review and pay the final amount
+3. Your remaining payment is sent via M-Pesa:
+   - Final payment + held deposit - platform commission
+
+### Viewing Your Earnings
+
+Track your income and payouts:
+
+#### Earnings Dashboard
+
+1. Go to **Artisan Dashboard** -> **Earnings**
+2. View your earnings summary:
+   - **Total Earnings** - All-time earnings
+   - **This Month** - Current month's earnings
+   - **Pending Payouts** - Awaiting processing
+   - **Commission Rate** - Your current rate
+
+#### Commission Structure
+
+ArtisanLink charges a platform commission on completed jobs:
+
+- **Promotional Rate (5%)** - Your first 5 completed jobs
+- **Standard Rate (10%)** - All jobs after the first 5
+
+The earnings dashboard shows:
+- Your current commission rate
+- How many promotional jobs you've completed
+- How many promotional jobs remain
+
+#### Payout History
+
+View all your payouts:
+
+1. Scroll down to **Payout History**
+2. Filter by status (Completed, Pending, Failed)
+3. Each payout shows:
+   - Amount
+   - Job reference
+   - M-Pesa receipt number
+   - Date processed
+
+#### Payout Processing
+
+- Payouts are processed automatically via M-Pesa
+- Processing happens hourly
+- Minimum payout amount: KES 10
+- Failed payouts are retried automatically (up to 3 times)
+
+**Note**: Ensure your phone number in your profile is correct and registered with M-Pesa.
+
 ### Viewing Your Stats
 
 Track your performance:
@@ -328,12 +508,88 @@ View key metrics:
 
 ### Managing Settings
 
-1. Go to **Admin** → **Settings**
+1. Go to **Admin** -> **Settings**
 2. Configure:
    - Platform settings
    - Feature toggles
    - Email templates
    - Payment settings
+
+### Managing Payouts
+
+Monitor and manage artisan payouts:
+
+#### Payouts Dashboard
+
+1. Go to **Admin** -> **Payouts**
+2. View payout overview:
+   - **Total Paid** - All-time completed payouts
+   - **Pending** - Awaiting processing
+   - **Failed** - Need attention
+   - **Requires Review** - Manual intervention needed
+
+#### Filtering Payouts
+
+Filter the payout list by:
+- **Status** - Pending, Processing, Completed, Failed, Cancelled
+- **Type** - Deposit Share, Final Payment, Refund, Adjustment
+- **Review Flag** - Only payouts needing manual review
+- **Date Range** - Custom time period
+- **Search** - By artisan name or job title
+
+#### Handling Failed Payouts
+
+When payouts fail:
+
+1. Click on the failed payout to view details
+2. Check the **Last Error** message
+3. Common issues:
+   - Wrong phone number
+   - Insufficient B2C balance
+   - M-Pesa service unavailable
+4. Actions available:
+   - **Retry** - Try processing again
+   - **Add Notes** - Document your findings
+   - **Mark Complete** - If manually resolved (enter receipt)
+   - **Cancel** - If payout should not proceed
+
+#### Payouts Requiring Review
+
+After 3 automatic retry attempts, payouts are flagged for review:
+
+1. Go to **Payouts** -> Filter by "Requires Review"
+2. Investigate each case:
+   - Contact the artisan if phone number issues
+   - Check B2C account balance
+   - Review error logs
+3. Take appropriate action (retry, manual payment, or cancel)
+
+### Viewing Platform Earnings
+
+Track platform commission and revenue:
+
+#### Earnings Dashboard
+
+1. Go to **Admin** -> **Earnings**
+2. View earnings summary:
+   - **Total Commission** - All-time platform earnings
+   - **Total Job Value** - Gross transaction volume
+   - **Effective Rate** - Average commission percentage
+   - **Rate Distribution** - Promotional vs. standard
+
+#### Earnings Charts
+
+- **Daily Earnings** - Bar chart showing last 14 days
+- **Promotional vs. Standard** - Breakdown by commission type
+
+#### Earnings History
+
+View detailed commission records:
+- Job reference
+- Artisan name
+- Commission amount
+- Commission rate applied
+- Date processed
 
 ---
 
@@ -441,7 +697,34 @@ A: Apply through your dashboard. Verification requires identity confirmation and
 
 **Q: How do payments work?**
 
-A: Payments for work are handled directly between you and clients. ArtisanLink only processes subscription payments.
+A: Payments are handled through M-Pesa:
+1. Clients pay a deposit (typically 30%) when accepting a quote
+2. 80% of the deposit goes to the artisan immediately for materials
+3. 20% is held until job completion as protection
+4. After job completion, the client pays the final amount
+5. The platform deducts commission (5-10%) and pays the artisan
+
+**Q: What is the platform commission?**
+
+A: 
+- **5% promotional rate** for your first 5 completed jobs
+- **10% standard rate** for all jobs after that
+- Commission is deducted from the final payment, not the deposit
+
+**Q: When do I receive my payment?**
+
+A: 
+- Deposit share (80%): Within 1 hour of client payment
+- Final payment: Within 1 hour of job completion and client payment
+- Payouts are processed hourly via M-Pesa B2C
+
+**Q: What if my payout fails?**
+
+A:
+- The system automatically retries up to 3 times
+- Check that your phone number is correct in your profile
+- Ensure your phone is registered with M-Pesa
+- Contact support if issues persist
 
 ### Technical
 

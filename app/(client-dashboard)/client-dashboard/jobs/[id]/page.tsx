@@ -128,7 +128,8 @@ function PaymentDialog({
       setPhoneNumber(defaultPhone || "");
       reset();
     }
-  }, [open, defaultPhone, reset]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, defaultPhone]);
 
   // Handle successful payment
   useEffect(() => {
@@ -138,7 +139,8 @@ function PaymentDialog({
       });
       onOpenChange(false);
     }
-  }, [isComplete, paymentType, onOpenChange]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isComplete]);
 
   // Handle failed payment
   useEffect(() => {
