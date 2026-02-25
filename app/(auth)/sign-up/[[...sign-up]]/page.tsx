@@ -30,7 +30,7 @@ export default function SignUpPage() {
                 <Card className="w-full sm:w-96">
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
-                      <Hammer className="w-6 h-6 text-blue-600" />
+                      <Hammer className="w-6 h-6 text-emerald-700" />
                       Join ArtisanLink
                     </CardTitle>
                     <CardDescription>
@@ -47,7 +47,7 @@ export default function SignUpPage() {
                           variant={role === 'client' ? 'default' : 'outline'}
                           className={cn(
                             'h-auto p-4 justify-start text-left',
-                            role === 'client' && 'bg-blue-600 hover:bg-blue-700'
+                            role === 'client' && 'bg-emerald-700 hover:bg-emerald-800'
                           )}
                           onClick={() => setRole('client')}
                         >
@@ -64,7 +64,7 @@ export default function SignUpPage() {
                           variant={role === 'artisan' ? 'default' : 'outline'}
                           className={cn(
                             'h-auto p-4 justify-start text-left',
-                            role === 'artisan' && 'bg-blue-600 hover:bg-blue-700'
+                            role === 'artisan' && 'bg-emerald-700 hover:bg-emerald-800'
                           )}
                           onClick={() => setRole('artisan')}
                         >
