@@ -5,11 +5,29 @@ import Link from "next/link";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import Lenis from "lenis";
-import { 
-  TrendingUp, Award, Users, Clock, Shield, Star,
-  ChevronDown, ArrowRight, Check, X, MessageCircle,
-  Building2, Home as HomeIcon, Wrench, Sparkles, Search, MapPin,
-  BadgeCheck, Eye, Heart, Filter, ChevronRight
+import {
+  TrendingUp,
+  Award,
+  Users,
+  Clock,
+  Shield,
+  Star,
+  ChevronDown,
+  ArrowRight,
+  Check,
+  X,
+  MessageCircle,
+  Building2,
+  Home as HomeIcon,
+  Wrench,
+  Sparkles,
+  Search,
+  MapPin,
+  BadgeCheck,
+  Eye,
+  Heart,
+  Filter,
+  ChevronRight,
 } from "lucide-react";
 
 // Register GSAP plugins
@@ -24,7 +42,7 @@ if (typeof window !== "undefined") {
 export default function Home() {
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   const [activeCategory, setActiveCategory] = useState("all");
-  
+
   // Refs for animations
   const containerRef = useRef<HTMLDivElement>(null);
   const heroRef = useRef<HTMLDivElement>(null);
@@ -72,36 +90,36 @@ export default function Home() {
 
     // ============ HERO ANIMATIONS ============
     const heroTl = gsap.timeline({ defaults: { ease: "power3.out" } });
-    
+
     heroTl
       .fromTo(
         ".hero-badge",
         { y: 30, opacity: 0 },
-        { y: 0, opacity: 1, duration: 0.8 }
+        { y: 0, opacity: 1, duration: 0.8 },
       )
       .fromTo(
         ".hero-title-line",
         { y: 60, opacity: 0 },
         { y: 0, opacity: 1, duration: 1, stagger: 0.15 },
-        "-=0.4"
+        "-=0.4",
       )
       .fromTo(
         ".hero-description",
         { y: 40, opacity: 0 },
         { y: 0, opacity: 1, duration: 0.8 },
-        "-=0.6"
+        "-=0.6",
       )
       .fromTo(
         ".hero-search",
         { y: 40, opacity: 0, scale: 0.98 },
         { y: 0, opacity: 1, scale: 1, duration: 0.8 },
-        "-=0.4"
+        "-=0.4",
       )
       .fromTo(
         ".hero-trust-badge",
         { y: 20, opacity: 0 },
         { y: 0, opacity: 1, duration: 0.5, stagger: 0.1 },
-        "-=0.3"
+        "-=0.3",
       );
 
     // ============ STATS COUNTER ANIMATIONS ============
@@ -110,7 +128,7 @@ export default function Home() {
       const valueEl = item.querySelector(".stat-value");
       const iconEl = item.querySelector(".stat-icon");
       const labelEl = item.querySelector(".stat-label");
-      
+
       gsap.fromTo(
         iconEl,
         { scale: 0, rotation: -180 },
@@ -124,7 +142,7 @@ export default function Home() {
             start: "top 85%",
             toggleActions: "play none none reverse",
           },
-        }
+        },
       );
 
       gsap.fromTo(
@@ -139,7 +157,7 @@ export default function Home() {
             start: "top 85%",
             toggleActions: "play none none reverse",
           },
-        }
+        },
       );
 
       gsap.fromTo(
@@ -155,7 +173,7 @@ export default function Home() {
             start: "top 85%",
             toggleActions: "play none none reverse",
           },
-        }
+        },
       );
     });
 
@@ -176,7 +194,7 @@ export default function Home() {
             start: "top 70%",
             toggleActions: "play none none reverse",
           },
-        }
+        },
       );
 
       // Animate the step number
@@ -195,12 +213,14 @@ export default function Home() {
             start: "top 70%",
             toggleActions: "play none none reverse",
           },
-        }
+        },
       );
     });
 
     // Connecting lines animation
-    const connectingLines = gsap.utils.toArray(".connecting-line") as HTMLElement[];
+    const connectingLines = gsap.utils.toArray(
+      ".connecting-line",
+    ) as HTMLElement[];
     connectingLines.forEach((line, i) => {
       gsap.fromTo(
         line,
@@ -215,7 +235,7 @@ export default function Home() {
             start: "top 70%",
             toggleActions: "play none none reverse",
           },
-        }
+        },
       );
     });
 
@@ -235,7 +255,7 @@ export default function Home() {
           start: "top 75%",
           toggleActions: "play none none reverse",
         },
-      }
+      },
     );
 
     // ============ ARTISAN CARDS STAGGERED ANIMATION ============
@@ -256,7 +276,7 @@ export default function Home() {
             start: "top 60%",
             toggleActions: "play none none reverse",
           },
-        }
+        },
       );
     });
 
@@ -274,7 +294,7 @@ export default function Home() {
           start: "top 75%",
           toggleActions: "play none none reverse",
         },
-      }
+      },
     );
 
     gsap.fromTo(
@@ -291,7 +311,7 @@ export default function Home() {
           start: "top 75%",
           toggleActions: "play none none reverse",
         },
-      }
+      },
     );
 
     // ============ CASE STUDIES ANIMATION ============
@@ -313,7 +333,7 @@ export default function Home() {
             start: "top 80%",
             toggleActions: "play none none reverse",
           },
-        }
+        },
       );
 
       gsap.fromTo(
@@ -330,12 +350,14 @@ export default function Home() {
             start: "top 80%",
             toggleActions: "play none none reverse",
           },
-        }
+        },
       );
     });
 
     // ============ COMPARISON TABLE ROW-BY-ROW REVEAL ============
-    const comparisonRows = gsap.utils.toArray(".comparison-row") as HTMLElement[];
+    const comparisonRows = gsap.utils.toArray(
+      ".comparison-row",
+    ) as HTMLElement[];
     comparisonRows.forEach((row, i) => {
       gsap.fromTo(
         row,
@@ -351,7 +373,7 @@ export default function Home() {
             start: "top 70%",
             toggleActions: "play none none reverse",
           },
-        }
+        },
       );
     });
 
@@ -373,7 +395,7 @@ export default function Home() {
             start: "top 70%",
             toggleActions: "play none none reverse",
           },
-        }
+        },
       );
     });
 
@@ -394,7 +416,7 @@ export default function Home() {
             start: "top 75%",
             toggleActions: "play none none reverse",
           },
-        }
+        },
       );
     });
 
@@ -412,7 +434,7 @@ export default function Home() {
           start: "top 80%",
           toggleActions: "play none none reverse",
         },
-      }
+      },
     );
 
     gsap.fromTo(
@@ -429,19 +451,19 @@ export default function Home() {
           start: "top 80%",
           toggleActions: "play none none reverse",
         },
-      }
+      },
     );
 
     // ============ MAGNETIC BUTTON EFFECT ============
     const magneticButtons = document.querySelectorAll(".magnetic-btn");
     magneticButtons.forEach((btn) => {
       const button = btn as HTMLElement;
-      
+
       button.addEventListener("mousemove", (e: MouseEvent) => {
         const rect = button.getBoundingClientRect();
         const x = e.clientX - rect.left - rect.width / 2;
         const y = e.clientY - rect.top - rect.height / 2;
-        
+
         gsap.to(button, {
           x: x * 0.3,
           y: y * 0.3,
@@ -471,7 +493,7 @@ export default function Home() {
   // FAQ toggle animation
   const toggleFaq = (index: number) => {
     const contentEl = faqContentRefs.current[index];
-    
+
     if (openFaq === index) {
       // Close
       if (contentEl) {
@@ -495,16 +517,16 @@ export default function Home() {
           ease: "power2.inOut",
         });
       }
-      
+
       setOpenFaq(index);
-      
+
       // Open new - need to wait for state update
       setTimeout(() => {
         if (contentEl) {
           gsap.fromTo(
             contentEl,
             { height: 0, opacity: 0 },
-            { height: "auto", opacity: 1, duration: 0.4, ease: "power2.out" }
+            { height: "auto", opacity: 1, duration: 0.4, ease: "power2.out" },
           );
         }
       }, 10);
@@ -512,10 +534,26 @@ export default function Home() {
   };
 
   const impactStats = [
-    { value: "KES 2.3B", label: "Paid to artisans", icon: <TrendingUp className="w-5 h-5" /> },
-    { value: "127,000", label: "Projects completed", icon: <Award className="w-5 h-5" /> },
-    { value: "15,847", label: "Verified artisans", icon: <Users className="w-5 h-5" /> },
-    { value: "< 2 hrs", label: "Avg. response time", icon: <Clock className="w-5 h-5" /> },
+    {
+      value: "KES 2.3B",
+      label: "Paid to artisans",
+      icon: <TrendingUp className="w-5 h-5" />,
+    },
+    {
+      value: "127,000",
+      label: "Projects completed",
+      icon: <Award className="w-5 h-5" />,
+    },
+    {
+      value: "15,847",
+      label: "Verified artisans",
+      icon: <Users className="w-5 h-5" />,
+    },
+    {
+      value: "< 2 hrs",
+      label: "Avg. response time",
+      icon: <Clock className="w-5 h-5" />,
+    },
   ];
 
   const categories = [
@@ -540,7 +578,8 @@ export default function Home() {
       completedJobs: 234,
       verified: true,
       available: true,
-      image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&q=80",
+      image:
+        "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&q=80",
       portfolio: ["Custom furniture", "Kitchen cabinets", "Wooden doors"],
     },
     {
@@ -553,7 +592,8 @@ export default function Home() {
       completedJobs: 156,
       verified: true,
       available: true,
-      image: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200&q=80",
+      image:
+        "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200&q=80",
       portfolio: ["Wall textures", "Color consulting", "Commercial painting"],
     },
     {
@@ -566,7 +606,8 @@ export default function Home() {
       completedJobs: 312,
       verified: true,
       available: false,
-      image: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=200&q=80",
+      image:
+        "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=200&q=80",
       portfolio: ["Home wiring", "Solar installation", "Commercial electrical"],
     },
   ];
@@ -575,25 +616,29 @@ export default function Home() {
     {
       step: "01",
       title: "Browse & Discover",
-      description: "Search our catalog of verified artisans by category, location, ratings, and availability. Filter to find the perfect match for your project.",
+      description:
+        "Search our catalog of verified artisans by category, location, ratings, and availability. Filter to find the perfect match for your project.",
       icon: <Search className="w-6 h-6" />,
     },
     {
       step: "02",
       title: "View Portfolios",
-      description: "Explore each artisan's work history, photos of completed projects, client reviews, and certifications. Make an informed decision.",
+      description:
+        "Explore each artisan's work history, photos of completed projects, client reviews, and certifications. Make an informed decision.",
       icon: <Eye className="w-6 h-6" />,
     },
     {
       step: "03",
       title: "Start a Conversation",
-      description: "Message artisans directly to discuss your project, ask questions, and get a sense of their communication style and availability.",
+      description:
+        "Message artisans directly to discuss your project, ask questions, and get a sense of their communication style and availability.",
       icon: <MessageCircle className="w-6 h-6" />,
     },
     {
       step: "04",
       title: "Request & Hire",
-      description: "Send a job request through chat. The artisan sends a detailed quote—accept it, pay a deposit via M-Pesa, and work begins with funds held in escrow.",
+      description:
+        "Send a job request through chat. The artisan sends a detailed quote—accept it, pay a deposit via M-Pesa, and work begins with funds held in escrow.",
       icon: <BadgeCheck className="w-6 h-6" />,
     },
   ];
@@ -603,11 +648,13 @@ export default function Home() {
       type: "Residential",
       icon: <HomeIcon className="w-6 h-6" />,
       title: "Custom Kitchen Renovation in Karen",
-      client: "The Mwangi Family",
+      client: "The Kellerman Family",
       artisan: "John Kamau, Master Carpenter",
       duration: "3 weeks",
-      result: "Found John by browsing carpenters in Karen. After viewing his portfolio and chatting about the project, hired him for custom cabinets and countertops.",
-      image: "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=600&q=80",
+      result:
+        "Found John by browsing carpenters in Karen. After viewing his portfolio and chatting about the project, hired him for custom cabinets and countertops.",
+      image:
+        "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=600&q=80",
     },
     {
       type: "Commercial",
@@ -616,8 +663,10 @@ export default function Home() {
       client: "TechHub Kenya",
       artisan: "Peter Ochieng, Licensed Electrician",
       duration: "1 week",
-      result: "Searched for licensed electricians with commercial experience. Peter's reviews and portfolio stood out. Quick chat, clear quote, excellent work.",
-      image: "https://images.unsplash.com/photo-1497366216548-37526070297c?w=600&q=80",
+      result:
+        "Searched for licensed electricians with commercial experience. Peter's reviews and portfolio stood out. Quick chat, clear quote, excellent work.",
+      image:
+        "https://images.unsplash.com/photo-1497366216548-37526070297c?w=600&q=80",
     },
   ];
 
@@ -635,56 +684,87 @@ export default function Home() {
   const faqs = [
     {
       q: "How do I find the right artisan for my project?",
-      a: "Use our search filters to browse by category (carpenter, electrician, etc.), location, ratings, and availability. View each artisan's portfolio, read reviews from past clients, and check their completed projects before reaching out."
+      a: "Use our search filters to browse by category (carpenter, electrician, etc.), location, ratings, and availability. View each artisan's portfolio, read reviews from past clients, and check their completed projects before reaching out.",
     },
     {
       q: "Can I message artisans before hiring?",
-      a: "Absolutely! We encourage you to start a conversation first. Discuss your project details, ask about their experience, request quotes, and get a feel for their communication style before committing."
+      a: "Absolutely! We encourage you to start a conversation first. Discuss your project details, ask about their experience, request quotes, and get a feel for their communication style before committing.",
     },
     {
       q: "How does the job request process work?",
-      a: "Once you've found an artisan you like, send them a job request through the chat. Describe your project, timeline, and budget. The artisan will review and send a formal quote. Once you accept, the job begins."
+      a: "Once you've found an artisan you like, send them a job request through the chat. Describe your project, timeline, and budget. The artisan will review and send a formal quote. Once you accept, the job begins.",
     },
     {
       q: "How are payments handled?",
-      a: "Payments are made via M-Pesa and held in escrow. You can pay the full amount upfront or in milestones. Funds are only released to the artisan when you confirm each milestone or the final work is satisfactory."
+      a: "Payments are made via M-Pesa and held in escrow. You can pay the full amount upfront or in milestones. Funds are only released to the artisan when you confirm each milestone or the final work is satisfactory.",
     },
     {
       q: "What if I'm not satisfied with the work?",
-      a: "Our satisfaction guarantee protects you. If work doesn't meet agreed standards, we'll mediate with the artisan to get it corrected at no extra cost, or issue a refund from the escrow."
+      a: "Our satisfaction guarantee protects you. If work doesn't meet agreed standards, we'll mediate with the artisan to get it corrected at no extra cost, or issue a refund from the escrow.",
     },
   ];
 
   const testimonialHighlight = {
-    quote: "I needed a plumber urgently. Browsed ArtisanLink, found James with great reviews in my area, messaged him, and he was at my door in 2 hours. The whole experience was seamless.",
+    quote:
+      "I needed a plumber urgently. Browsed ArtisanLink, found James with great reviews in my area, messaged him, and he was at my door in 2 hours. The whole experience was seamless.",
     author: "David Kimani",
     role: "Homeowner",
     location: "Lavington, Nairobi",
-    image: "https://images.unsplash.com/photo-1560250097-0b93528c311a?w=200&q=80",
+    image:
+      "https://images.unsplash.com/photo-1560250097-0b93528c311a?w=200&q=80",
   };
 
   return (
-    <div ref={containerRef} className="bg-stone-50 text-stone-900 min-h-screen font-sans overflow-x-hidden">
+    <div
+      ref={containerRef}
+      className="bg-stone-50 text-stone-900 min-h-screen font-sans overflow-x-hidden"
+    >
       {/* Navigation */}
       <nav className="sticky top-0 z-50 bg-stone-50/95 backdrop-blur-sm border-b border-stone-200">
         <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
-          <Link href="/" className="text-2xl font-serif font-bold text-emerald-800">
+          <Link
+            href="/"
+            className="text-2xl font-serif font-bold text-emerald-800"
+          >
             ArtisanLink
           </Link>
-          
+
           <div className="hidden md:flex items-center gap-8">
-            <a href="#how-it-works" className="text-sm text-stone-600 hover:text-emerald-700 transition-colors">How It Works</a>
-            <a href="#artisans" className="text-sm text-stone-600 hover:text-emerald-700 transition-colors">Browse Artisans</a>
-            <a href="#stories" className="text-sm text-stone-600 hover:text-emerald-700 transition-colors">Success Stories</a>
-            <a href="#faq" className="text-sm text-stone-600 hover:text-emerald-700 transition-colors">FAQ</a>
+            <a
+              href="#how-it-works"
+              className="text-sm text-stone-600 hover:text-emerald-700 transition-colors"
+            >
+              How It Works
+            </a>
+            <a
+              href="#artisans"
+              className="text-sm text-stone-600 hover:text-emerald-700 transition-colors"
+            >
+              Browse Artisans
+            </a>
+            <a
+              href="#stories"
+              className="text-sm text-stone-600 hover:text-emerald-700 transition-colors"
+            >
+              Success Stories
+            </a>
+            <a
+              href="#faq"
+              className="text-sm text-stone-600 hover:text-emerald-700 transition-colors"
+            >
+              FAQ
+            </a>
           </div>
 
           <div className="flex items-center gap-4">
-            <Link href="/sign-in" className="text-sm font-medium text-stone-600 hover:text-stone-900 transition-colors">
+            <Link
+              href="/sign-in"
+              className="text-sm font-medium text-stone-600 hover:text-stone-900 transition-colors"
+            >
               Sign In
             </Link>
-            <Link 
-              href="/sign-up" 
+            <Link
+              href="/sign-up"
               className="magnetic-btn bg-emerald-700 text-white px-5 py-2.5 rounded-md text-sm font-medium hover:bg-emerald-800 transition-colors inline-block"
             >
               Get Started
@@ -694,35 +774,43 @@ export default function Home() {
       </nav>
 
       {/* Hero - Editorial Style with Search Focus */}
-      <section ref={heroRef} className="py-16 md:py-24 px-6 border-b border-stone-200">
+      <section
+        ref={heroRef}
+        className="py-16 md:py-24 px-6 border-b border-stone-200"
+      >
         <div className="max-w-6xl mx-auto">
           <div className="max-w-3xl">
             <p className="hero-badge text-emerald-700 font-medium mb-4 tracking-wide text-sm uppercase">
               Kenya&apos;s Trusted Artisan Marketplace
             </p>
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-serif font-bold leading-tight mb-6 text-stone-800">
-              <span className="hero-title-line block">Find skilled artisans.</span>
-              <span className="hero-title-line block text-emerald-700">Hire with confidence.</span>
+              <span className="hero-title-line block">
+                Find skilled artisans.
+              </span>
+              <span className="hero-title-line block text-emerald-700">
+                Hire with confidence.
+              </span>
             </h1>
             <p className="hero-description text-lg text-stone-600 mb-10 leading-relaxed max-w-2xl">
-              Browse thousands of verified carpenters, electricians, plumbers, and more. 
-              View their portfolios, read real reviews, and connect directly before you hire.
+              Browse thousands of verified carpenters, electricians, plumbers,
+              and more. View their portfolios, read real reviews, and connect
+              directly before you hire.
             </p>
 
             {/* Search Bar */}
             <div className="hero-search bg-white rounded-xl shadow-lg border border-stone-200 p-2 flex flex-col sm:flex-row gap-2 mb-8">
               <div className="flex-1 flex items-center gap-3 px-4 py-3">
                 <Search className="w-5 h-5 text-stone-400" />
-                <input 
-                  type="text" 
+                <input
+                  type="text"
                   placeholder="What service do you need?"
                   className="w-full outline-none text-stone-800 placeholder:text-stone-400"
                 />
               </div>
               <div className="flex items-center gap-3 px-4 py-3 border-t sm:border-t-0 sm:border-l border-stone-200">
                 <MapPin className="w-5 h-5 text-stone-400" />
-                <input 
-                  type="text" 
+                <input
+                  type="text"
                   placeholder="Location"
                   className="w-full sm:w-32 outline-none text-stone-800 placeholder:text-stone-400"
                 />
@@ -765,8 +853,12 @@ export default function Home() {
                 <div className="stat-icon inline-flex items-center justify-center w-12 h-12 bg-emerald-700 rounded-full mb-3">
                   {stat.icon}
                 </div>
-                <div className="stat-value text-2xl md:text-3xl font-bold mb-1">{stat.value}</div>
-                <div className="stat-label text-emerald-200 text-sm">{stat.label}</div>
+                <div className="stat-value text-2xl md:text-3xl font-bold mb-1">
+                  {stat.value}
+                </div>
+                <div className="stat-label text-emerald-200 text-sm">
+                  {stat.label}
+                </div>
               </div>
             ))}
           </div>
@@ -777,12 +869,15 @@ export default function Home() {
       <section ref={howItWorksRef} id="how-it-works" className="py-24 px-6">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-16">
-            <p className="text-emerald-700 font-medium mb-2 tracking-wide text-sm uppercase">How It Works</p>
+            <p className="text-emerald-700 font-medium mb-2 tracking-wide text-sm uppercase">
+              How It Works
+            </p>
             <h2 className="text-3xl md:text-4xl font-serif font-bold text-stone-800 mb-4">
               Your journey to quality craftsmanship
             </h2>
             <p className="text-stone-600 max-w-2xl mx-auto">
-              Finding and hiring the right artisan is simple. Browse, connect, and hire—all in one place.
+              Finding and hiring the right artisan is simple. Browse, connect,
+              and hire—all in one place.
             </p>
           </div>
 
@@ -802,7 +897,9 @@ export default function Home() {
                     {item.icon}
                   </div>
                   <h3 className="text-lg font-semibold mb-2">{item.title}</h3>
-                  <p className="text-stone-600 text-sm leading-relaxed">{item.description}</p>
+                  <p className="text-stone-600 text-sm leading-relaxed">
+                    {item.description}
+                  </p>
                 </div>
               </div>
             ))}
@@ -811,16 +908,22 @@ export default function Home() {
       </section>
 
       {/* Browse Artisans Preview */}
-      <section ref={artisansRef} id="artisans" className="py-24 px-6 bg-stone-100">
+      <section
+        ref={artisansRef}
+        id="artisans"
+        className="py-24 px-6 bg-stone-100"
+      >
         <div className="max-w-6xl mx-auto">
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
             <div>
-              <p className="text-emerald-700 font-medium mb-2 tracking-wide text-sm uppercase">Browse Artisans</p>
+              <p className="text-emerald-700 font-medium mb-2 tracking-wide text-sm uppercase">
+                Browse Artisans
+              </p>
               <h2 className="text-3xl md:text-4xl font-serif font-bold text-stone-800">
                 Discover skilled professionals
               </h2>
             </div>
-            <Link 
+            <Link
               href="/sign-up"
               className="inline-flex items-center gap-2 text-emerald-700 font-medium hover:text-emerald-800 transition-colors"
             >
@@ -837,12 +940,14 @@ export default function Home() {
                 onClick={() => setActiveCategory(cat.id)}
                 className={`category-tab px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all duration-300 ${
                   activeCategory === cat.id
-                    ? 'bg-emerald-700 text-white scale-105'
-                    : 'bg-white text-stone-600 hover:bg-stone-200'
+                    ? "bg-emerald-700 text-white scale-105"
+                    : "bg-white text-stone-600 hover:bg-stone-200"
                 }`}
               >
                 {cat.name}
-                <span className={`ml-2 ${activeCategory === cat.id ? 'text-emerald-200' : 'text-stone-400'}`}>
+                <span
+                  className={`ml-2 ${activeCategory === cat.id ? "text-emerald-200" : "text-stone-400"}`}
+                >
                   {cat.count.toLocaleString()}
                 </span>
               </button>
@@ -852,12 +957,15 @@ export default function Home() {
           {/* Artisan Cards */}
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {featuredArtisans.map((artisan, i) => (
-              <div key={i} className="artisan-card bg-white rounded-xl border border-stone-200 overflow-hidden hover:shadow-xl transition-all duration-300 group">
+              <div
+                key={i}
+                className="artisan-card bg-white rounded-xl border border-stone-200 overflow-hidden hover:shadow-xl transition-all duration-300 group"
+              >
                 <div className="p-6">
                   <div className="flex items-start gap-4 mb-4">
                     <div className="relative">
-                      <img 
-                        src={artisan.image} 
+                      <img
+                        src={artisan.image}
                         alt={artisan.name}
                         className="w-16 h-16 rounded-full object-cover group-hover:scale-110 transition-transform duration-300"
                       />
@@ -869,7 +977,9 @@ export default function Home() {
                     </div>
                     <div className="flex-1">
                       <h3 className="font-semibold text-lg">{artisan.name}</h3>
-                      <p className="text-emerald-700 text-sm font-medium">{artisan.profession}</p>
+                      <p className="text-emerald-700 text-sm font-medium">
+                        {artisan.profession}
+                      </p>
                       <div className="flex items-center gap-1 text-sm text-stone-500 mt-1">
                         <MapPin className="w-3 h-3" />
                         {artisan.location}
@@ -884,15 +994,22 @@ export default function Home() {
                     <div className="flex items-center gap-1">
                       <Star className="w-4 h-4 text-amber-400 fill-amber-400" />
                       <span className="font-medium">{artisan.rating}</span>
-                      <span className="text-stone-400">({artisan.reviews})</span>
+                      <span className="text-stone-400">
+                        ({artisan.reviews})
+                      </span>
                     </div>
                     <span className="text-stone-300">|</span>
-                    <span className="text-stone-500">{artisan.completedJobs} jobs done</span>
+                    <span className="text-stone-500">
+                      {artisan.completedJobs} jobs done
+                    </span>
                   </div>
 
                   <div className="flex flex-wrap gap-2 mb-4">
                     {artisan.portfolio.map((item, j) => (
-                      <span key={j} className="px-2 py-1 bg-stone-100 text-stone-600 rounded text-xs">
+                      <span
+                        key={j}
+                        className="px-2 py-1 bg-stone-100 text-stone-600 rounded text-xs"
+                      >
                         {item}
                       </span>
                     ))}
@@ -900,21 +1017,25 @@ export default function Home() {
 
                   <div className="flex items-center justify-between pt-4 border-t border-stone-100">
                     <div>
-                      <span className="text-lg font-bold">KES {artisan.hourlyRate.toLocaleString()}</span>
+                      <span className="text-lg font-bold">
+                        KES {artisan.hourlyRate.toLocaleString()}
+                      </span>
                       <span className="text-stone-500 text-sm">/hour</span>
                     </div>
                     <div className="flex items-center gap-2">
-                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                        artisan.available 
-                          ? 'bg-green-100 text-green-700' 
-                          : 'bg-stone-100 text-stone-500'
-                      }`}>
-                        {artisan.available ? 'Available' : 'Busy'}
+                      <span
+                        className={`px-2 py-1 rounded-full text-xs font-medium ${
+                          artisan.available
+                            ? "bg-green-100 text-green-700"
+                            : "bg-stone-100 text-stone-500"
+                        }`}
+                      >
+                        {artisan.available ? "Available" : "Busy"}
                       </span>
                     </div>
                   </div>
                 </div>
-                
+
                 <div className="px-6 py-4 bg-stone-50 border-t border-stone-100 flex gap-3">
                   <button className="flex-1 py-2.5 border border-stone-300 rounded-lg text-sm font-medium hover:bg-stone-100 transition-colors flex items-center justify-center gap-2 hover:border-emerald-600 hover:text-emerald-700">
                     <Eye className="w-4 h-4" />
@@ -930,7 +1051,7 @@ export default function Home() {
           </div>
 
           <div className="text-center mt-10">
-            <Link 
+            <Link
               href="/sign-up"
               className="magnetic-btn inline-flex items-center gap-2 bg-white border border-stone-300 px-8 py-3 rounded-lg font-medium hover:bg-stone-100 hover:border-emerald-600 transition-all"
             >
@@ -942,20 +1063,25 @@ export default function Home() {
       </section>
 
       {/* Testimonial Highlight */}
-      <section ref={testimonialRef} className="py-20 px-6 bg-emerald-800 text-white overflow-hidden">
+      <section
+        ref={testimonialRef}
+        className="py-20 px-6 bg-emerald-800 text-white overflow-hidden"
+      >
         <div className="max-w-4xl mx-auto text-center">
           <blockquote className="testimonial-quote text-2xl md:text-3xl font-serif italic leading-relaxed mb-8">
             &quot;{testimonialHighlight.quote}&quot;
           </blockquote>
           <div className="testimonial-author flex items-center justify-center gap-4">
-            <img 
-              src={testimonialHighlight.image} 
+            <img
+              src={testimonialHighlight.image}
               alt={testimonialHighlight.author}
               className="w-14 h-14 rounded-full object-cover border-2 border-emerald-600"
             />
             <div className="text-left">
               <div className="font-semibold">{testimonialHighlight.author}</div>
-              <div className="text-emerald-300 text-sm">{testimonialHighlight.role}, {testimonialHighlight.location}</div>
+              <div className="text-emerald-300 text-sm">
+                {testimonialHighlight.role}, {testimonialHighlight.location}
+              </div>
             </div>
           </div>
         </div>
@@ -965,7 +1091,9 @@ export default function Home() {
       <section ref={storiesRef} id="stories" className="py-24 px-6">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-16">
-            <p className="text-emerald-700 font-medium mb-2 tracking-wide text-sm uppercase">Success Stories</p>
+            <p className="text-emerald-700 font-medium mb-2 tracking-wide text-sm uppercase">
+              Success Stories
+            </p>
             <h2 className="text-3xl md:text-4xl font-serif font-bold text-stone-800">
               Real clients, real results
             </h2>
@@ -973,10 +1101,13 @@ export default function Home() {
 
           <div className="grid md:grid-cols-2 gap-8">
             {caseStudies.map((study, i) => (
-              <div key={i} className="case-card bg-white rounded-xl shadow-sm border border-stone-200 overflow-hidden">
+              <div
+                key={i}
+                className="case-card bg-white rounded-xl shadow-sm border border-stone-200 overflow-hidden"
+              >
                 <div className="case-image aspect-video overflow-hidden">
-                  <img 
-                    src={study.image} 
+                  <img
+                    src={study.image}
                     alt={study.title}
                     className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
                   />
@@ -987,13 +1118,19 @@ export default function Home() {
                       {study.icon}
                       {study.type}
                     </span>
-                    <span className="text-stone-400 text-sm">{study.duration}</span>
+                    <span className="text-stone-400 text-sm">
+                      {study.duration}
+                    </span>
                   </div>
-                  <h3 className="text-xl font-serif font-bold mb-2">{study.title}</h3>
+                  <h3 className="text-xl font-serif font-bold mb-2">
+                    {study.title}
+                  </h3>
                   <p className="text-stone-600 mb-4">{study.result}</p>
                   <div className="pt-4 border-t border-stone-100 flex items-center justify-between text-sm">
                     <span className="text-stone-500">{study.client}</span>
-                    <span className="text-emerald-700 font-medium">{study.artisan}</span>
+                    <span className="text-emerald-700 font-medium">
+                      {study.artisan}
+                    </span>
                   </div>
                 </div>
               </div>
@@ -1006,21 +1143,32 @@ export default function Home() {
       <section ref={comparisonRef} className="py-24 px-6 bg-stone-100">
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-16">
-            <p className="text-emerald-700 font-medium mb-2 tracking-wide text-sm uppercase">Why Choose Us</p>
+            <p className="text-emerald-700 font-medium mb-2 tracking-wide text-sm uppercase">
+              Why Choose Us
+            </p>
             <h2 className="text-3xl md:text-4xl font-serif font-bold text-stone-800 mb-4">
               The ArtisanLink advantage
             </h2>
-            <p className="text-stone-600">See how we compare to finding artisans the old way</p>
+            <p className="text-stone-600">
+              See how we compare to finding artisans the old way
+            </p>
           </div>
 
           <div className="bg-white rounded-xl shadow-sm border border-stone-200 overflow-hidden">
             <div className="comparison-row grid grid-cols-3 bg-stone-50 border-b border-stone-200">
               <div className="p-4 font-medium">Feature</div>
-              <div className="p-4 font-medium text-center bg-emerald-50 text-emerald-800">ArtisanLink</div>
-              <div className="p-4 font-medium text-center text-stone-500">Word of Mouth</div>
+              <div className="p-4 font-medium text-center bg-emerald-50 text-emerald-800">
+                ArtisanLink
+              </div>
+              <div className="p-4 font-medium text-center text-stone-500">
+                Word of Mouth
+              </div>
             </div>
             {comparisonFeatures.map((item, i) => (
-              <div key={i} className={`comparison-row grid grid-cols-3 ${i !== comparisonFeatures.length - 1 ? 'border-b border-stone-100' : ''}`}>
+              <div
+                key={i}
+                className={`comparison-row grid grid-cols-3 ${i !== comparisonFeatures.length - 1 ? "border-b border-stone-100" : ""}`}
+              >
                 <div className="p-4 text-stone-600 text-sm">{item.feature}</div>
                 <div className="p-4 flex justify-center bg-emerald-50/50">
                   {item.us ? (
@@ -1046,12 +1194,15 @@ export default function Home() {
       <section ref={pricingRef} id="pricing" className="py-24 px-6">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-12">
-            <p className="text-emerald-700 font-medium mb-2 tracking-wide text-sm uppercase">Simple Pricing</p>
+            <p className="text-emerald-700 font-medium mb-2 tracking-wide text-sm uppercase">
+              Simple Pricing
+            </p>
             <h2 className="text-3xl md:text-4xl font-serif font-bold text-stone-800 mb-4">
               Free for clients. Fair for artisans.
             </h2>
             <p className="text-stone-600 max-w-2xl mx-auto">
-              Browse, message, and hire artisans at no cost. Artisans pay a small commission only when they complete paid work.
+              Browse, message, and hire artisans at no cost. Artisans pay a
+              small commission only when they complete paid work.
             </p>
           </div>
 
@@ -1079,7 +1230,7 @@ export default function Home() {
                   </li>
                 ))}
               </ul>
-              <Link 
+              <Link
                 href="/sign-up"
                 className="magnetic-btn block w-full bg-emerald-700 text-white text-center py-3 rounded-lg font-medium hover:bg-emerald-800 transition-colors"
               >
@@ -1093,7 +1244,12 @@ export default function Home() {
                 <Sparkles className="w-4 h-4" />
                 For Artisans
               </div>
-              <div className="text-4xl font-bold mb-2">10% <span className="text-lg font-normal text-stone-500">commission</span></div>
+              <div className="text-4xl font-bold mb-2">
+                5%{" "}
+                <span className="text-lg font-normal text-stone-500">
+                  commission
+                </span>
+              </div>
               <p className="text-stone-500 mb-8">Only when you get paid</p>
               <ul className="space-y-4 mb-8">
                 {[
@@ -1110,7 +1266,7 @@ export default function Home() {
                   </li>
                 ))}
               </ul>
-              <Link 
+              <Link
                 href="/sign-up?role=artisan"
                 className="magnetic-btn block w-full border border-emerald-700 text-emerald-700 text-center py-3 rounded-lg font-medium hover:bg-emerald-50 transition-colors"
               >
@@ -1125,7 +1281,9 @@ export default function Home() {
       <section ref={faqRef} id="faq" className="py-24 px-6 bg-stone-100">
         <div className="max-w-3xl mx-auto">
           <div className="text-center mb-12">
-            <p className="text-emerald-700 font-medium mb-2 tracking-wide text-sm uppercase">FAQ</p>
+            <p className="text-emerald-700 font-medium mb-2 tracking-wide text-sm uppercase">
+              FAQ
+            </p>
             <h2 className="text-3xl md:text-4xl font-serif font-bold text-stone-800">
               Common questions
             </h2>
@@ -1133,18 +1291,28 @@ export default function Home() {
 
           <div className="space-y-4">
             {faqs.map((faq, i) => (
-              <div key={i} className="faq-item bg-white rounded-xl shadow-sm border border-stone-200 overflow-hidden">
+              <div
+                key={i}
+                className="faq-item bg-white rounded-xl shadow-sm border border-stone-200 overflow-hidden"
+              >
                 <button
                   onClick={() => toggleFaq(i)}
                   className="w-full flex items-center justify-between p-6 text-left hover:bg-stone-50 transition-colors"
                 >
                   <span className="font-medium pr-8">{faq.q}</span>
-                  <ChevronDown className={`w-5 h-5 text-stone-400 transition-transform duration-300 flex-shrink-0 ${openFaq === i ? 'rotate-180' : ''}`} />
+                  <ChevronDown
+                    className={`w-5 h-5 text-stone-400 transition-transform duration-300 flex-shrink-0 ${openFaq === i ? "rotate-180" : ""}`}
+                  />
                 </button>
-                <div 
-                  ref={(el) => { faqContentRefs.current[i] = el; }}
+                <div
+                  ref={(el) => {
+                    faqContentRefs.current[i] = el;
+                  }}
                   className="overflow-hidden"
-                  style={{ height: openFaq === i ? 'auto' : 0, opacity: openFaq === i ? 1 : 0 }}
+                  style={{
+                    height: openFaq === i ? "auto" : 0,
+                    opacity: openFaq === i ? 1 : 0,
+                  }}
                 >
                   <div className="px-6 pb-6 text-stone-600 leading-relaxed">
                     {faq.a}
@@ -1164,18 +1332,19 @@ export default function Home() {
               Ready to find your perfect artisan?
             </h2>
             <p className="text-emerald-200 text-lg mb-10 max-w-2xl mx-auto">
-              Join thousands of Kenyans who&apos;ve discovered a better way to hire skilled professionals.
-              Browse, connect, and hire—all for free.
+              Join thousands of Kenyans who&apos;ve discovered a better way to
+              hire skilled professionals. Browse, connect, and hire—all for
+              free.
             </p>
           </div>
           <div className="cta-buttons flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Link 
+            <Link
               href="/sign-up"
               className="magnetic-btn bg-white text-emerald-800 px-10 py-4 rounded-lg font-medium hover:bg-stone-100 transition-colors inline-block"
             >
               Start Browsing Free
             </Link>
-            <Link 
+            <Link
               href="/sign-up?role=artisan"
               className="magnetic-btn border border-emerald-600 px-10 py-4 rounded-lg font-medium hover:bg-emerald-700 transition-colors inline-block"
             >
@@ -1190,38 +1359,89 @@ export default function Home() {
         <div className="max-w-6xl mx-auto">
           <div className="grid md:grid-cols-4 gap-12 mb-12">
             <div className="md:col-span-2">
-              <Link href="/" className="text-2xl font-serif font-bold text-white mb-4 inline-block">
+              <Link
+                href="/"
+                className="text-2xl font-serif font-bold text-white mb-4 inline-block"
+              >
                 ArtisanLink
               </Link>
               <p className="text-sm leading-relaxed max-w-sm">
-                Kenya&apos;s trusted marketplace connecting clients with verified, skilled artisans. 
-                Browse portfolios, message directly, hire with confidence.
+                Kenya&apos;s trusted marketplace connecting clients with
+                verified, skilled artisans. Browse portfolios, message directly,
+                hire with confidence.
               </p>
             </div>
             <div>
               <h4 className="font-medium text-white mb-4">Platform</h4>
               <ul className="space-y-2 text-sm">
-                <li><a href="#how-it-works" className="hover:text-white transition-colors">How it Works</a></li>
-                <li><a href="#artisans" className="hover:text-white transition-colors">Browse Artisans</a></li>
-                <li><a href="#pricing" className="hover:text-white transition-colors">Pricing</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">For Businesses</a></li>
+                <li>
+                  <a
+                    href="#how-it-works"
+                    className="hover:text-white transition-colors"
+                  >
+                    How it Works
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="#artisans"
+                    className="hover:text-white transition-colors"
+                  >
+                    Browse Artisans
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="#pricing"
+                    className="hover:text-white transition-colors"
+                  >
+                    Pricing
+                  </a>
+                </li>
+                <li>
+                  <a href="#" className="hover:text-white transition-colors">
+                    For Businesses
+                  </a>
+                </li>
               </ul>
             </div>
             <div>
               <h4 className="font-medium text-white mb-4">Company</h4>
               <ul className="space-y-2 text-sm">
-                <li><a href="#" className="hover:text-white transition-colors">About Us</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Careers</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Blog</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Contact</a></li>
+                <li>
+                  <a href="#" className="hover:text-white transition-colors">
+                    About Us
+                  </a>
+                </li>
+                <li>
+                  <a href="#" className="hover:text-white transition-colors">
+                    Careers
+                  </a>
+                </li>
+                <li>
+                  <a href="#" className="hover:text-white transition-colors">
+                    Blog
+                  </a>
+                </li>
+                <li>
+                  <a href="#" className="hover:text-white transition-colors">
+                    Contact
+                  </a>
+                </li>
               </ul>
             </div>
           </div>
           <div className="pt-8 border-t border-stone-800 flex flex-col md:flex-row items-center justify-between gap-4">
-            <p className="text-sm">&copy; 2025 ArtisanLink. All rights reserved.</p>
+            <p className="text-sm">
+              &copy; 2025 ArtisanLink. All rights reserved.
+            </p>
             <div className="flex items-center gap-6 text-sm">
-              <a href="#" className="hover:text-white transition-colors">Privacy Policy</a>
-              <a href="#" className="hover:text-white transition-colors">Terms of Service</a>
+              <a href="#" className="hover:text-white transition-colors">
+                Privacy Policy
+              </a>
+              <a href="#" className="hover:text-white transition-colors">
+                Terms of Service
+              </a>
             </div>
           </div>
         </div>
