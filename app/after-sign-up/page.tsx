@@ -10,8 +10,8 @@ type AllowedRole = (typeof ALLOWED_ROLES)[number];
  * After Sign-Up redirect page
  *
  * Reads the selected role from the signup cookie, validates it,
- * sets the user's role in Clerk publicMetadata, cleans up the cookie,
- * and redirects to the appropriate dashboard.
+ * sets the user's role in Clerk publicMetadata, and redirects
+ * to the appropriate dashboard.
  */
 export default async function AfterSignUp() {
   const { userId } = await auth();
@@ -39,8 +39,10 @@ export default async function AfterSignUp() {
     console.error("Error updating Clerk metadata:", error);
   }
 
-  // Clean up the signup role cookie
-  cookieStore.delete(ROLE_COOKIE_NAME);
+  // Note: cookie cleanup is not possible in a Server Component (only in
+  // Server Actions or Route Handlers). The cookie has max-age=3600 and
+  // will expire naturally. It is only read here in after-sign-up, so
+  // it cannot affect subsequent sign-ins (which go through after-sign-in).
 
   // Redirect to the correct dashboard
   switch (role) {
