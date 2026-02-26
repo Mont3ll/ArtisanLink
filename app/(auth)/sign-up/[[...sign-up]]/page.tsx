@@ -223,25 +223,20 @@ export default function SignUpPage() {
                               autoSubmit
                               render={({ value, status }) => {
                                 return (
-                                  <div className="flex gap-1">
-                                    {Array.from({ length: 6 }, (_, i) => (
-                                      <div
-                                        key={i}
-                                        className={cn(
-                                          'relative flex size-10 items-center justify-center border-y border-r border-input text-sm transition-all first:rounded-l-md first:border-l last:rounded-r-md',
-                                          {
-                                            'bg-accent': status === 'cursor' || status === 'selected',
-                                          }
-                                        )}
-                                      >
-                                        {value?.[i]}
-                                        {status === 'cursor' && (
-                                          <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
-                                            <div className="animate-caret-blink h-4 w-px bg-foreground duration-1000" />
-                                          </div>
-                                        )}
+                                  <div
+                                    className={cn(
+                                      'relative flex size-10 items-center justify-center border-y border-r border-input text-sm transition-all first:rounded-l-md first:border-l last:rounded-r-md',
+                                      {
+                                        'bg-accent': status === 'cursor' || status === 'selected',
+                                      }
+                                    )}
+                                  >
+                                    {value}
+                                    {status === 'cursor' && (
+                                      <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+                                        <div className="animate-caret-blink h-4 w-px bg-foreground duration-1000" />
                                       </div>
-                                    ))}
+                                    )}
                                   </div>
                                 )
                               }}
