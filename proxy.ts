@@ -49,8 +49,11 @@ export const proxy = clerkMiddleware(async (auth, req) => {
     return NextResponse.next();
   }
 
-  // Default redirect to sign-in if no valid role
-  url.pathname = "/sign-in";
+  // No valid role in session claims yet (common right after sign-up
+  // when publicMetadata hasn't propagated to the JWT).
+  // Send to /after-sign-up to assign a role instead of /sign-in
+  // which would show a blank screen since the user is already authenticated.
+  url.pathname = "/after-sign-up";
   return NextResponse.redirect(url);
 });
 
