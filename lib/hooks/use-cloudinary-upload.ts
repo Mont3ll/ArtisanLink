@@ -8,7 +8,7 @@
 
 import { useState, useCallback } from 'react'
 
-export type UploadFolder = 'portfolio' | 'certificates' | 'id-documents' | 'profile-images'
+export type UploadFolder = 'portfolio' | 'certificates' | 'id-documents' | 'profile-images' | 'message-attachments'
 
 export interface UploadResult {
   url: string
@@ -41,6 +41,7 @@ const MAX_SIZES: Record<UploadFolder, number> = {
   certificates: 5 * 1024 * 1024, // 5MB
   'id-documents': 5 * 1024 * 1024, // 5MB
   'profile-images': 2 * 1024 * 1024, // 2MB
+  'message-attachments': 5 * 1024 * 1024, // 5MB
 }
 
 // Allowed formats by folder
@@ -49,6 +50,7 @@ const ALLOWED_FORMATS: Record<UploadFolder, string[]> = {
   certificates: ['image/jpeg', 'image/png', 'application/pdf'],
   'id-documents': ['image/jpeg', 'image/png', 'application/pdf'],
   'profile-images': ['image/jpeg', 'image/png', 'image/webp'],
+  'message-attachments': ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'application/pdf'],
 }
 
 /**

@@ -94,7 +94,7 @@ Click on an artisan card to view their full profile:
 
 ### Leaving Reviews
 
-After working with an artisan:
+After working with an artisan (the job must be fully **paid** — status: PAID):
 
 1. Go to your **Messages** and find the conversation
 2. Click **"Leave Review"** or go to the artisan's profile
@@ -105,7 +105,7 @@ After working with an artisan:
    - Approximate cost
 6. Submit your review
 
-**Note**: Reviews require admin approval before appearing publicly.
+**Note**: Reviews require admin approval before appearing publicly. You can only leave a review for artisans on jobs where all payments have been completed.
 
 ### Managing Conversations
 
@@ -115,6 +115,20 @@ Your **Messages** dashboard shows all conversations:
 - **Archived** - Past conversations
 - Unread messages show a notification badge
 - Click a conversation to view and reply
+
+#### Sending Attachments
+
+You can attach files to messages:
+
+1. Click the **paperclip icon** next to the message input
+2. Select a file from your device
+3. Supported formats: JPEG, PNG, GIF, WebP, PDF (up to 5 MB)
+4. A preview thumbnail appears below the message input:
+   - Images show an inline preview
+   - PDFs show a file icon with the filename
+5. Click **X** on a preview to remove the attachment before sending
+6. You can attach multiple files to a single message
+7. Click **Send** to send the message with attachments
 
 ### Requesting a Job
 
@@ -282,6 +296,9 @@ Access premium features with a subscription:
 - Priority in search results
 - Analytics dashboard
 - Verified badge eligibility
+- **Appear in search results** (artisans without an active subscription are excluded from search)
+- **Submit quotes** on job requests
+- **Receive new conversations** from clients
 
 #### Subscribing
 
@@ -455,7 +472,9 @@ Track your performance:
 1. Go to **Admin** → **Verifications**
 2. See pending verification requests
 3. Click to review an application
-4. View submitted documents and profile
+4. View submitted documents with inline previews:
+   - **Images** (certificates, ID photos) display as thumbnails with a hover overlay to open full size in a new tab
+   - **PDFs** show a file icon with the filename and an "Open" button to view in a new tab
 
 #### Processing Verifications
 

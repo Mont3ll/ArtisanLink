@@ -247,7 +247,8 @@ function StatsCard({ label, count, variant = "default" }: { label: string; count
 
 export default function ArtisanJobsPage() {
   const [statusFilter, setStatusFilter] = useState<string | null>(null);
-  const { data, isLoading, error } = useArtisanJobs(statusFilter);
+  const [page, setPage] = useState(1);
+  const { data, isLoading, error } = useArtisanJobs(statusFilter, page);
 
   const jobs = data?.jobs || [];
   const counts = data?.statusCounts;
@@ -278,7 +279,7 @@ export default function ArtisanJobsPage() {
       <div className="flex items-center gap-4">
         <Select
           value={statusFilter || "all"}
-          onValueChange={(value) => setStatusFilter(value === "all" ? null : value)}
+          onValueChange={(value) => { setStatusFilter(value === "all" ? null : value); setPage(1); }}
         >
           <SelectTrigger className="w-[180px]">
             <Filter className="h-4 w-4 mr-2" />
@@ -338,6 +339,7 @@ export default function ArtisanJobsPage() {
             variant="outline"
             size="sm"
             disabled={data.pagination.page === 1}
+            onClick={() => setPage((p) => Math.max(1, p - 1))}
           >
             Previous
           </Button>
@@ -348,6 +350,7 @@ export default function ArtisanJobsPage() {
             variant="outline"
             size="sm"
             disabled={data.pagination.page === data.pagination.totalPages}
+            onClick={() => setPage((p) => Math.min(data!.pagination.totalPages, p + 1))}
           >
             Next
           </Button>

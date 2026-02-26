@@ -24,6 +24,7 @@ const MAX_SIZES: Record<UploadFolder, number> = {
   certificates: 5 * 1024 * 1024, // 5MB
   'id-documents': 5 * 1024 * 1024, // 5MB
   'profile-images': 2 * 1024 * 1024, // 2MB
+  'message-attachments': 5 * 1024 * 1024, // 5MB
 }
 
 /**

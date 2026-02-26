@@ -51,13 +51,17 @@ export async function GET(request: Request) {
     const sortOrder = searchParams.get('sortOrder') === 'asc' ? 'asc' : 'desc'
 
     // Build where clause for profiles
-    // Only show verified artisans in search results (security requirement)
+    // Only show verified artisans with active subscriptions in search results
     const where: Record<string, unknown> = {
       user: {
         role: 'ARTISAN',
         status: 'ACTIVE'
       },
-      artisanStatus: 'VERIFIED'
+      artisanStatus: 'VERIFIED',
+      subscription: {
+        status: 'ACTIVE',
+        endDate: { gt: new Date() },
+      },
     }
 
     // Text search on profession, bio, name
@@ -223,13 +227,17 @@ export async function GET(request: Request) {
       })
     }
 
-    // Get available filter options for faceted search (only verified artisans)
+    // Get available filter options for faceted search (only verified artisans with active subscriptions)
+    const facetWhere = {
+      user: { role: 'ARTISAN' as const, status: 'ACTIVE' as const },
+      artisanStatus: 'VERIFIED' as const,
+      subscription: { status: 'ACTIVE' as const, endDate: { gt: new Date() } },
+    }
     const [professions, counties, specializations] = await Promise.all([
       prisma.profile.groupBy({
         by: ['profession'],
         where: {
-          user: { role: 'ARTISAN', status: 'ACTIVE' },
-          artisanStatus: 'VERIFIED',
+          ...facetWhere,
           profession: { not: null }
         },
         _count: { profession: true },
@@ -239,8 +247,7 @@ export async function GET(request: Request) {
       prisma.profile.groupBy({
         by: ['county'],
         where: {
-          user: { role: 'ARTISAN', status: 'ACTIVE' },
-          artisanStatus: 'VERIFIED',
+          ...facetWhere,
           county: { not: null }
         },
         _count: { county: true },

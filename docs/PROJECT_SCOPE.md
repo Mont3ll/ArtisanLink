@@ -56,6 +56,7 @@ ArtisanLink is a Next.js 16 marketplace platform connecting clients with skilled
   - Profile photos
   - Portfolio images
   - Verification documents
+  - Message attachments (images and PDFs, up to 5 MB)
 
 ### Maps & Geolocation
 - **Mapbox GL** - Interactive maps

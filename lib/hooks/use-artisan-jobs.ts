@@ -121,14 +121,15 @@ export interface ArtisanJobDetails extends ArtisanJob {
 // Query keys
 export const artisanJobsKeys = {
   all: ['artisan-jobs'] as const,
-  list: (status?: string | null) => [...artisanJobsKeys.all, 'list', status || 'all'] as const,
+  list: (status?: string | null, page?: number) => [...artisanJobsKeys.all, 'list', status || 'all', page ?? 1] as const,
   detail: (id: string) => [...artisanJobsKeys.all, 'detail', id] as const,
 }
 
 // Fetch functions
-async function fetchArtisanJobs(status: string | null): Promise<ArtisanJobsResponse> {
+async function fetchArtisanJobs(status: string | null, page: number = 1): Promise<ArtisanJobsResponse> {
   const params = new URLSearchParams()
   if (status) params.set('status', status)
+  params.set('page', String(page))
   
   const response = await fetch(`/api/artisan/jobs?${params.toString()}`)
   if (!response.ok) {
@@ -146,10 +147,10 @@ async function fetchArtisanJobDetails(id: string): Promise<{ job: ArtisanJobDeta
 }
 
 // Hooks
-export function useArtisanJobs(status: string | null = null) {
+export function useArtisanJobs(status: string | null = null, page: number = 1) {
   return useQuery({
-    queryKey: artisanJobsKeys.list(status),
-    queryFn: () => fetchArtisanJobs(status),
+    queryKey: artisanJobsKeys.list(status, page),
+    queryFn: () => fetchArtisanJobs(status, page),
   })
 }
 

@@ -148,6 +148,8 @@ Client sends inquiry → Artisan receives → Creates Quote → Client reviews �
 - Describes project requirements
 
 **System Actions:**
+- Checks artisan's subscription status (must be ACTIVE with valid `endDate`)
+- If subscription inactive/expired, returns 403 error
 - Creates `Conversation` between client and artisan
 - Sends notification to artisan
 
@@ -167,6 +169,10 @@ Client sends inquiry → Artisan receives → Creates Quote → Client reviews �
 - `Job` created with `status: REQUESTED`
 
 #### 3. Artisan Quote
+
+**Prerequisites:**
+- Artisan must have an active subscription (status `ACTIVE` with valid `endDate`)
+- If subscription is inactive or expired, the artisan receives a 403 error and must subscribe before quoting
 
 **Artisan Actions:**
 - Reviews job request

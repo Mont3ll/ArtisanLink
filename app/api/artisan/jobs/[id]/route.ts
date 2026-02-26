@@ -197,7 +197,7 @@ function getAvailableActions(job: {
       break
     case 'QUOTED':
       // If latest quote was declined and it was round 1, can send revised quote
-      if (latestQuote?.status === 'DECLINED' && latestQuote.round === 1) {
+      if (latestQuote?.status === 'REVISION_REQUESTED' && latestQuote.round === 1) {
         actions.push('send_quote')
       }
       break

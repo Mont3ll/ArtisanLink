@@ -23,7 +23,8 @@ import {
   User,
   Mail,
   Phone,
-  AlertCircle
+  AlertCircle,
+  ExternalLink,
 } from "lucide-react"
 import {
   useAdminVerification,
@@ -32,6 +33,59 @@ import {
   formatDate,
   type PendingArtisan,
 } from "@/lib/hooks/use-admin-verification"
+
+// Check if URL is a PDF
+function isPdfUrl(url: string): boolean {
+  return /\.pdf(\?|$)/i.test(url)
+}
+
+// Document Preview Component
+function DocumentPreview({ url, label }: { url: string; label: string }) {
+  if (isPdfUrl(url)) {
+    return (
+      <div className="space-y-2">
+        <p className="font-medium">{label}:</p>
+        <div className="flex items-center gap-3 p-3 border rounded-lg bg-muted/30">
+          <FileText className="h-10 w-10 text-muted-foreground flex-shrink-0" />
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-medium">PDF Document</p>
+            <p className="text-xs text-muted-foreground truncate">{url.split('/').pop()?.split('?')[0]}</p>
+          </div>
+          <Button variant="outline" size="sm" asChild>
+            <a href={url} target="_blank" rel="noopener noreferrer">
+              <ExternalLink className="h-3 w-3 mr-1" />
+              Open
+            </a>
+          </Button>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="space-y-2">
+      <p className="font-medium">{label}:</p>
+      <a
+        href={url}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="block relative group rounded-lg border overflow-hidden bg-muted/30 max-w-xs"
+      >
+        <img
+          src={url}
+          alt={label}
+          className="w-full h-auto max-h-48 object-contain"
+        />
+        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">
+          <span className="opacity-0 group-hover:opacity-100 transition-opacity bg-black/60 text-white text-xs px-2 py-1 rounded flex items-center gap-1">
+            <ExternalLink className="h-3 w-3" />
+            Open full size
+          </span>
+        </div>
+      </a>
+    </div>
+  )
+}
 
 // Skeleton Components
 function StatCardSkeleton() {
@@ -397,34 +451,24 @@ export default function VerificationPage() {
 
                                 {/* Certificate */}
                                 {selectedArtisan.profile?.certificateUrl && (
-                                  <div className="space-y-2">
-                                    <p className="font-medium">Certificate:</p>
-                                    <Button variant="outline" asChild>
-                                      <a href={selectedArtisan.profile.certificateUrl} target="_blank" rel="noopener noreferrer">
-                                        <FileText className="h-4 w-4 mr-2" />
-                                        View Certificate
-                                      </a>
-                                    </Button>
-                                  </div>
+                                  <DocumentPreview
+                                    url={selectedArtisan.profile.certificateUrl}
+                                    label="Certificate"
+                                  />
                                 )}
 
                                 {/* ID Document */}
                                 {selectedArtisan.profile?.idDocumentUrl && (
-                                  <div className="space-y-2">
-                                    <p className="font-medium">ID Document:</p>
-                                    <div className="flex items-center gap-3">
-                                      <Button variant="outline" asChild>
-                                        <a href={selectedArtisan.profile.idDocumentUrl} target="_blank" rel="noopener noreferrer">
-                                          <FileText className="h-4 w-4 mr-2" />
-                                          View ID Document
-                                        </a>
-                                      </Button>
-                                      {selectedArtisan.profile.idDocumentType && (
-                                        <span className="text-sm text-muted-foreground">
-                                          ({selectedArtisan.profile.idDocumentType.replace(/_/g, ' ')})
-                                        </span>
-                                      )}
-                                    </div>
+                                  <div>
+                                    <DocumentPreview
+                                      url={selectedArtisan.profile.idDocumentUrl}
+                                      label="ID Document"
+                                    />
+                                    {selectedArtisan.profile.idDocumentType && (
+                                      <p className="text-sm text-muted-foreground mt-1">
+                                        Type: {selectedArtisan.profile.idDocumentType.replace(/_/g, ' ')}
+                                      </p>
+                                    )}
                                   </div>
                                 )}
 

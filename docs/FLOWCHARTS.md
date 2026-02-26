@@ -197,7 +197,9 @@ stateDiagram-v2
 
 ```mermaid
 flowchart TD
-    Start([Artisan Creates Quote]) --> Draft["Create Quote Draft<br/>isDraft: true<br/>round: 1"]
+    Start([Artisan Creates Quote]) --> CheckSub{Has Active Subscription?}
+    CheckSub -->|No| SubError[Return 403: Subscription Required]
+    CheckSub -->|Yes| Draft["Create Quote Draft<br/>isDraft: true<br/>round: 1"]
     
     Draft --> AddItems[Add Line Items]
     AddItems --> Categories{"Item Categories:<br/>LABOR<br/>MATERIALS<br/>EQUIPMENT<br/>TRANSPORT<br/>OTHER"}
@@ -416,7 +418,7 @@ sequenceDiagram
 
 ```mermaid
 flowchart TD
-    Start([Job Completed & Paid]) --> CanReview{Has Completed Job?}
+    Start([Job Completed & Paid]) --> CanReview{Has Paid Job?}
     
     CanReview -->|No| NoReview[Cannot Review]
     CanReview -->|Yes| CheckExisting{Already Reviewed?}
@@ -469,7 +471,7 @@ flowchart TD
     FilterSearch --> BuildQuery
     GeoSearch --> BuildQuery
     
-    BuildQuery --> APICall["GET /api/search/artisans"]
+    BuildQuery --> APICall["GET /api/search/artisans<br/>(Only active subscriptions)"]
     APICall --> ProcessResults[Process Results]
     
     ProcessResults --> CalculateDistance{Has Location?}
@@ -492,10 +494,10 @@ flowchart TD
     ProfileActions -->|Save| SaveArtisan
     ProfileActions -->|Message| StartConversation
     ProfileActions -->|Request Job| RequestJob
-    ProfileActions -->|Review| CheckCanReview{Has Completed Job?}
+    ProfileActions -->|Review| CheckCanReview{Has Paid Job?}
     
     CheckCanReview -->|Yes| WriteReview[[Review Flow]]
-    CheckCanReview -->|No| NoReview[Show Message: Complete a job first]
+    CheckCanReview -->|No| NoReview[Show Message: Complete and pay for a job first]
     
     MapView --> ShowPins[Show Artisan Pins]
     ShowPins --> ClickPin{Click Pin?}
@@ -511,7 +513,9 @@ flowchart TD
 flowchart TD
     Start([User Initiates Message]) --> CheckConversation{Conversation Exists?}
     
-    CheckConversation -->|No| CreateConversation["Create Conversation<br/>status: ACTIVE"]
+    CheckConversation -->|No| CheckSubscription{Artisan Has Active Subscription?}
+    CheckSubscription -->|No| SubError[Return 403: Subscription Required]
+    CheckSubscription -->|Yes| CreateConversation["Create Conversation<br/>status: ACTIVE"]
     CheckConversation -->|Yes| OpenConversation[Open Existing Conversation]
     
     CreateConversation --> OpenConversation

@@ -45,6 +45,24 @@ export async function GET(
                 name: true,
                 skillLevel: true
               }
+            },
+            portfolioItems: {
+              where: { isPublic: true },
+              select: {
+                id: true,
+                title: true,
+                description: true,
+                imageUrl: true,
+                imageUrls: true,
+                category: true,
+                tags: true,
+                completedAt: true,
+                duration: true,
+                isFeatured: true,
+                createdAt: true,
+              },
+              orderBy: { createdAt: 'desc' },
+              take: 12,
             }
           }
         }
@@ -76,7 +94,7 @@ export async function GET(
         where: {
           clientId: currentUser.id,
           artisanId: artisanUserId,
-          status: 'COMPLETED'
+          status: 'PAID'
         }
       })
 

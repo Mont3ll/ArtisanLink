@@ -151,7 +151,7 @@ function JobCard({ job }: { job: ClientJob }) {
               {job.status === "ACCEPTED" && "Pay deposit to start work"}
               {job.status === "COMPLETED" && "Make final payment"}
             </span>
-            <Button size="sm" variant="outline" onClick={(e) => e.stopPropagation()}>
+            <Button size="sm" variant="outline" onClick={(e) => { e.stopPropagation(); router.push(`/client-dashboard/jobs/${job.id}`); }}>
               Take Action
             </Button>
           </div>
@@ -211,7 +211,8 @@ function EmptyState({ status }: { status: string | null }) {
 
 export default function ClientJobsPage() {
   const [statusFilter, setStatusFilter] = useState<string | null>(null);
-  const { data, isLoading, error } = useClientJobs(statusFilter);
+  const [page, setPage] = useState(1);
+  const { data, isLoading, error } = useClientJobs(statusFilter, page);
 
   const jobs = data?.jobs || [];
 
@@ -237,7 +238,7 @@ export default function ClientJobsPage() {
       <div className="flex items-center gap-4">
         <Select
           value={statusFilter || "all"}
-          onValueChange={(value) => setStatusFilter(value === "all" ? null : value)}
+          onValueChange={(value) => { setStatusFilter(value === "all" ? null : value); setPage(1); }}
         >
           <SelectTrigger className="w-[180px]">
             <Filter className="h-4 w-4 mr-2" />
@@ -297,6 +298,7 @@ export default function ClientJobsPage() {
             variant="outline"
             size="sm"
             disabled={data.pagination.page === 1}
+            onClick={() => setPage((p) => Math.max(1, p - 1))}
           >
             Previous
           </Button>
@@ -307,6 +309,7 @@ export default function ClientJobsPage() {
             variant="outline"
             size="sm"
             disabled={data.pagination.page === data.pagination.totalPages}
+            onClick={() => setPage((p) => Math.min(data!.pagination.totalPages, p + 1))}
           >
             Next
           </Button>
