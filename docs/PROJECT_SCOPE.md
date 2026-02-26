@@ -10,7 +10,8 @@ ArtisanLink is a Next.js 16 marketplace platform connecting clients with skilled
 1. **Platform Commission** - 5-10% commission on completed jobs
    - Promotional rate (5%) for first 5 jobs per artisan
    - Standard rate (10%) for subsequent jobs
-2. **Subscription Fees** - Monthly/Annual plans for premium artisan features
+   - Subscriber rate (5%) for active subscription holders (permanently)
+2. **Subscription Fees** - Optional Monthly/Annual plans for premium boost features (priority search, reduced commission, premium badge)
 
 ### User Roles
 
@@ -142,6 +143,9 @@ ArtisanLink is a Next.js 16 marketplace platform connecting clients with skilled
 - [x] M-Pesa subscription payments
 - [x] Auto-expiry handling
 - [x] Admin subscription management
+- [x] Subscription as optional boost (not mandatory gate)
+- [x] Premium search placement for subscribers
+- [x] Reduced commission rate for subscribers
 
 ### Phase 15: Admin Features
 - [x] User management

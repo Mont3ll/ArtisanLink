@@ -104,7 +104,13 @@ export async function POST(request: Request) {
                 phone: true,
                 completedJobCount: true,
                 profile: {
-                  select: { currentJobCount: true, maxConcurrentJobs: true },
+                  select: {
+                    currentJobCount: true,
+                    maxConcurrentJobs: true,
+                    subscription: {
+                      select: { status: true, endDate: true },
+                    },
+                  },
                 },
               },
             },
@@ -226,6 +232,9 @@ export async function POST(request: Request) {
               const totalJobPrice = jobPayment.job.agreedPrice || 
                 (jobPayment.job.depositAmount ? jobPayment.job.depositAmount + jobPayment.amount : jobPayment.amount)
               
+              const artisanSub = jobPayment.job.artisan.profile?.subscription
+              const hasActiveSub = artisanSub?.status === 'ACTIVE' && new Date(artisanSub.endDate) > new Date()
+
               const payoutResult = await processFinalPayment(tx, {
                 jobId: jobPayment.jobId,
                 jobPaymentId: jobPayment.id,
@@ -235,6 +244,7 @@ export async function POST(request: Request) {
                 artisanPhone: jobPayment.job.artisan.phone,
                 artisanCompletedJobs: jobPayment.job.artisan.completedJobCount || 0,
                 totalJobPrice,
+                hasActiveSubscription: hasActiveSub,
               })
               
               logger.info('Final payout created', {

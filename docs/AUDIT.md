@@ -762,3 +762,4 @@ This document serves as the source of truth for all development tasks. Mark task
 | 2026-02-26 | **Batch 6**: Admin verification page — inline document previews (image thumbnails, PDF file icons) replacing plain links |
 | 2026-02-26 | Added `message-attachments` folder type to Cloudinary config (`lib/cloudinary.ts`, `lib/hooks/use-cloudinary-upload.ts`, `app/api/upload/image/route.ts`) |
 | 2026-02-26 | Updated docs: API.md, USER_GUIDE.md, WORKFLOWS.md, FLOWCHARTS.md, AUDIT.md, PROJECT_SCOPE.md |
+| 2026-02-26 | **Subscription as Optional Boost**: Removed subscription as mandatory gate for search visibility, quote submission, and conversation creation. Subscription now provides optional premium benefits: priority search placement, premium badge, reduced commission (5% permanently). Updated search API, quote API, conversations API, saved artisans API, payment processor, earnings API, subscription page, plan features. Updated all documentation. |

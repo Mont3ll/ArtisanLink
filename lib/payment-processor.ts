@@ -17,6 +17,7 @@
  * Commission Rates:
  * - Standard: 10% of total job price
  * - Promotional: 5% for first 5 jobs per artisan
+ * - Subscriber: 5% always (active subscription benefit)
  */
 
 import { createLogger } from '@/lib/logger'
@@ -73,16 +74,18 @@ export interface ProcessFinalPaymentParams {
   artisanPhone: string
   artisanCompletedJobs: number
   totalJobPrice: number
+  hasActiveSubscription?: boolean
 }
 
 /**
- * Calculate commission rate based on artisan's completed job count
+ * Calculate commission rate based on artisan's completed job count and subscription status.
+ * Subscribers always get the promotional 5% rate regardless of job count.
  */
-export function calculateCommissionRate(completedJobCount: number): {
+export function calculateCommissionRate(completedJobCount: number, hasActiveSubscription = false): {
   rate: number
   isPromotional: boolean
 } {
-  const isPromotional = completedJobCount < config.promotionalJobThreshold
+  const isPromotional = hasActiveSubscription || completedJobCount < config.promotionalJobThreshold
   return {
     rate: isPromotional ? config.promotionalCommissionRate : config.standardCommissionRate,
     isPromotional,
@@ -262,6 +265,7 @@ export async function processFinalPayment(
     artisanPhone,
     artisanCompletedJobs,
     totalJobPrice,
+    hasActiveSubscription,
   } = params
 
   try {
@@ -275,7 +279,7 @@ export async function processFinalPayment(
     }
 
     // Calculate commission rate
-    const { rate: commissionRate, isPromotional } = calculateCommissionRate(artisanCompletedJobs)
+    const { rate: commissionRate, isPromotional } = calculateCommissionRate(artisanCompletedJobs, hasActiveSubscription)
 
     // Calculate distribution
     const { commission, artisanPayout } = calculateFinalPaymentDistribution(

@@ -148,8 +148,8 @@ Client sends inquiry → Artisan receives → Creates Quote → Client reviews �
 - Describes project requirements
 
 **System Actions:**
-- Checks artisan's subscription status (must be ACTIVE with valid `endDate`)
-- If subscription inactive/expired, returns 403 error
+- Checks artisan's verification status (must be VERIFIED)
+- If artisan is not verified, returns 403 error
 - Creates `Conversation` between client and artisan
 - Sends notification to artisan
 
@@ -171,8 +171,8 @@ Client sends inquiry → Artisan receives → Creates Quote → Client reviews �
 #### 3. Artisan Quote
 
 **Prerequisites:**
-- Artisan must have an active subscription (status `ACTIVE` with valid `endDate`)
-- If subscription is inactive or expired, the artisan receives a 403 error and must subscribe before quoting
+- Artisan must be verified (artisanStatus: `VERIFIED`)
+- If not verified, the artisan receives a 403 error and must complete verification before quoting
 
 **Artisan Actions:**
 - Reviews job request
@@ -510,11 +510,11 @@ Artisan selects plan → Initiates payment → STK Push → Payment confirmed �
 | Annual | KES 5,000 | 365 days | All premium + 17% discount |
 
 ### Premium Features
-- Featured placement in search
-- Unlimited portfolio items
-- Priority search ranking
-- Advanced analytics
-- Verified badge eligibility
+- Priority placement in search results
+- Premium profile badge
+- Reduced commission rate (5% permanently)
+- Portfolio showcase (up to 20 items)
+- Priority support
 
 ### Payment Processing
 
@@ -561,6 +561,7 @@ Artisan selects plan → Initiates payment → STK Push → Payment confirmed �
 | Type | Rate | Applies To |
 |------|------|-----------|
 | Promotional | 5% | First 5 completed jobs per artisan |
+| Subscriber | 5% | Active subscription holders (permanently) |
 | Standard | 10% | All jobs after promotional period |
 
 ### Calculation

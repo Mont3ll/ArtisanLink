@@ -95,14 +95,6 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
       return NextResponse.json({ error: 'Only verified artisans can create quotes' }, { status: 403 })
     }
 
-    // Check active subscription
-    const subscription = await prisma.subscription.findUnique({
-      where: { profileId: user.profile!.id },
-    })
-    if (!subscription || subscription.status !== 'ACTIVE' || subscription.endDate < new Date()) {
-      return NextResponse.json({ error: 'Active subscription required to create quotes' }, { status: 403 })
-    }
-
     // Get job with existing quotes
     const job = await prisma.job.findUnique({
       where: { id: jobId },

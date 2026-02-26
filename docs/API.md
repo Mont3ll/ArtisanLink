@@ -245,7 +245,7 @@ Search and filter artisans. Public endpoint with rate limiting.
 | page | number | Page number (default: 1) |
 | limit | number | Items per page (max: 50, default: 20) |
 
-**Note**: Only artisans with an active subscription (status `ACTIVE` and `endDate` in the future) appear in search results. Facet counts (professions, counties) also reflect only subscribed artisans.
+**Note**: Only verified artisans (`artisanStatus: VERIFIED`) appear in search results. Artisans with an active subscription (`isPremium: true`) are boosted to the top of results. Facet counts reflect only verified artisans.
 
 **Response**:
 ```json
@@ -268,6 +268,7 @@ Search and filter artisans. Public endpoint with rate limiting.
       "hourlyRate": 500,
       "isAvailable": true,
       "isVerified": true,
+      "isPremium": false,
       "rating": {
         "average": 4.8,
         "total": 25
@@ -483,7 +484,7 @@ Start a new conversation with an artisan.
 
 **Authentication**: Required (Client role)
 
-**Note**: The artisan must have an active subscription (status `ACTIVE` with a valid `endDate`). Returns `403 Forbidden` if the artisan's subscription is inactive or expired.
+**Note**: The artisan must be verified (artisanStatus: `VERIFIED`). Returns `403 Forbidden` if not verified.
 
 **Request Body**:
 ```json
@@ -836,9 +837,9 @@ Remove specialization.
 
 Submit a quote for a job request.
 
-**Authentication**: Required (Artisan role, active subscription)
+**Authentication**: Required (Artisan role, verified status)
 
-**Note**: The artisan must have an active subscription (status `ACTIVE` with a valid `endDate`). Returns `403 Forbidden` if the subscription is inactive or expired.
+**Note**: The artisan must be verified (artisanStatus: `VERIFIED`). Returns `403 Forbidden` if not verified.
 
 ---
 

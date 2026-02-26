@@ -197,9 +197,9 @@ stateDiagram-v2
 
 ```mermaid
 flowchart TD
-    Start([Artisan Creates Quote]) --> CheckSub{Has Active Subscription?}
-    CheckSub -->|No| SubError[Return 403: Subscription Required]
-    CheckSub -->|Yes| Draft["Create Quote Draft<br/>isDraft: true<br/>round: 1"]
+    Start([Artisan Creates Quote]) --> CheckVerified{Is Verified?}
+    CheckVerified -->|No| VerifyError[Return 403: Verification Required]
+    CheckVerified -->|Yes| Draft["Create Quote Draft<br/>isDraft: true<br/>round: 1"]
     
     Draft --> AddItems[Add Line Items]
     AddItems --> Categories{"Item Categories:<br/>LABOR<br/>MATERIALS<br/>EQUIPMENT<br/>TRANSPORT<br/>OTHER"}
@@ -471,7 +471,7 @@ flowchart TD
     FilterSearch --> BuildQuery
     GeoSearch --> BuildQuery
     
-    BuildQuery --> APICall["GET /api/search/artisans<br/>(Only active subscriptions)"]
+    BuildQuery --> APICall["GET /api/search/artisans<br/>(Only verified artisans, premium boosted)"]
     APICall --> ProcessResults[Process Results]
     
     ProcessResults --> CalculateDistance{Has Location?}
@@ -513,9 +513,9 @@ flowchart TD
 flowchart TD
     Start([User Initiates Message]) --> CheckConversation{Conversation Exists?}
     
-    CheckConversation -->|No| CheckSubscription{Artisan Has Active Subscription?}
-    CheckSubscription -->|No| SubError[Return 403: Subscription Required]
-    CheckSubscription -->|Yes| CreateConversation["Create Conversation<br/>status: ACTIVE"]
+    CheckConversation -->|No| CheckVerified{Artisan Is Verified?}
+    CheckVerified -->|No| VerifyError[Return 403: Verification Required]
+    CheckVerified -->|Yes| CreateConversation["Create Conversation<br/>status: ACTIVE"]
     CheckConversation -->|Yes| OpenConversation[Open Existing Conversation]
     
     CreateConversation --> OpenConversation

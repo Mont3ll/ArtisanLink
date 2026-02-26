@@ -283,22 +283,22 @@ Add your specific skills:
 
 ### Subscription Plans
 
-Access premium features with a subscription:
+Boost your profile with an optional premium subscription:
 
-#### Free Features
-- Basic profile
-- Limited portfolio items
-- Receive messages
+#### Free Features (All Verified Artisans)
+- Profile visible in search results
+- Accept job requests and send quotes
+- Receive messages from clients
+- Basic portfolio (up to 5 items)
+- Standard commission rate (5% first 5 jobs, then 10%)
 
-#### Premium Features (Subscription Required)
-- Featured placement in search
-- Unlimited portfolio items
-- Priority in search results
+#### Premium Features (Optional Subscription)
+- Priority placement in search results
+- Premium profile badge
+- Reduced commission rate (5% permanently)
+- Extended portfolio (up to 20 items)
 - Analytics dashboard
-- Verified badge eligibility
-- **Appear in search results** (artisans without an active subscription are excluded from search)
-- **Submit quotes** on job requests
-- **Receive new conversations** from clients
+- Priority support
 
 #### Subscribing
 
@@ -401,6 +401,7 @@ ArtisanLink charges a platform commission on completed jobs:
 
 - **Promotional Rate (5%)** - Your first 5 completed jobs
 - **Standard Rate (10%)** - All jobs after the first 5
+- **Subscriber Rate (5%)** - Active subscription holders keep the 5% rate permanently, regardless of job count
 
 The earnings dashboard shows:
 - Your current commission rate
@@ -708,7 +709,7 @@ A:
 
 **Q: What happens if my subscription expires?**
 
-A: Your account reverts to free features. Your profile and portfolio remain, but premium features are disabled.
+A: You'll still appear in search results and can accept jobs, but you'll lose your priority placement, premium badge, and reduced commission rate. Your commission rate reverts to the standard 10% (unless you're still in the promotional period).
 
 **Q: How do I get the verified badge?**
 
@@ -728,6 +729,7 @@ A: Payments are handled through M-Pesa:
 A: 
 - **5% promotional rate** for your first 5 completed jobs
 - **10% standard rate** for all jobs after that
+- **5% subscriber rate** for active subscription holders (permanently)
 - Commission is deducted from the final payment, not the deposit
 
 **Q: When do I receive my payment?**

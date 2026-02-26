@@ -58,6 +58,12 @@ export async function GET(request: Request) {
                 },
                 take: 5,
               },
+              subscription: {
+                select: {
+                  status: true,
+                  endDate: true,
+                },
+              },
             },
           },
         },
@@ -90,6 +96,7 @@ export async function GET(request: Request) {
         hourlyRate: saved.profile.hourlyRate,
         isAvailable: saved.profile.isAvailable,
         isVerified: saved.profile.artisanStatus === 'VERIFIED',
+        isPremium: saved.profile.subscription?.status === 'ACTIVE' && new Date(saved.profile.subscription?.endDate) > new Date(),
         rating: {
           average: saved.profile.averageRating,
           total: saved.profile.totalReviews,

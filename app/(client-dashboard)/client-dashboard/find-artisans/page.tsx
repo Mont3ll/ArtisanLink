@@ -20,6 +20,7 @@ import {
   Trash2,
   MoreHorizontal,
   Briefcase,
+  Crown,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -108,6 +109,9 @@ function ArtisanCard({
                 <CardTitle className="text-base">{artisan.name}</CardTitle>
                 {artisan.isVerified && (
                   <BadgeCheck className="h-4 w-4 text-emerald-500" />
+                )}
+                {artisan.isPremium && (
+                  <Crown className="h-4 w-4 text-amber-500" />
                 )}
               </div>
               <CardDescription className="text-sm">

@@ -170,7 +170,7 @@ export async function POST(request: Request) {
     // Verify artisan exists and is verified
     const artisan = await prisma.user.findUnique({
       where: { id: data.artisanId },
-      include: { profile: { include: { subscription: true } } }
+      include: { profile: true }
     })
 
     if (!artisan || artisan.role !== 'ARTISAN') {
@@ -180,18 +180,6 @@ export async function POST(request: Request) {
     if (artisan.profile?.artisanStatus !== 'VERIFIED') {
       return NextResponse.json(
         { error: 'Cannot message unverified artisan' },
-        { status: 400 }
-      )
-    }
-
-    // Check artisan has active subscription
-    if (
-      !artisan.profile?.subscription ||
-      artisan.profile.subscription.status !== 'ACTIVE' ||
-      artisan.profile.subscription.endDate < new Date()
-    ) {
-      return NextResponse.json(
-        { error: 'This artisan does not have an active subscription' },
         { status: 400 }
       )
     }

@@ -19,6 +19,7 @@ export interface SavedArtisan {
     hourlyRate: number | null
     isAvailable: boolean
     isVerified: boolean
+    isPremium: boolean
     rating: {
       average: number
       total: number

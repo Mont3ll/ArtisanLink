@@ -104,7 +104,7 @@ function CurrentSubscriptionCard({
               <h3 className="font-semibold text-red-800">Subscription Expired</h3>
               <p className="text-red-700 text-sm">
                 Your subscription expired on {formatSubscriptionDate(subscription.endDate)}.
-                Renew now to continue enjoying premium features.
+                Renew now to keep your boosted search ranking and reduced commission rate.
               </p>
             </div>
           </div>
@@ -488,7 +488,7 @@ export default function SubscriptionPage() {
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Subscription</h1>
           <p className="text-muted-foreground">
-            Manage your ArtisanLink subscription
+            Boost your profile and reduce your commission rate
           </p>
         </div>
         {subscription?.status === 'ACTIVE' && (
