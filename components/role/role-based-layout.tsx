@@ -21,6 +21,7 @@ import {
   SidebarInset,
   SidebarProvider,
 } from '@/components/ui/sidebar'
+import { CompleteProfileBanner } from '@/components/shared/complete-profile-banner'
 
 interface RoleBasedLayoutProps {
   children: ReactNode
@@ -77,6 +78,7 @@ export function RoleBasedLayout({
         {getSidebarComponent()}
         <SidebarInset>
           {getHeaderComponent()}
+          <CompleteProfileBanner />
           <div className="flex flex-1 flex-col">
             <div className="@container/main flex flex-1 flex-col gap-2">
               {children}

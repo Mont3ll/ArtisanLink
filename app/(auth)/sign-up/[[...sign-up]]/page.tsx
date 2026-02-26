@@ -1,7 +1,7 @@
 'use client';
 import * as Clerk from '@clerk/elements/common';
 import * as SignUp from '@clerk/elements/sign-up';
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -25,11 +25,6 @@ export default function SignUpPage() {
   const setRoleCookie = useCallback((selectedRole: string) => {
     document.cookie = `${ROLE_COOKIE_NAME}=${selectedRole}; path=/; max-age=3600; SameSite=Lax`;
   }, []);
-
-  // Set the default cookie on mount
-  useEffect(() => {
-    setRoleCookie('client');
-  }, [setRoleCookie]);
 
   const handleRoleSelect = (selectedRole: string) => {
     setRole(selectedRole);
@@ -122,26 +117,6 @@ export default function SignUpPage() {
                     <p className="flex items-center gap-x-3 text-sm text-muted-foreground before:h-px before:flex-1 before:bg-border after:h-px after:flex-1 after:bg-border">
                       or
                     </p>
-                    <div className="grid grid-cols-2 gap-3">
-                      <Clerk.Field name="firstName" className="space-y-2">
-                        <Clerk.Label asChild>
-                          <Label>First name</Label>
-                        </Clerk.Label>
-                        <Clerk.Input type="text" required asChild>
-                          <Input />
-                        </Clerk.Input>
-                        <Clerk.FieldError className="block text-sm text-destructive" />
-                      </Clerk.Field>
-                      <Clerk.Field name="lastName" className="space-y-2">
-                        <Clerk.Label asChild>
-                          <Label>Last name</Label>
-                        </Clerk.Label>
-                        <Clerk.Input type="text" required asChild>
-                          <Input />
-                        </Clerk.Input>
-                        <Clerk.FieldError className="block text-sm text-destructive" />
-                      </Clerk.Field>
-                    </div>
                     <Clerk.Field name="emailAddress" className="space-y-2">
                       <Clerk.Label asChild>
                         <Label>Email address</Label>
@@ -160,6 +135,8 @@ export default function SignUpPage() {
                       </Clerk.Input>
                       <Clerk.FieldError className="block text-sm text-destructive" />
                     </Clerk.Field>
+                    {/* CAPTCHA widget container for Clerk bot protection */}
+                    <div id="clerk-captcha" />
                   </CardContent>
                   <CardFooter>
                     <div className="grid w-full gap-y-4">

@@ -4,6 +4,7 @@ import { Bell, User } from 'lucide-react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import NotificationPreferencesCard from '@/components/shared/notification-preferences-card'
+import PersonalInfoCard from '@/components/shared/personal-info-card'
 
 export default function ClientSettingsPage() {
   return (
@@ -11,12 +12,16 @@ export default function ClientSettingsPage() {
       <div>
         <h1 className="text-3xl font-bold tracking-tight">Settings</h1>
         <p className="text-muted-foreground">
-          Manage your account preferences
+          Manage your profile and account preferences
         </p>
       </div>
 
-      <Tabs defaultValue="notifications" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-2 max-w-[400px]">
+      <Tabs defaultValue="profile" className="space-y-6">
+        <TabsList className="grid w-full grid-cols-3 max-w-[500px]">
+          <TabsTrigger value="profile" className="gap-2">
+            <User className="h-4 w-4" />
+            Profile
+          </TabsTrigger>
           <TabsTrigger value="notifications" className="gap-2">
             <Bell className="h-4 w-4" />
             Notifications
@@ -26,6 +31,11 @@ export default function ClientSettingsPage() {
             Account
           </TabsTrigger>
         </TabsList>
+
+        {/* Profile Tab */}
+        <TabsContent value="profile" className="space-y-6">
+          <PersonalInfoCard />
+        </TabsContent>
 
         {/* Notifications Tab */}
         <TabsContent value="notifications" className="space-y-6">

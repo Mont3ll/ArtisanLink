@@ -1,9 +1,10 @@
 import { auth, clerkClient } from "@clerk/nextjs/server";
 import { cookies } from "next/headers";
-import { redirect } from "next/navigation";
+import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
 const ROLE_COOKIE_NAME = "artisanlink_signup_role";
+const VERIFIED_ROLE_COOKIE = "artisanlink_verified_role";
 const ALLOWED_ROLES = ["client", "artisan"] as const;
 type AllowedRole = (typeof ALLOWED_ROLES)[number];
 
@@ -12,22 +13,23 @@ function isAllowedRole(value: string | undefined): value is AllowedRole {
 }
 
 /**
- * After Sign-Up redirect page
+ * After Sign-Up route handler
  *
  * Determines the user's role from (in priority order):
  * 1. The signup cookie (set during sign-up role selection)
  * 2. Clerk publicMetadata (if already set from a previous attempt)
  *
  * Then sets Clerk publicMetadata, creates the DB user, and redirects
- * to the correct dashboard.
+ * to /after-sign-in (which resolves the role and sends to the dashboard).
  *
  * If no role can be determined from any source, redirects to /sign-up.
  */
-export default async function AfterSignUp() {
+export async function GET(req: Request) {
   const { userId } = await auth();
+  const baseUrl = new URL(req.url).origin;
 
   if (!userId) {
-    redirect("/sign-up");
+    return NextResponse.redirect(new URL("/sign-up", baseUrl));
   }
 
   // --- Resolve role ---
@@ -59,7 +61,7 @@ export default async function AfterSignUp() {
 
   // No role from any source — send to sign-up to choose one
   if (!role) {
-    redirect("/sign-up");
+    return NextResponse.redirect(new URL("/sign-up", baseUrl));
   }
 
   // --- Set role in Clerk + create DB user ---
@@ -116,9 +118,16 @@ export default async function AfterSignUp() {
     // Non-fatal: UserSyncProvider will retry on the dashboard
   }
 
-  // 3. Redirect based on the role we just set (not session claims)
-  if (role === "artisan") {
-    redirect("/artisan-dashboard");
-  }
-  redirect("/client-dashboard");
+  // 3. Redirect to /after-sign-in which resolves the role from
+  //    Clerk API directly (bypasses the JWT propagation delay).
+  //    Set the verified-role cookie so the proxy trusts the redirect chain.
+  const response = NextResponse.redirect(new URL("/after-sign-in", baseUrl));
+  response.cookies.set(VERIFIED_ROLE_COOKIE, role, {
+    path: "/",
+    maxAge: 120, // 2 minutes — enough for Clerk SDK to refresh the JWT
+    httpOnly: true,
+    sameSite: "lax",
+  });
+
+  return response;
 }

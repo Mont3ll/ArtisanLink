@@ -51,6 +51,7 @@ import {
   FileText
 } from 'lucide-react'
 import NotificationPreferencesCard from '@/components/shared/notification-preferences-card'
+import PersonalInfoCard from '@/components/shared/personal-info-card'
 import { FileUpload } from '@/components/ui/file-upload'
 import {
   useArtisanSettingsProfile,
@@ -397,6 +398,9 @@ export default function SettingsPage() {
 
         {/* Profile Tab */}
         <TabsContent value="profile" className="space-y-6">
+          {/* Personal Information Card */}
+          <PersonalInfoCard />
+
           {/* Availability Card */}
           <Card>
             <CardHeader>

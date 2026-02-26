@@ -1,6 +1,8 @@
 import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 
+const VERIFIED_ROLE_COOKIE = "artisanlink_verified_role";
+
 const isProtectedRoute = createRouteMatcher([
   "/dashboard",
   "/client-dashboard(.*)",
@@ -13,10 +15,7 @@ export const proxy = clerkMiddleware(async (auth, req) => {
   const { userId, sessionClaims } = await auth();
 
   // Get role from sessionClaims.publicMetadata
-  const role = (sessionClaims?.publicMetadata as { role?: string })?.role;
-
-  // Debug logging
-  // console.log("[middleware] userId:", userId, "| role:", role, "| pathname:", url.pathname);
+  let role = (sessionClaims?.publicMetadata as { role?: string })?.role;
 
   // Let transitional auth routes through without role checks.
   // These handle role assignment / resolution and must not be intercepted,
@@ -31,6 +30,16 @@ export const proxy = clerkMiddleware(async (auth, req) => {
 
   if (!userId || !isProtectedRoute(req)) {
     return NextResponse.next();
+  }
+
+  // If JWT doesn't have a role yet, check the short-lived verified
+  // role cookie set by /after-sign-in. This bridges the gap between
+  // when publicMetadata is set and when the JWT refreshes.
+  if (!role) {
+    const verifiedRole = req.cookies.get(VERIFIED_ROLE_COOKIE)?.value;
+    if (verifiedRole && ["admin", "artisan", "client"].includes(verifiedRole)) {
+      role = verifiedRole;
+    }
   }
 
   // Admin: admin dashboard only
@@ -60,11 +69,16 @@ export const proxy = clerkMiddleware(async (auth, req) => {
     return NextResponse.next();
   }
 
-  // No valid role in session claims yet (common right after sign-up
-  // when publicMetadata hasn't propagated to the JWT).
-  // Send to /after-sign-up to assign a role instead of /sign-in
-  // which would show a blank screen since the user is already authenticated.
-  url.pathname = "/after-sign-up";
+  // No valid role in session claims or verified cookie.
+  // Send to /after-sign-in which does a direct Clerk API lookup
+  // to resolve the role without depending on the JWT.
+  // Guard against redirect loops: if the referrer is /after-sign-in,
+  // let the request through instead of redirecting back.
+  const referer = req.headers.get("referer") || "";
+  if (referer.includes("/after-sign-in") || referer.includes("/after-sign-up")) {
+    return NextResponse.next();
+  }
+  url.pathname = "/after-sign-in";
   return NextResponse.redirect(url);
 });
 
