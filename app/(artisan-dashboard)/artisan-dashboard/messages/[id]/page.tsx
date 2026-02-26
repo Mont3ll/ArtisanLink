@@ -14,6 +14,8 @@ import {
   Paperclip,
   AlertTriangle,
   RefreshCw,
+  X,
+  FileText,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -39,6 +41,7 @@ import {
   useArchiveConversationDetail,
   type Message,
 } from "@/lib/hooks";
+import { useCloudinaryUpload } from "@/lib/hooks/use-cloudinary-upload";
 
 // Message Bubble Component
 function MessageBubble({
@@ -181,14 +184,24 @@ export default function ArtisanConversationPage() {
     isLoading: messagesLoading,
   } = useConversationMessages(id, { refetchInterval: 5000 }); // Poll every 5 seconds
   
-  const sendMessage = useSendMessage(id);
+  const sendMessage = useSendMessage(id, conversation?.artisanId || '');
   const archiveConversation = useArchiveConversationDetail(id);
 
   // Local state
   const [newMessage, setNewMessage] = useState("");
+  const [attachments, setAttachments] = useState<string[]>([]);
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Cloudinary upload hook
+  const { upload, isUploading } = useCloudinaryUpload({
+    folder: 'message-attachments',
+    onSuccess: (result) => {
+      setAttachments((prev) => [...prev, result.url]);
+    },
+  });
 
   // Derived state
   const currentUserId = conversation?.artisanId || "";
@@ -214,23 +227,54 @@ export default function ArtisanConversationPage() {
   // Handle send message
   const handleSend = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newMessage.trim() || sendMessage.isPending || !conversation) return;
+    if ((!newMessage.trim() && attachments.length === 0) || sendMessage.isPending || !conversation) return;
 
     const messageContent = newMessage.trim();
+    const messageAttachments = [...attachments];
     setNewMessage("");
+    setAttachments([]);
 
     sendMessage.mutate(
-      { content: messageContent },
+      {
+        content: messageContent,
+        ...(messageAttachments.length > 0 && { attachmentUrls: messageAttachments }),
+      },
       {
         onError: () => {
-          // Restore the input on error
+          // Restore the input and attachments on error
           setNewMessage(messageContent);
+          setAttachments(messageAttachments);
         },
         onSettled: () => {
           inputRef.current?.focus();
         },
       }
     );
+  };
+
+  // Handle file selection
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    for (const file of Array.from(files)) {
+      await upload(file);
+    }
+
+    // Reset file input
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
+  // Remove attachment
+  const removeAttachment = (index: number) => {
+    setAttachments((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  // Check if URL is an image
+  const isImageUrl = (url: string) => {
+    return /\.(jpg|jpeg|png|gif|webp)(\?|$)/i.test(url);
   };
 
   // Handle archive
@@ -423,7 +467,67 @@ export default function ArtisanConversationPage() {
         </div>
       ) : (
         <form onSubmit={handleSend} className="border-t p-4 bg-background">
+          {/* Attachment preview */}
+          {attachments.length > 0 && (
+            <div className="flex flex-wrap gap-2 mb-3">
+              {attachments.map((url, i) => (
+                <div
+                  key={i}
+                  className="relative group rounded-lg border bg-muted/50 overflow-hidden"
+                >
+                  {isImageUrl(url) ? (
+                    <img
+                      src={url}
+                      alt={`Attachment ${i + 1}`}
+                      className="h-16 w-16 object-cover"
+                    />
+                  ) : (
+                    <div className="h-16 w-16 flex items-center justify-center">
+                      <FileText className="h-6 w-6 text-muted-foreground" />
+                    </div>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => removeAttachment(i)}
+                    className="absolute -top-1 -right-1 bg-destructive text-destructive-foreground rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-opacity"
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                </div>
+              ))}
+              {isUploading && (
+                <div className="h-16 w-16 rounded-lg border bg-muted/50 flex items-center justify-center">
+                  <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Hidden file input */}
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/jpeg,image/png,image/gif,image/webp,application/pdf"
+            multiple
+            onChange={handleFileSelect}
+            className="hidden"
+          />
+
           <div className="flex items-center gap-2">
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={isUploading}
+              className="flex-shrink-0"
+            >
+              {isUploading ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Paperclip className="h-4 w-4" />
+              )}
+            </Button>
             <Input
               ref={inputRef}
               placeholder="Type a message..."
@@ -435,7 +539,7 @@ export default function ArtisanConversationPage() {
             <Button
               type="submit"
               size="icon"
-              disabled={!newMessage.trim() || sendMessage.isPending}
+              disabled={(!newMessage.trim() && attachments.length === 0) || sendMessage.isPending || isUploading}
             >
               {sendMessage.isPending ? (
                 <Loader2 className="h-4 w-4 animate-spin" />

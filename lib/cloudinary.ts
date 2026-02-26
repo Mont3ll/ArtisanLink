@@ -36,7 +36,7 @@ cloudinary.config({
 // Types
 // ============================================================================
 
-export type UploadFolder = 'portfolio' | 'certificates' | 'id-documents' | 'profile-images'
+export type UploadFolder = 'portfolio' | 'certificates' | 'id-documents' | 'profile-images' | 'message-attachments'
 
 export interface UploadOptions {
   folder: UploadFolder
@@ -101,6 +101,10 @@ const FOLDER_CONFIG: Record<UploadFolder, { maxSize: number; allowedFormats: str
   'profile-images': {
     maxSize: 2 * 1024 * 1024, // 2MB for profile images
     allowedFormats: ['jpg', 'jpeg', 'png', 'webp'],
+  },
+  'message-attachments': {
+    maxSize: 5 * 1024 * 1024, // 5MB for message attachments
+    allowedFormats: ['jpg', 'jpeg', 'png', 'gif', 'webp', 'pdf'],
   },
 }
 

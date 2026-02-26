@@ -13,6 +13,7 @@ import {
   Loader2,
   Users,
   MoreHorizontal,
+  Crown,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -90,7 +91,10 @@ function SavedArtisanCard({
               <div className="flex items-center gap-2">
                 <CardTitle className="text-lg">{artisan.name}</CardTitle>
                 {artisan.isVerified && (
-                  <BadgeCheck className="h-4 w-4 text-blue-500" />
+                  <BadgeCheck className="h-4 w-4 text-emerald-500" />
+                )}
+                {artisan.isPremium && (
+                  <Crown className="h-4 w-4 text-amber-500" />
                 )}
               </div>
               <CardDescription className="text-sm">

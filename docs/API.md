@@ -245,6 +245,8 @@ Search and filter artisans. Public endpoint with rate limiting.
 | page | number | Page number (default: 1) |
 | limit | number | Items per page (max: 50, default: 20) |
 
+**Note**: Only verified artisans (`artisanStatus: VERIFIED`) appear in search results. Artisans with an active subscription (`isPremium: true`) are boosted to the top of results. Facet counts reflect only verified artisans.
+
 **Response**:
 ```json
 {
@@ -266,6 +268,7 @@ Search and filter artisans. Public endpoint with rate limiting.
       "hourlyRate": 500,
       "isAvailable": true,
       "isVerified": true,
+      "isPremium": false,
       "rating": {
         "average": 4.8,
         "total": 25
@@ -481,6 +484,8 @@ Start a new conversation with an artisan.
 
 **Authentication**: Required (Client role)
 
+**Note**: The artisan must be verified (artisanStatus: `VERIFIED`). Returns `403 Forbidden` if not verified.
+
 **Request Body**:
 ```json
 {
@@ -501,9 +506,12 @@ Send a message in a conversation.
 **Request Body**:
 ```json
 {
-  "content": "Your message here..."
+  "content": "Your message here...",
+  "attachmentUrls": ["https://res.cloudinary.com/..."]  // optional
 }
 ```
+
+**Note**: `attachmentUrls` is an optional array of Cloudinary URLs for file attachments (images or PDFs, up to 5 MB each). Upload files first via `POST /api/upload/image` with folder `message-attachments`.
 
 #### GET /api/conversations/unread
 
@@ -820,6 +828,75 @@ Add specialization.
 #### DELETE /api/artisan/specializations/[id]
 
 Remove specialization.
+
+---
+
+### Artisan Jobs
+
+#### POST /api/artisan/jobs/[id]/quote
+
+Submit a quote for a job request.
+
+**Authentication**: Required (Artisan role, verified status)
+
+**Note**: The artisan must be verified (artisanStatus: `VERIFIED`). Returns `403 Forbidden` if not verified.
+
+---
+
+### Client Artisan Profile
+
+#### GET /api/client/artisans/[id]
+
+Get a specific artisan's public profile with portfolio items.
+
+**Authentication**: Required (Client role)
+
+**Response** includes up to 12 public portfolio items:
+```json
+{
+  "artisan": {
+    "id": "clxxxxxxxxxx",
+    "profile": {
+      "profession": "Carpenter",
+      "bio": "...",
+      "portfolioItems": [
+        {
+          "id": "clxxxxxxxxxx",
+          "title": "Custom Dining Table",
+          "description": "Handcrafted oak dining table...",
+          "imageUrl": "https://...",
+          "imageUrls": ["https://..."],
+          "category": "Furniture",
+          "tags": ["oak", "dining"],
+          "completedAt": "2023-12-01T00:00:00.000Z",
+          "duration": "2 weeks",
+          "isFeatured": true,
+          "createdAt": "2023-12-15T00:00:00.000Z"
+        }
+      ]
+    }
+  }
+}
+```
+
+**Note**: Only public portfolio items (`isPublic: true`) are returned, ordered by most recent, limited to 12 items.
+
+---
+
+### Image Upload
+
+#### POST /api/upload/image
+
+Upload an image to Cloudinary.
+
+**Authentication**: Required
+
+**Supported Folders**:
+- `portfolio` - Portfolio images
+- `certificates` - Verification certificates
+- `id-documents` - ID verification documents
+- `profile-images` - Profile photos
+- `message-attachments` - Message file attachments (images and PDFs, up to 5 MB)
 
 ---
 

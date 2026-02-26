@@ -13,6 +13,16 @@ export async function clearDatabase(): Promise<void> {
   log('🗑️', 'Clearing existing data...')
   
   // Delete in order of dependencies (child tables first)
+  // Phase 9-11: Job workflow tables
+  await prisma.platformEarning.deleteMany()
+  await prisma.artisanPayout.deleteMany()
+  await prisma.jobPayment.deleteMany()
+  await prisma.quoteLineItem.deleteMany()
+  await prisma.quote.deleteMany()
+  await prisma.job.deleteMany()
+  await prisma.verificationHistory.deleteMany()
+  
+  // Operational tables
   await prisma.notification.deleteMany()
   await prisma.notificationPreferences.deleteMany()
   await prisma.searchHistory.deleteMany()
@@ -23,6 +33,8 @@ export async function clearDatabase(): Promise<void> {
   await prisma.message.deleteMany()
   await prisma.conversation.deleteMany()
   await prisma.payment.deleteMany()
+  
+  // Static/structural tables
   await prisma.subscription.deleteMany()
   await prisma.specialization.deleteMany()
   await prisma.portfolioItem.deleteMany()

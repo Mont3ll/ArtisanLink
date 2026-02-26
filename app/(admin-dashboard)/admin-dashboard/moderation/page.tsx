@@ -343,8 +343,8 @@ export default function ModerationPage() {
                 userItems.map((item) => (
                   <div key={item.id} className="flex items-start justify-between p-4 border rounded-lg">
                     <div className="flex items-start gap-4">
-                      <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-                        <User className="h-5 w-5 text-blue-600" />
+                      <div className="w-10 h-10 bg-emerald-100 rounded-full flex items-center justify-center">
+                        <User className="h-5 w-5 text-emerald-600" />
                       </div>
                       <div className="flex-1">
                         <div className="font-medium">

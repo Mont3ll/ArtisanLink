@@ -53,11 +53,11 @@ export const SUBSCRIPTION_PLANS = {
     price: 500,
     durationDays: 30,
     features: [
-      'Unlimited profile visibility',
-      'Accept unlimited inquiries',
-      'Priority listing in search',
+      'Priority listing in search results',
+      'Premium profile badge',
+      'Reduced commission rate (5%)',
       'Portfolio showcase (up to 20 items)',
-      'Messaging with clients',
+      'Priority support',
     ],
   },
   ANNUAL: {
@@ -67,8 +67,7 @@ export const SUBSCRIPTION_PLANS = {
     features: [
       'All Monthly features',
       'Save KES 1,000 per year',
-      'Verified badge',
-      'Featured in homepage',
+      'Featured on homepage',
       'Analytics dashboard',
       'Priority support',
     ],

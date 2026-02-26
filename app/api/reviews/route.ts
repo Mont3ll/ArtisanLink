@@ -152,12 +152,12 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Artisan not found' }, { status: 404 })
     }
 
-    // Check if client has a COMPLETED job with this artisan
+    // Check if client has a COMPLETED or PAID job with this artisan
     const completedJob = await prisma.job.findFirst({
       where: {
         clientId: user.id,
         artisanId: profile.userId, // Get artisan's user ID from profile
-        status: 'COMPLETED'
+        status: { in: ['COMPLETED', 'PAID'] }
       }
     })
 

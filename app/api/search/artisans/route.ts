@@ -51,11 +51,13 @@ export async function GET(request: Request) {
     const sortOrder = searchParams.get('sortOrder') === 'asc' ? 'asc' : 'desc'
 
     // Build where clause for profiles
+    // Only show verified artisans in search results (subscription is optional boost, not a gate)
     const where: Record<string, unknown> = {
       user: {
         role: 'ARTISAN',
         status: 'ACTIVE'
-      }
+      },
+      artisanStatus: 'VERIFIED',
     }
 
     // Text search on profession, bio, name
@@ -102,10 +104,8 @@ export async function GET(request: Request) {
       where.isAvailable = true
     }
 
-    // Verified filter
-    if (verifiedOnly) {
-      where.artisanStatus = 'VERIFIED'
-    }
+    // Note: artisanStatus: 'VERIFIED' is already enforced in the base WHERE clause.
+    // The verifiedOnly param is kept for backwards compatibility but has no additional effect.
 
     // Specialization filter
     if (specialization) {
@@ -151,6 +151,13 @@ export async function GET(request: Request) {
               name: true,
               skillLevel: true
             }
+          },
+          subscription: {
+            select: {
+              status: true,
+              endDate: true,
+              plan: true,
+            }
           }
         },
         orderBy,
@@ -163,6 +170,10 @@ export async function GET(request: Request) {
     // Calculate distance if geospatial search
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let results = profiles.map((profile: any) => {
+      // Determine if artisan has an active subscription (premium/boosted)
+      const hasActiveSubscription = profile.subscription?.status === 'ACTIVE' 
+        && profile.subscription?.endDate > new Date()
+
       const artisan = {
         id: profile.user.id,
         profileId: profile.id,
@@ -180,6 +191,7 @@ export async function GET(request: Request) {
         hourlyRate: profile.hourlyRate,
         isAvailable: profile.isAvailable,
         isVerified: profile.artisanStatus === 'VERIFIED',
+        isPremium: hasActiveSubscription,
         rating: {
           average: profile.averageRating,
           total: profile.totalReviews
@@ -223,12 +235,24 @@ export async function GET(request: Request) {
       })
     }
 
-    // Get available filter options for faceted search
+    // Boost premium artisans to the top of results (stable sort preserves existing order within groups)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    results.sort((a: any, b: any) => {
+      if (a.isPremium && !b.isPremium) return -1
+      if (!a.isPremium && b.isPremium) return 1
+      return 0
+    })
+
+    // Get available filter options for faceted search (all verified artisans)
+    const facetWhere = {
+      user: { role: 'ARTISAN' as const, status: 'ACTIVE' as const },
+      artisanStatus: 'VERIFIED' as const,
+    }
     const [professions, counties, specializations] = await Promise.all([
       prisma.profile.groupBy({
         by: ['profession'],
         where: {
-          user: { role: 'ARTISAN', status: 'ACTIVE' },
+          ...facetWhere,
           profession: { not: null }
         },
         _count: { profession: true },
@@ -238,7 +262,7 @@ export async function GET(request: Request) {
       prisma.profile.groupBy({
         by: ['county'],
         where: {
-          user: { role: 'ARTISAN', status: 'ACTIVE' },
+          ...facetWhere,
           county: { not: null }
         },
         _count: { county: true },

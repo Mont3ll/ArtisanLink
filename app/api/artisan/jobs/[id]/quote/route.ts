@@ -80,7 +80,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
     // Get user
     const user = await prisma.user.findUnique({
       where: { clerkId },
-      select: { id: true, role: true, firstName: true, lastName: true },
+      select: { id: true, role: true, firstName: true, lastName: true, profile: { select: { id: true, artisanStatus: true } } },
     })
 
     if (!user) {
@@ -89,6 +89,10 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
 
     if (user.role !== 'ARTISAN') {
       return NextResponse.json({ error: 'Only artisans can create quotes' }, { status: 403 })
+    }
+
+    if (user.profile?.artisanStatus !== 'VERIFIED') {
+      return NextResponse.json({ error: 'Only verified artisans can create quotes' }, { status: 403 })
     }
 
     // Get job with existing quotes

@@ -18,6 +18,7 @@ export interface Artisan {
   hourlyRate: number | null
   isAvailable: boolean
   isVerified: boolean
+  isPremium: boolean
   rating: {
     average: number
     total: number

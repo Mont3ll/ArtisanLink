@@ -128,9 +128,9 @@ export default function SlidingImages() {
         <section className="sliding-images-section relative py-20 lg:py-32 bg-gradient-section overflow-hidden">
             {/* Full-width Background Effects */}
             <div className="absolute inset-0 bg-animated-grid opacity-30" />
-            <div className="absolute inset-0 bg-gradient-to-r from-blue-500/5 via-transparent to-purple-500/5" />
+            <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/5 via-transparent to-teal-500/5" />
             <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-amber-400/10 rounded-full blur-3xl animate-float" />
-            <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-blue-400/10 rounded-full blur-3xl animate-float-delayed" />
+            <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-emerald-400/10 rounded-full blur-3xl animate-float-delayed" />
             <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-purple-400/5 rounded-full blur-2xl" />
             
             <div className="space-y-12 relative z-10">
@@ -138,7 +138,7 @@ export default function SlidingImages() {
                 <div className="max-w-7xl mx-auto px-6 md:px-8 lg:px-12">
                     <div className="sliding-header text-center">
                         <div className="inline-flex items-center gap-2 px-4 py-2 glass-card-light rounded-full text-sm font-medium text-slate-600 dark:text-slate-400 mb-6">
-                            <Users className="w-4 h-4 text-blue-500" />
+                            <Users className="w-4 h-4 text-emerald-500" />
                             Our Artisans
                         </div>
                         <h2 className="text-3xl md:text-4xl font-bold text-slate-900 dark:text-slate-100 mb-4">

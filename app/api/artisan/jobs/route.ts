@@ -63,6 +63,7 @@ export async function GET(request: NextRequest) {
               phone: true,
               profile: {
                 select: {
+                  profileImage: true,
                   city: true,
                   county: true,
                 },
@@ -118,7 +119,7 @@ export async function GET(request: NextRequest) {
         name: `${job.client.firstName} ${job.client.lastName}`,
         email: job.client.email,
         phone: job.client.phone,
-        profileImage: null,
+        profileImage: job.client.profile?.profileImage || null,
         location: job.client.profile?.county ? `${job.client.profile.city}, ${job.client.profile.county}` : null,
       },
       latestQuote: job.quotes[0] || null,

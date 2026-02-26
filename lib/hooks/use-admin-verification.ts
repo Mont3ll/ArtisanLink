@@ -9,6 +9,9 @@ export interface PendingArtisanProfile {
   bio?: string
   certificateUrl?: string
   certificateUploadedAt?: string
+  idDocumentUrl?: string
+  idDocumentType?: string
+  profileImage?: string
   artisanStatus: 'PENDING' | 'VERIFIED' | 'REJECTED'
 }
 
@@ -40,6 +43,7 @@ export interface ProcessVerificationData {
   artisanId: string
   action: 'APPROVE' | 'REJECT'
   reason?: string
+  adminNotes?: string
 }
 
 export interface ProcessVerificationResponse {
@@ -58,8 +62,8 @@ export const adminVerificationKeys = {
   stats: () => [...adminVerificationKeys.all, 'stats'] as const,
 }
 
-// Fetch pending artisans
-async function fetchPendingArtisans(): Promise<PendingArtisan[]> {
+// Fetch pending artisans with stats
+async function fetchPendingArtisans(): Promise<VerificationData> {
   const response = await fetch('/api/admin/verification/pending')
   
   if (!response.ok) {
@@ -87,7 +91,7 @@ async function processVerification(
 }
 
 /**
- * Hook to fetch pending artisan verifications
+ * Hook to fetch pending artisan verifications with stats
  */
 export function usePendingVerifications() {
   return useQuery({
@@ -97,47 +101,17 @@ export function usePendingVerifications() {
 }
 
 /**
- * Hook to get verification stats (calculated from pending artisans since no stats API)
- * This calculates stats client-side based on available data
- */
-export function useVerificationStats() {
-  const { data: pendingArtisans, isLoading, error } = usePendingVerifications()
-  
-  // Calculate stats from pending artisans
-  const stats: VerificationStats | undefined = pendingArtisans ? {
-    totalPending: pendingArtisans.length,
-    // These would ideally come from an API, using placeholders for now
-    totalVerified: 0,
-    totalRejected: 0,
-    avgProcessingTime: 2, // Default 2 days
-    pendingThisWeek: pendingArtisans.filter(a => {
-      const weekAgo = new Date()
-      weekAgo.setDate(weekAgo.getDate() - 7)
-      return new Date(a.createdAt) > weekAgo
-    }).length,
-    verifiedThisWeek: 0,
-  } : undefined
-  
-  return {
-    stats,
-    isLoading,
-    error,
-  }
-}
-
-/**
  * Hook to fetch all verification data (pending artisans and stats)
  */
 export function useAdminVerification() {
-  const pendingQuery = usePendingVerifications()
-  const { stats } = useVerificationStats()
+  const query = usePendingVerifications()
   
   return {
-    pendingArtisans: pendingQuery.data || [],
-    stats,
-    isLoading: pendingQuery.isLoading,
-    error: pendingQuery.error,
-    refetch: pendingQuery.refetch,
+    pendingArtisans: query.data?.pendingArtisans || [],
+    stats: query.data?.stats,
+    isLoading: query.isLoading,
+    error: query.error,
+    refetch: query.refetch,
   }
 }
 
@@ -154,26 +128,33 @@ export function useProcessVerification() {
       await queryClient.cancelQueries({ queryKey: adminVerificationKeys.pending() })
       
       // Snapshot previous value
-      const previousArtisans = queryClient.getQueryData<PendingArtisan[]>(
+      const previousData = queryClient.getQueryData<VerificationData>(
         adminVerificationKeys.pending()
       )
       
       // Optimistically remove the artisan from pending list
-      if (previousArtisans) {
-        queryClient.setQueryData<PendingArtisan[]>(
+      if (previousData) {
+        queryClient.setQueryData<VerificationData>(
           adminVerificationKeys.pending(),
-          previousArtisans.filter(a => a.id !== data.artisanId)
+          {
+            ...previousData,
+            pendingArtisans: previousData.pendingArtisans.filter(a => a.id !== data.artisanId),
+            stats: {
+              ...previousData.stats,
+              totalPending: previousData.stats.totalPending - 1,
+            }
+          }
         )
       }
       
-      return { previousArtisans }
+      return { previousData }
     },
     onError: (_err, _data, context) => {
       // Rollback on error
-      if (context?.previousArtisans) {
+      if (context?.previousData) {
         queryClient.setQueryData(
           adminVerificationKeys.pending(),
-          context.previousArtisans
+          context.previousData
         )
       }
     },

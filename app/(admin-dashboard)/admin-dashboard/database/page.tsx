@@ -220,8 +220,8 @@ export default function DatabasePage() {
                   tables.map((table) => (
                     <div key={table.name} className="flex items-center justify-between p-4 border rounded-lg">
                       <div className="flex items-center gap-4">
-                        <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-                          <Database className="h-5 w-5 text-blue-600" />
+                        <div className="w-10 h-10 bg-emerald-100 rounded-full flex items-center justify-center">
+                          <Database className="h-5 w-5 text-emerald-600" />
                         </div>
                         <div>
                           <div className="font-medium">{table.displayName}</div>
@@ -266,7 +266,7 @@ export default function DatabasePage() {
                   <>
                     <div className="flex items-center justify-between p-3 border rounded-lg">
                       <div className="flex items-center gap-3">
-                        <Users className="h-5 w-5 text-blue-500" />
+                        <Users className="h-5 w-5 text-emerald-500" />
                         <span className="text-sm">Active Users</span>
                       </div>
                       <span className="font-medium">{(health?.activeUsers ?? 0).toLocaleString()}</span>

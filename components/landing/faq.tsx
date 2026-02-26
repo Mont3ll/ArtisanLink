@@ -83,7 +83,7 @@ function FaqItem({ faq }: FaqItemProps) {
   return (
     <div className="faq-item rounded-xl glass-card-light hover:glow-primary transition-all duration-500 overflow-hidden group relative">
       {/* Subtle gradient overlay */}
-      <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-sky-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+      <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/5 to-teal-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
       
       <button
         onClick={() => setIsOpen(!isOpen)}
@@ -94,7 +94,7 @@ function FaqItem({ faq }: FaqItemProps) {
           {faq.q}
         </span>
         <div ref={iconRef} className="flex-shrink-0 ml-4">
-          <ChevronDown className="h-5 w-5 text-slate-500 dark:text-slate-400 group-hover:text-blue-500 transition-colors" />
+          <ChevronDown className="h-5 w-5 text-slate-500 dark:text-slate-400 group-hover:text-emerald-500 transition-colors" />
         </div>
       </button>
       <div
@@ -127,7 +127,7 @@ export default function Faq() {
     <div className="space-y-12">
       <div className="faq-header text-center">
         <div className="inline-flex items-center gap-2 px-4 py-2 glass-card-light rounded-full text-sm font-medium text-slate-600 dark:text-slate-400 mb-6">
-          <HelpCircle className="w-4 h-4 text-blue-500" />
+          <HelpCircle className="w-4 h-4 text-emerald-500" />
           FAQ
         </div>
         <h2 className="text-3xl md:text-4xl font-bold text-slate-900 dark:text-slate-100 mb-4">

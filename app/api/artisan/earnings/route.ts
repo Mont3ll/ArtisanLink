@@ -123,12 +123,25 @@ export async function GET(request: Request) {
       }),
     ])
 
-    // Get commission info
-    const isPromotionalEligible = (user.completedJobCount || 0) < 5
+    // Get commission info (check subscription status for reduced rate)
+    const profile = await prisma.profile.findUnique({
+      where: { userId: user.id },
+      select: {
+        subscription: {
+          select: { status: true, endDate: true },
+        },
+      },
+    })
+
+    const sub = profile?.subscription
+    const hasActiveSubscription = sub?.status === 'ACTIVE' && new Date(sub.endDate) > new Date()
+    const isPromotionalEligible = hasActiveSubscription || (user.completedJobCount || 0) < 5
     const commissionRate = isPromotionalEligible ? 0.05 : 0.10
-    const remainingPromotionalJobs = isPromotionalEligible
-      ? 5 - (user.completedJobCount || 0)
-      : 0
+    const remainingPromotionalJobs = hasActiveSubscription
+      ? null
+      : (user.completedJobCount || 0) < 5
+        ? 5 - (user.completedJobCount || 0)
+        : 0
 
     const statistics = {
       totalEarnings: {
@@ -146,6 +159,7 @@ export async function GET(request: Request) {
       commission: {
         currentRate: commissionRate,
         isPromotional: isPromotionalEligible,
+        hasActiveSubscription,
         remainingPromotionalJobs,
         completedJobCount: user.completedJobCount || 0,
       },

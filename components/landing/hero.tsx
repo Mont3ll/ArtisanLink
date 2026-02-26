@@ -70,7 +70,7 @@ export default function Hero() {
   return (
     <section ref={root} className="pt-16 sm:pt-24 hero-main relative pb-20 lg:pb-32" aria-labelledby="hero-title">
       {/* Background Elements */}
-      <div className="hero-bg-orb absolute top-20 right-10 w-32 h-32 bg-gradient-to-br from-blue-400/20 to-sky-500/20 rounded-full blur-xl" />
+      <div className="hero-bg-orb absolute top-20 right-10 w-32 h-32 bg-gradient-to-br from-emerald-400/20 to-teal-500/20 rounded-full blur-xl" />
       <div className="hero-bg-orb absolute bottom-20 left-10 w-24 h-24 bg-gradient-to-br from-amber-400/20 to-orange-500/20 rounded-full blur-xl" />
       
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center relative z-10">
@@ -149,8 +149,8 @@ export default function Hero() {
 
             <div className="absolute -bottom-4 -right-4 floating-card bg-white dark:bg-slate-800 rounded-lg shadow-lg p-4 glass-light z-10 animate-float-delayed">
               <div className="flex items-center gap-3">
-                <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-                  <MapPin className="w-4 h-4 text-blue-600" />
+                <div className="w-8 h-8 bg-emerald-100 rounded-full flex items-center justify-center">
+                  <MapPin className="w-4 h-4 text-emerald-600" />
                 </div>
                 <div>
                   <div className="text-sm font-semibold text-slate-900 dark:text-slate-100">Nearby</div>
@@ -161,7 +161,7 @@ export default function Hero() {
           </div>
           
           {/* Background decoration */}
-          <div className="absolute inset-0 -z-10 bg-gradient-to-br from-blue-100/50 to-sky-100/50 rounded-3xl blur-xl transform scale-110" />
+          <div className="absolute inset-0 -z-10 bg-gradient-to-br from-emerald-100/50 to-teal-100/50 rounded-3xl blur-xl transform scale-110" />
         </div>
       </div>
     </section>

@@ -161,12 +161,12 @@ export async function POST(request: Request) {
               type: 'PAYMENT',
               title: 'Subscription Activated',
               message: `Your ${payment.subscription.plan.toLowerCase()} subscription has been activated. Receipt: ${result.mpesaReceiptNumber}`,
-              metadata: JSON.stringify({
+              data: {
                 paymentId: payment.id,
                 subscriptionId: payment.subscriptionId,
                 amount: result.amount,
                 receiptNumber: result.mpesaReceiptNumber,
-              }),
+              },
             },
           })
         }
@@ -201,12 +201,12 @@ export async function POST(request: Request) {
               type: 'PAYMENT',
               title: 'Payment Failed',
               message: `Your subscription payment failed: ${failureReason}. Please try again.`,
-              metadata: JSON.stringify({
+              data: {
                 paymentId: payment.id,
                 subscriptionId: payment.subscriptionId,
                 reason: failureReason,
                 resultCode: result.resultCode,
-              }),
+              },
             },
           })
         }

@@ -94,7 +94,7 @@ Click on an artisan card to view their full profile:
 
 ### Leaving Reviews
 
-After working with an artisan:
+After working with an artisan (the job must be fully **paid** — status: PAID):
 
 1. Go to your **Messages** and find the conversation
 2. Click **"Leave Review"** or go to the artisan's profile
@@ -105,7 +105,7 @@ After working with an artisan:
    - Approximate cost
 6. Submit your review
 
-**Note**: Reviews require admin approval before appearing publicly.
+**Note**: Reviews require admin approval before appearing publicly. You can only leave a review for artisans on jobs where all payments have been completed.
 
 ### Managing Conversations
 
@@ -115,6 +115,20 @@ Your **Messages** dashboard shows all conversations:
 - **Archived** - Past conversations
 - Unread messages show a notification badge
 - Click a conversation to view and reply
+
+#### Sending Attachments
+
+You can attach files to messages:
+
+1. Click the **paperclip icon** next to the message input
+2. Select a file from your device
+3. Supported formats: JPEG, PNG, GIF, WebP, PDF (up to 5 MB)
+4. A preview thumbnail appears below the message input:
+   - Images show an inline preview
+   - PDFs show a file icon with the filename
+5. Click **X** on a preview to remove the attachment before sending
+6. You can attach multiple files to a single message
+7. Click **Send** to send the message with attachments
 
 ### Requesting a Job
 
@@ -269,19 +283,22 @@ Add your specific skills:
 
 ### Subscription Plans
 
-Access premium features with a subscription:
+Boost your profile with an optional premium subscription:
 
-#### Free Features
-- Basic profile
-- Limited portfolio items
-- Receive messages
+#### Free Features (All Verified Artisans)
+- Profile visible in search results
+- Accept job requests and send quotes
+- Receive messages from clients
+- Basic portfolio (up to 5 items)
+- Standard commission rate (5% first 5 jobs, then 10%)
 
-#### Premium Features (Subscription Required)
-- Featured placement in search
-- Unlimited portfolio items
-- Priority in search results
+#### Premium Features (Optional Subscription)
+- Priority placement in search results
+- Premium profile badge
+- Reduced commission rate (5% permanently)
+- Extended portfolio (up to 20 items)
 - Analytics dashboard
-- Verified badge eligibility
+- Priority support
 
 #### Subscribing
 
@@ -384,6 +401,7 @@ ArtisanLink charges a platform commission on completed jobs:
 
 - **Promotional Rate (5%)** - Your first 5 completed jobs
 - **Standard Rate (10%)** - All jobs after the first 5
+- **Subscriber Rate (5%)** - Active subscription holders keep the 5% rate permanently, regardless of job count
 
 The earnings dashboard shows:
 - Your current commission rate
@@ -455,7 +473,9 @@ Track your performance:
 1. Go to **Admin** → **Verifications**
 2. See pending verification requests
 3. Click to review an application
-4. View submitted documents and profile
+4. View submitted documents with inline previews:
+   - **Images** (certificates, ID photos) display as thumbnails with a hover overlay to open full size in a new tab
+   - **PDFs** show a file icon with the filename and an "Open" button to view in a new tab
 
 #### Processing Verifications
 
@@ -689,7 +709,7 @@ A:
 
 **Q: What happens if my subscription expires?**
 
-A: Your account reverts to free features. Your profile and portfolio remain, but premium features are disabled.
+A: You'll still appear in search results and can accept jobs, but you'll lose your priority placement, premium badge, and reduced commission rate. Your commission rate reverts to the standard 10% (unless you're still in the promotional period).
 
 **Q: How do I get the verified badge?**
 
@@ -709,6 +729,7 @@ A: Payments are handled through M-Pesa:
 A: 
 - **5% promotional rate** for your first 5 completed jobs
 - **10% standard rate** for all jobs after that
+- **5% subscriber rate** for active subscription holders (permanently)
 - Commission is deducted from the final payment, not the deposit
 
 **Q: When do I receive my payment?**

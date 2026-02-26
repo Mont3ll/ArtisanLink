@@ -163,7 +163,7 @@ export function useConversationMessages(
 /**
  * Hook to send a message with optimistic update
  */
-export function useSendMessage(conversationId: string) {
+export function useSendMessage(conversationId: string, currentUserId: string) {
   const queryClient = useQueryClient()
   
   return useMutation({
@@ -185,22 +185,28 @@ export function useSendMessage(conversationId: string) {
         conversationMessagesKeys.detail(conversationId)
       )
       
+      // Determine sender/receiver based on who is actually sending
+      const isClient = previousConversation?.clientId === currentUserId
+      const senderParticipant = isClient ? previousConversation?.client : previousConversation?.artisan
+      
       // Create optimistic message
       const optimisticMessage: Message = {
         id: `temp-${Date.now()}`,
         conversationId,
-        senderId: previousConversation?.clientId || '',
-        receiverId: previousConversation?.artisanId || '',
+        senderId: currentUserId,
+        receiverId: isClient
+          ? previousConversation?.artisanId || ''
+          : previousConversation?.clientId || '',
         content: newMessageData.content,
         status: 'SENT',
         attachmentUrls: newMessageData.attachmentUrls || [],
         createdAt: new Date().toISOString(),
         readAt: null,
         sender: {
-          id: previousConversation?.clientId || '',
-          firstName: previousConversation?.client.firstName || '',
-          lastName: previousConversation?.client.lastName || '',
-          profile: previousConversation?.client.profile,
+          id: currentUserId,
+          firstName: senderParticipant?.firstName || '',
+          lastName: senderParticipant?.lastName || '',
+          profile: senderParticipant?.profile,
         },
       }
       

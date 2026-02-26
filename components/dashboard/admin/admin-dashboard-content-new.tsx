@@ -212,8 +212,8 @@ export function AdminDashboardContent() {
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex items-start gap-3 p-4 border rounded-lg">
-              <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
-                <Users className="w-4 h-4 text-blue-600" />
+              <div className="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center">
+                <Users className="w-4 h-4 text-emerald-600" />
               </div>
               <div className="flex-1 space-y-1">
                 <p className="text-sm font-medium">New artisan registration</p>

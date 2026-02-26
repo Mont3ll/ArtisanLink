@@ -18,9 +18,9 @@ const cards = [
     title: "Localized discovery",
     desc: "Find artisans near you with an interactive map and filters for trade and availability.",
     icon: MapPin,
-    color: "from-blue-50 to-blue-100",
-    iconColor: "text-blue-600",
-    borderColor: "border-blue-200/50",
+    color: "from-emerald-50 to-emerald-100",
+    iconColor: "text-emerald-600",
+    borderColor: "border-emerald-200/50",
     benefits: ["Interactive map search", "Real-time availability", "Location-based filters"]
   },
   {
@@ -77,7 +77,7 @@ export default function Features() {
       if (container) {
         for (let i = 0; i < 4; i++) {
           const orb = document.createElement('div');
-          orb.className = `floating-orb-${i} absolute rounded-full bg-gradient-to-br from-blue-400/10 to-sky-500/10 blur-xl pointer-events-none`;
+          orb.className = `floating-orb-${i} absolute rounded-full bg-gradient-to-br from-emerald-400/10 to-teal-500/10 blur-xl pointer-events-none`;
           
           const size = Math.random() * 100 + 50;
           orb.style.width = `${size}px`;
@@ -95,8 +95,8 @@ export default function Features() {
     <section className="features-section relative py-20 lg:py-32 bg-gradient-section overflow-hidden">
       {/* Enhanced Background Effects */}
       <div className="absolute inset-0 bg-animated-grid opacity-30" />
-      <div className="absolute inset-0 bg-gradient-to-r from-blue-500/5 via-transparent to-sky-500/5" />
-      <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl animate-float" />
+      <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/5 via-transparent to-teal-500/5" />
+      <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl animate-float" />
       <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-amber-500/10 rounded-full blur-3xl animate-float-delayed" />
       
       <div ref={containerRef} className="container mx-auto px-6 md:px-8 lg:px-12 relative z-10">

@@ -16,7 +16,11 @@ import {
   Calendar,
   DollarSign,
   Hammer,
-  Briefcase
+  Briefcase,
+  Clock,
+  XCircle,
+  Shield,
+  ArrowRight
 } from "lucide-react"
 
 // Metric card with skeleton support
@@ -50,6 +54,72 @@ function MetricCard({
         </div>
       </CardContent>
     </Card>
+  )
+}
+
+// Verification status banner
+function VerificationBanner({ status, rejectionReason }: { status: string | null | undefined; rejectionReason?: string | null }) {
+  if (status === 'VERIFIED') return null
+
+  if (status === 'REJECTED') {
+    return (
+      <div className="rounded-lg border border-red-200 bg-red-50 dark:border-red-900 dark:bg-red-950/50 p-4">
+        <div className="flex items-start gap-3">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-red-100 dark:bg-red-900">
+            <XCircle className="h-5 w-5 text-red-600 dark:text-red-400" />
+          </div>
+          <div className="flex-1 space-y-1">
+            <h3 className="font-semibold text-red-800 dark:text-red-200">Verification Rejected</h3>
+            <p className="text-sm text-red-700 dark:text-red-300">
+              Your profile verification was not approved. You will not appear in search results
+              or receive job requests until you are verified.
+            </p>
+            {rejectionReason && (
+              <p className="text-sm text-red-600 dark:text-red-400 mt-1">
+                <span className="font-medium">Reason:</span> {rejectionReason}
+              </p>
+            )}
+            <div className="pt-2">
+              <Link href="/artisan-dashboard/settings">
+                <Button size="sm" variant="outline" className="border-red-300 text-red-700 hover:bg-red-100 dark:border-red-800 dark:text-red-300 dark:hover:bg-red-900">
+                  <Shield className="mr-2 h-4 w-4" />
+                  Update & Resubmit
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Button>
+              </Link>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  // PENDING or null (not yet submitted)
+  return (
+    <div className="rounded-lg border border-amber-200 bg-amber-50 dark:border-amber-900 dark:bg-amber-950/50 p-4">
+      <div className="flex items-start gap-3">
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-amber-100 dark:bg-amber-900">
+          <Clock className="h-5 w-5 text-amber-600 dark:text-amber-400" />
+        </div>
+        <div className="flex-1 space-y-1">
+          <h3 className="font-semibold text-amber-800 dark:text-amber-200">Verification Pending</h3>
+          <p className="text-sm text-amber-700 dark:text-amber-300">
+            {status === 'PENDING'
+              ? 'Your profile is under review by our team. You will not appear in search results or receive job requests until your verification is approved.'
+              : 'Please upload your certificate and ID document to start the verification process. You will not appear in search results until verified.'}
+          </p>
+          <div className="pt-2">
+            <Link href="/artisan-dashboard/settings">
+              <Button size="sm" variant="outline" className="border-amber-300 text-amber-700 hover:bg-amber-100 dark:border-amber-800 dark:text-amber-300 dark:hover:bg-amber-900">
+                <Shield className="mr-2 h-4 w-4" />
+                {status === 'PENDING' ? 'View Verification Status' : 'Start Verification'}
+                <ArrowRight className="ml-2 h-4 w-4" />
+              </Button>
+            </Link>
+          </div>
+        </div>
+      </div>
+    </div>
   )
 }
 
@@ -135,6 +205,14 @@ export function ArtisanDashboardContent() {
           )}
         </div>
       </div>
+
+      {/* Verification Status Banner */}
+      {!isLoading && (
+        <VerificationBanner 
+          status={profile?.artisanStatus} 
+          rejectionReason={profile?.rejectionReason} 
+        />
+      )}
 
       {/* Profile Completion */}
       {profile && <ProfileCompletion profile={profile} />}
@@ -270,8 +348,8 @@ export function ArtisanDashboardContent() {
           ) : recentActivity.length > 0 ? (
             recentActivity.slice(0, 5).map((activity) => (
               <div key={activity.id} className="flex items-start gap-3 p-4 border rounded-lg">
-                <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
-                  {activity.icon === 'message' && <MessageSquare className="w-4 h-4 text-blue-600" />}
+                <div className="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center">
+                  {activity.icon === 'message' && <MessageSquare className="w-4 h-4 text-emerald-600" />}
                   {activity.icon === 'star' && <Star className="w-4 h-4 text-yellow-600" />}
                   {activity.icon === 'eye' && <Eye className="w-4 h-4 text-green-600" />}
                 </div>

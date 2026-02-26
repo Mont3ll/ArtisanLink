@@ -259,10 +259,10 @@ function PerformanceTips({
 
   if (stats.totalProjects < 5) {
     tips.push(
-      <div key="portfolio" className="p-4 bg-blue-50 rounded-lg">
-        <Briefcase className="h-6 w-6 text-blue-600 mb-2" />
-        <h4 className="font-medium text-blue-900">Add More Portfolio Items</h4>
-        <p className="text-sm text-blue-700">
+      <div key="portfolio" className="p-4 bg-emerald-50 rounded-lg">
+        <Briefcase className="h-6 w-6 text-emerald-600 mb-2" />
+        <h4 className="font-medium text-emerald-900">Add More Portfolio Items</h4>
+        <p className="text-sm text-emerald-700">
           Profiles with 5+ portfolio items get 40% more inquiries
         </p>
       </div>
@@ -338,7 +338,7 @@ function PerformanceTips({
 
 export default function AnalyticsPage() {
   const [timeRange, setTimeRange] = useState('30d')
-  const { data, isLoading, error, refetch } = useArtisanAnalytics()
+  const { data, isLoading, error, refetch } = useArtisanAnalytics(timeRange)
 
   if (error) {
     return (

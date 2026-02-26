@@ -95,14 +95,15 @@ export interface ClientJobDetails extends ClientJob {
 // Query keys
 export const clientJobsKeys = {
   all: ['client-jobs'] as const,
-  list: (status?: string | null) => [...clientJobsKeys.all, 'list', status || 'all'] as const,
+  list: (status?: string | null, page?: number) => [...clientJobsKeys.all, 'list', status || 'all', page ?? 1] as const,
   detail: (id: string) => [...clientJobsKeys.all, 'detail', id] as const,
 }
 
 // Fetch functions
-async function fetchClientJobs(status: string | null): Promise<ClientJobsResponse> {
+async function fetchClientJobs(status: string | null, page: number = 1): Promise<ClientJobsResponse> {
   const params = new URLSearchParams()
   if (status) params.set('status', status)
+  params.set('page', String(page))
   
   const response = await fetch(`/api/client/jobs?${params.toString()}`)
   if (!response.ok) {
@@ -120,10 +121,10 @@ async function fetchClientJobDetails(id: string): Promise<{ job: ClientJobDetail
 }
 
 // Hooks
-export function useClientJobs(status: string | null = null) {
+export function useClientJobs(status: string | null = null, page: number = 1) {
   return useQuery({
-    queryKey: clientJobsKeys.list(status),
-    queryFn: () => fetchClientJobs(status),
+    queryKey: clientJobsKeys.list(status, page),
+    queryFn: () => fetchClientJobs(status, page),
   })
 }
 

@@ -137,8 +137,7 @@ export default function AnalyticsPage() {
                   {formatCurrency(data?.projectStats.averageBudget ?? 0)}
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  <TrendingUp className="inline h-3 w-3 mr-1" />
-                  +12.5% from last month
+                  Based on agreed job prices
                 </p>
               </>
             )}
@@ -244,7 +243,7 @@ export default function AnalyticsPage() {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   {data?.userGrowth.map((item) => (
                     <div key={item.role} className="text-center p-4 border rounded-lg">
-                      <div className="text-2xl font-bold text-blue-600">{item.count}</div>
+                      <div className="text-2xl font-bold text-emerald-600">{item.count}</div>
                       <div className="text-sm text-muted-foreground">New {item.role}s</div>
                     </div>
                   ))}
@@ -288,7 +287,7 @@ export default function AnalyticsPage() {
                     </>
                   ) : (
                     <>
-                      <div className="text-2xl font-bold text-blue-600">{data?.metrics.activeProjects}</div>
+                      <div className="text-2xl font-bold text-emerald-600">{data?.metrics.activeProjects}</div>
                       <div className="text-sm text-muted-foreground">Active Projects</div>
                     </>
                   )}

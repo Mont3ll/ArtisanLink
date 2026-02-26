@@ -753,3 +753,13 @@ This document serves as the source of truth for all development tasks. Mark task
 | 2026-01-23 | Updated admin and artisan sidebars with new menu items (Payouts, Earnings) |
 | 2026-01-23 | Created `docs/WORKFLOWS.md` - Comprehensive workflow documentation (~650 lines) |
 | 2026-01-23 | Updated documentation: AUDIT.md, API.md, ENVIRONMENT.md, DEPLOYMENT.md, USER_GUIDE.md |
+| 2026-02-26 | **Multi-flow Audit**: Identified 11 issues across client, artisan, and admin flows |
+| 2026-02-26 | **Batch 1** (5 fixes): REVISION_REQUESTED status in artisan job actions, PAID status for review eligibility, client profile image in artisan job listings, Take Action button navigation, notification `data` field fix |
+| 2026-02-26 | **Batch 2**: Wired up pagination for client and artisan job list pages |
+| 2026-02-26 | **Batch 3**: Subscription gating for quote submission, artisan search, and conversation creation |
+| 2026-02-26 | **Batch 4**: Added portfolio items (up to 12 public) to `GET /api/client/artisans/[id]` response |
+| 2026-02-26 | **Batch 5**: Fixed optimistic senderId bug in `useSendMessage`; added message attachment upload UI (Paperclip button, Cloudinary `message-attachments` folder, image/PDF previews) |
+| 2026-02-26 | **Batch 6**: Admin verification page — inline document previews (image thumbnails, PDF file icons) replacing plain links |
+| 2026-02-26 | Added `message-attachments` folder type to Cloudinary config (`lib/cloudinary.ts`, `lib/hooks/use-cloudinary-upload.ts`, `app/api/upload/image/route.ts`) |
+| 2026-02-26 | Updated docs: API.md, USER_GUIDE.md, WORKFLOWS.md, FLOWCHARTS.md, AUDIT.md, PROJECT_SCOPE.md |
+| 2026-02-26 | **Subscription as Optional Boost**: Removed subscription as mandatory gate for search visibility, quote submission, and conversation creation. Subscription now provides optional premium benefits: priority search placement, premium badge, reduced commission (5% permanently). Updated search API, quote API, conversations API, saved artisans API, payment processor, earnings API, subscription page, plan features. Updated all documentation. |

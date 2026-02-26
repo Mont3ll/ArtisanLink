@@ -10,7 +10,6 @@ import { KENYAN_COUNTIES, PROFESSIONS, KENYAN_FIRST_NAMES, KENYAN_LAST_NAMES } f
 import { 
   randomElement, 
   randomInt,
-  randomFloat,
   randomDate, 
   generatePhone, 
   generateEmail, 
@@ -158,8 +157,8 @@ export async function seedArtisans(
               latitude: data.coords.lat,
               longitude: data.coords.lng,
               address: `${randomElement(['Plot', 'House', 'Shop', 'Building'])} ${randomInt(1, 500)}, ${data.city}`,
-              averageRating: data.artisanStatus === ArtisanStatus.VERIFIED ? randomFloat(3.5, 5.0, 1) : 0,
-              totalReviews: data.artisanStatus === ArtisanStatus.VERIFIED ? randomInt(0, 50) : 0,
+              averageRating: 0,
+              totalReviews: 0,
               certificateUrl: data.artisanStatus !== ArtisanStatus.PENDING ? `https://certificates.artisanlink.co.ke/${data.artisanId}.pdf` : null,
               certificateUploadedAt: randomDate(180),
               verifiedAt: data.artisanStatus === ArtisanStatus.VERIFIED ? randomDate(90) : null,

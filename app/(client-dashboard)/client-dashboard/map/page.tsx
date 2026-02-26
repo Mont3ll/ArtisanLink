@@ -743,7 +743,7 @@ export default function MapSearchPage() {
                           {selectedArtisan.name}
                         </CardTitle>
                         {selectedArtisan.isVerified && (
-                          <BadgeCheck className="h-4 w-4 text-blue-500" />
+                          <BadgeCheck className="h-4 w-4 text-emerald-500" />
                         )}
                       </div>
                       <CardDescription>
@@ -864,7 +864,7 @@ export default function MapSearchPage() {
                   {userLocation && (
                     <div className="border-t pt-2">
                       <div className="flex items-center gap-2">
-                        <div className="w-3 h-3 rounded-full bg-blue-500 border border-white" />
+                        <div className="w-3 h-3 rounded-full bg-emerald-500 border border-white" />
                         <span>Your Location</span>
                       </div>
                     </div>

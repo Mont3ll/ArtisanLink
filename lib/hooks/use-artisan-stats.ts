@@ -39,6 +39,7 @@ export interface ArtisanProfile {
   certificateUrl: string | null
   isAvailable: boolean
   artisanStatus: string | null
+  rejectionReason: string | null
   portfolioItems: { id: string }[]
   specializations: { id: string }[]
 }
