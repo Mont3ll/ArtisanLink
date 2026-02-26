@@ -36,7 +36,7 @@ export async function GET() {
       }
     })
 
-    // Get portfolio statistics instead of project statistics
+    // Get portfolio statistics (last 30 days)
     const portfolioStats = await prisma.portfolioItem.aggregate({
       _count: { id: true },
       where: {
@@ -46,15 +46,70 @@ export async function GET() {
       }
     })
 
-    // Get revenue data (simulated for now since we don't have orders table)
-    const revenueData = [
-      { month: 'Jan', revenue: 15000 },
-      { month: 'Feb', revenue: 18000 },
-      { month: 'Mar', revenue: 22000 },
-      { month: 'Apr', revenue: 25000 },
-      { month: 'May', revenue: 28000 },
-      { month: 'Jun', revenue: 32000 }
-    ]
+    // Build real monthly revenue data from PlatformEarning records (last 6 months)
+    const sixMonthsAgo = new Date()
+    sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6)
+    sixMonthsAgo.setDate(1)
+    sixMonthsAgo.setHours(0, 0, 0, 0)
+
+    const earnings = await prisma.platformEarning.findMany({
+      where: {
+        createdAt: { gte: sixMonthsAgo }
+      },
+      select: {
+        commissionAmount: true,
+        createdAt: true
+      }
+    })
+
+    // Group earnings by month
+    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+    const monthlyMap = new Map<string, number>()
+
+    // Pre-populate the last 6 months with 0 so we always show them
+    for (let i = 5; i >= 0; i--) {
+      const d = new Date()
+      d.setMonth(d.getMonth() - i)
+      const key = `${d.getFullYear()}-${d.getMonth()}`
+      monthlyMap.set(key, 0)
+    }
+
+    for (const earning of earnings) {
+      const d = new Date(earning.createdAt)
+      const key = `${d.getFullYear()}-${d.getMonth()}`
+      monthlyMap.set(key, (monthlyMap.get(key) || 0) + earning.commissionAmount)
+    }
+
+    const revenueData = Array.from(monthlyMap.entries()).map(([key, revenue]) => {
+      const [, monthIdx] = key.split('-')
+      return {
+        month: monthNames[parseInt(monthIdx, 10)],
+        revenue: Math.round(revenue * 100) / 100
+      }
+    })
+
+    // Get real job statistics for completion rate and average value
+    const [totalJobs, completedJobs, jobValueAgg] = await Promise.all([
+      prisma.job.count({
+        where: {
+          status: { notIn: ['REQUESTED', 'CANCELLED', 'DECLINED'] }
+        }
+      }),
+      prisma.job.count({
+        where: {
+          status: { in: ['COMPLETED', 'PAID'] }
+        }
+      }),
+      prisma.job.aggregate({
+        _avg: { agreedPrice: true },
+        where: {
+          agreedPrice: { not: null }
+        }
+      })
+    ])
+
+    const completionRate = totalJobs > 0 ? (completedJobs / totalJobs) * 100 : 0
+    const averageBudget = jobValueAgg._avg.agreedPrice || 0
 
     // Get platform metrics
     const totalUsers = await prisma.user.count()
@@ -70,14 +125,14 @@ export async function GET() {
       })),
       projectStats: {
         total: portfolioStats._count.id,
-        averageBudget: 0 // No budget data in portfolio items
+        averageBudget: Math.round(averageBudget * 100) / 100
       },
       revenueData,
       metrics: {
         totalUsers,
         totalProjects: totalPortfolioItems,
         activeProjects: activeSubscriptions,
-        completionRate: totalPortfolioItems > 0 ? 85 : 0 // Simulated completion rate
+        completionRate: Math.round(completionRate * 10) / 10
       }
     })
   } catch (error) {

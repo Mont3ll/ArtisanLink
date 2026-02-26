@@ -3,15 +3,11 @@ import { prisma, SeedResult } from './client'
 import { KENYAN_COUNTIES, PROFESSIONS } from './data'
 import { logSection } from './utils'
 
-// Import all seed modules
+// Import seed modules (static/structural data only)
 import { clearDatabase } from './00-clear'
 import { seedAdmins, seedClients } from './01-users'
 import { seedArtisans } from './02-artisans'
 import { seedSpecializations, seedPortfolioItems } from './03-specializations'
-import { seedReviews } from './04-reviews'
-import { seedConversations, seedMessages } from './05-conversations'
-import { seedPayments, seedSavedArtisans, seedSearchHistory } from './06-payments'
-import { seedNotifications, seedActivityLogs } from './07-notifications'
 import { seedSettings } from './08-settings'
 
 // ============================================================================
@@ -22,27 +18,25 @@ export interface SeedConfig {
   clearFirst?: boolean
   clients?: number
   artisansPerProfession?: number
-  conversations?: number
-  activityLogs?: number
 }
 
 const DEFAULT_CONFIG: SeedConfig = {
   clearFirst: true,
   clients: 40,
   artisansPerProfession: 10,
-  conversations: 80,
-  activityLogs: 100
 }
 
 // ============================================================================
 // MAIN SEED ORCHESTRATOR
+// Seeds only static/structural data. All operational data (reviews, messages,
+// jobs, payments, notifications, etc.) is created through manual testing.
 // ============================================================================
 
 export async function seed(config: SeedConfig = {}): Promise<SeedResult[]> {
   const cfg = { ...DEFAULT_CONFIG, ...config }
   const results: SeedResult[] = []
   
-  console.log('🌱 Starting comprehensive database seeding...')
+  console.log('🌱 Starting database seeding (static data only)...')
   console.log('================================================\n')
   
   try {
@@ -63,10 +57,9 @@ export async function seed(config: SeedConfig = {}): Promise<SeedResult[]> {
     const { artisans, details: artisanDetails } = await seedArtisans(admins[0].id, cfg.artisansPerProfession)
     results.push({ name: 'Artisans', count: artisans.length, details: artisanDetails })
     
-    // Step 2: Create artisan-related data
-    logSection('STEP 2: Creating Artisan Data')
+    // Step 2: Create artisan content (specializations + portfolio)
+    logSection('STEP 2: Creating Artisan Content')
     
-    // Type assertions for seed functions - the actual data includes profile from seedArtisans
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const specResult = await seedSpecializations(artisans as any)
     results.push(specResult)
@@ -75,48 +68,8 @@ export async function seed(config: SeedConfig = {}): Promise<SeedResult[]> {
     const portfolioResult = await seedPortfolioItems(artisans as any)
     results.push(portfolioResult)
     
-    // Step 3: Create reviews
-    logSection('STEP 3: Creating Reviews')
-    
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const reviewResult = await seedReviews(artisans as any, clients)
-    results.push(reviewResult)
-    
-    // Step 4: Create conversations and messages
-    logSection('STEP 4: Creating Conversations')
-    
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { conversations } = await seedConversations(artisans as any, clients as any, cfg.conversations)
-    results.push({ name: 'Conversations', count: conversations.length })
-    
-    const messageResult = await seedMessages(conversations, artisans, clients)
-    results.push(messageResult)
-    
-    // Step 5: Create payments and saved data
-    logSection('STEP 5: Creating Payments & Saved Data')
-    
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const paymentResult = await seedPayments(artisans as any)
-    results.push(paymentResult)
-    
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const savedResult = await seedSavedArtisans(artisans as any, clients)
-    results.push(savedResult)
-    
-    const searchResult = await seedSearchHistory(clients)
-    results.push(searchResult)
-    
-    // Step 6: Create notifications and logs
-    logSection('STEP 6: Creating Notifications & Logs')
-    
-    const notifResult = await seedNotifications(artisans, clients)
-    results.push(notifResult)
-    
-    const logResult = await seedActivityLogs(admins, artisans, cfg.activityLogs)
-    results.push(logResult)
-    
-    // Step 7: Create settings
-    logSection('STEP 7: Creating System Settings')
+    // Step 3: Create system settings
+    logSection('STEP 3: Creating System Settings')
     
     const settingsResult = await seedSettings()
     results.push(settingsResult)
@@ -157,7 +110,7 @@ function printSummary(
   console.log('\n================================================')
   console.log('✅ DATABASE SEEDING COMPLETED SUCCESSFULLY!')
   console.log('================================================\n')
-  console.log('📊 SEEDING SUMMARY:')
+  console.log('📊 SEEDING SUMMARY (Static Data Only):')
   console.log('─────────────────────────────────────────────────')
   
   for (const result of results) {
@@ -175,9 +128,11 @@ function printSummary(
   console.log('─────────────────────────────────────────────────')
   console.log(`🌍 Counties Covered:     ${KENYAN_COUNTIES.length}`)
   console.log(`🛠️  Professions:          ${PROFESSIONS.length}`)
-  console.log('─────────────────────────────────────────────────\n')
-  console.log('🚀 You can now start the application and explore!')
-  console.log('   Run: npm run dev\n')
+  console.log('─────────────────────────────────────────────────')
+  console.log('\n📝 Operational data (reviews, messages, jobs, payments,')
+  console.log('   notifications, etc.) should be created through manual testing.')
+  console.log('\n🚀 You can now start the application and explore!')
+  console.log('   Run: bun dev\n')
 }
 
 function getEmoji(name: string): string {
@@ -187,14 +142,6 @@ function getEmoji(name: string): string {
     'Artisans': '🔨',
     'Specializations': '🎯',
     'Portfolio Items': '🎨',
-    'Reviews': '⭐',
-    'Conversations': '💬',
-    'Messages': '📨',
-    'Payments': '💳',
-    'Saved Artisans': '💾',
-    'Search History': '🔍',
-    'Notifications': '🔔',
-    'Activity Logs': '📝',
     'Settings': '⚙️',
   }
   return emojis[name] || '•'
@@ -202,7 +149,6 @@ function getEmoji(name: string): string {
 
 // ============================================================================
 // INDIVIDUAL SEED RUNNERS (for running specific groups)
-// These fetch users from DB so types are cast appropriately
 // ============================================================================
 
 export async function seedUsersOnly(config?: Partial<SeedConfig>): Promise<void> {
@@ -241,56 +187,12 @@ export async function seedArtisanDataOnly(): Promise<void> {
   console.log('\n✅ Artisan data seeding completed!')
 }
 
-export async function seedInteractionsOnly(): Promise<void> {
-  console.log('🌱 Seeding interactions only (requires existing users)...\n')
+export async function seedSettingsOnly(): Promise<void> {
+  console.log('🌱 Seeding system settings only...\n')
   
-  const [artisans, clients] = await Promise.all([
-    prisma.user.findMany({
-      where: { role: 'ARTISAN' },
-      include: { profile: { include: { subscription: true } } }
-    }),
-    prisma.user.findMany({
-      where: { role: 'CLIENT' },
-      include: { profile: true }
-    })
-  ])
-  
-  if (artisans.length === 0 || clients.length === 0) {
-    throw new Error('No users found. Run seedUsersOnly first.')
-  }
-  
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  await seedReviews(artisans as any, clients)
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { conversations } = await seedConversations(artisans as any, clients as any)
-  await seedMessages(conversations, artisans, clients)
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  await seedPayments(artisans as any)
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  await seedSavedArtisans(artisans as any, clients)
-  await seedSearchHistory(clients)
-  
-  console.log('\n✅ Interactions seeding completed!')
-}
-
-export async function seedSystemDataOnly(): Promise<void> {
-  console.log('🌱 Seeding system data only (requires existing users)...\n')
-  
-  const [admins, artisans, clients] = await Promise.all([
-    prisma.user.findMany({ where: { role: 'ADMIN' } }),
-    prisma.user.findMany({ where: { role: 'ARTISAN' } }),
-    prisma.user.findMany({ where: { role: 'CLIENT' } })
-  ])
-  
-  if (admins.length === 0) {
-    throw new Error('No admins found. Run seedUsersOnly first.')
-  }
-  
-  await seedNotifications(artisans, clients)
-  await seedActivityLogs(admins, artisans)
   await seedSettings()
   
-  console.log('\n✅ System data seeding completed!')
+  console.log('\n✅ System settings seeding completed!')
 }
 
 // Export prisma for cleanup

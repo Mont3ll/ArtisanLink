@@ -12,6 +12,7 @@ import {
   IconInnerShadowTop,
   IconStar,
   IconBriefcase,
+  IconChartBar,
 } from "@tabler/icons-react"
 import { useUser } from "@clerk/nextjs"
 
@@ -94,6 +95,11 @@ export function ClientSidebar({ ...props }: React.ComponentProps<typeof Sidebar>
       title: "Saved Artisans",
       url: "/client-dashboard/saved",
       icon: IconHeart,
+    },
+    {
+      title: "Analytics",
+      url: "/client-dashboard/analytics",
+      icon: IconChartBar,
     },
   ]
 

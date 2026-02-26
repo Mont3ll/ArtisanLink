@@ -4,26 +4,24 @@
  * This is the main entry point for seeding the database.
  * The seed logic is organized into modular files in the prisma/seed/ directory.
  * 
+ * Only static/structural data is seeded:
+ *   - Users (admins, clients, artisans with profiles and subscriptions)
+ *   - Artisan content (specializations, portfolio items)
+ *   - System settings
+ * 
+ * All operational data (reviews, messages, jobs, payments, notifications, etc.)
+ * should be created through manual testing.
+ * 
  * Usage:
  *   npx prisma db seed          # Run full seed
  *   npx tsx prisma/seed.ts      # Run full seed directly
  * 
- * To run specific seed groups, import and call directly:
- *   import { seedUsersOnly } from './seed'
- *   import { seedArtisanDataOnly } from './seed'
- *   import { seedInteractionsOnly } from './seed'
- *   import { seedSystemDataOnly } from './seed'
- * 
  * Seed modules:
- *   - 00-clear.ts        : Clear existing data
- *   - 01-users.ts        : Admin and client users
- *   - 02-artisans.ts     : Artisan users with profiles and subscriptions
+ *   - 00-clear.ts           : Clear existing data
+ *   - 01-users.ts           : Admin and client users
+ *   - 02-artisans.ts        : Artisan users with profiles and subscriptions
  *   - 03-specializations.ts : Specializations and portfolio items
- *   - 04-reviews.ts      : Client reviews
- *   - 05-conversations.ts : Conversations and messages
- *   - 06-payments.ts     : Payments, saved artisans, search history
- *   - 07-notifications.ts : Notifications and activity logs
- *   - 08-settings.ts     : System settings
+ *   - 08-settings.ts        : System settings
  */
 
 // Load environment variables from .env file
@@ -34,8 +32,7 @@ import {
   prisma,
   seedUsersOnly,
   seedArtisanDataOnly,
-  seedInteractionsOnly,
-  seedSystemDataOnly,
+  seedSettingsOnly,
   type SeedConfig 
 } from './seed/index'
 
@@ -51,8 +48,6 @@ if (args.includes('--no-clear')) {
 if (args.includes('--small')) {
   config.clients = 10
   config.artisansPerProfession = 3
-  config.conversations = 20
-  config.activityLogs = 30
 }
 
 // Check for specific seed group commands
@@ -66,11 +61,8 @@ async function main() {
     case 'artisan-data':
       await seedArtisanDataOnly()
       break
-    case 'interactions':
-      await seedInteractionsOnly()
-      break
-    case 'system':
-      await seedSystemDataOnly()
+    case 'settings':
+      await seedSettingsOnly()
       break
     default:
       await seed(config)
@@ -91,7 +83,6 @@ export {
   seed,
   seedUsersOnly,
   seedArtisanDataOnly,
-  seedInteractionsOnly,
-  seedSystemDataOnly,
+  seedSettingsOnly,
   type SeedConfig
 }

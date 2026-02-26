@@ -338,7 +338,7 @@ function PerformanceTips({
 
 export default function AnalyticsPage() {
   const [timeRange, setTimeRange] = useState('30d')
-  const { data, isLoading, error, refetch } = useArtisanAnalytics()
+  const { data, isLoading, error, refetch } = useArtisanAnalytics(timeRange)
 
   if (error) {
     return (

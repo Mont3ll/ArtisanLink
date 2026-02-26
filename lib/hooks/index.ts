@@ -198,6 +198,18 @@ export {
   type ArtisanAnalyticsData,
 } from './use-artisan-analytics'
 
+// Client analytics hooks
+export {
+  useClientAnalytics,
+  formatClientCurrency,
+  JOB_STATUS_LABELS,
+  JOB_STATUS_COLORS,
+  clientAnalyticsKeys,
+  type ClientAnalyticsStats,
+  type SpendingTrendItem,
+  type ClientAnalyticsData,
+} from './use-client-analytics'
+
 // Artisan payments hooks
 export {
   useArtisanPayments,

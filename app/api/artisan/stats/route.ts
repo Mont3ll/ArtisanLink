@@ -1,8 +1,27 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@clerk/nextjs/server'
 import { prisma } from '@/lib/prisma'
 
-export async function GET() {
+/**
+ * Parse a time range string into a Date representing the start of that range.
+ * Supported values: '7d', '30d', '90d', '1y'. Defaults to '30d'.
+ */
+function getRangeStartDate(range: string | null): Date {
+  const now = new Date()
+  switch (range) {
+    case '7d':
+      return new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
+    case '90d':
+      return new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000)
+    case '1y':
+      return new Date(now.getTime() - 365 * 24 * 60 * 60 * 1000)
+    case '30d':
+    default:
+      return new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000)
+  }
+}
+
+export async function GET(request: NextRequest) {
   try {
     const { userId } = await auth()
     
@@ -10,7 +29,11 @@ export async function GET() {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Get current user
+    // Parse time range from query params
+    const range = request.nextUrl.searchParams.get('range')
+    const rangeStart = getRangeStartDate(range)
+
+    // Get current user with time-range-filtered related data
     const user = await prisma.user.findUnique({
       where: { clerkId: userId },
       include: {
@@ -18,11 +41,15 @@ export async function GET() {
           include: {
             subscription: true,
             portfolioItems: {
+              where: { createdAt: { gte: rangeStart } },
               orderBy: { createdAt: 'desc' },
               take: 5
             },
             reviews: {
-              where: { isApproved: true },
+              where: {
+                isApproved: true,
+                createdAt: { gte: rangeStart }
+              },
               include: {
                 client: {
                   select: {
@@ -40,6 +67,7 @@ export async function GET() {
           }
         },
         artisanConversations: {
+          where: { createdAt: { gte: rangeStart } },
           orderBy: { lastMessageAt: 'desc' },
           take: 5,
           include: {
@@ -62,18 +90,20 @@ export async function GET() {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
-    // Get unread message count
+    // Get unread message count (within range)
     const unreadMessageCount = await prisma.message.count({
       where: {
         receiverId: user.id,
-        status: { not: 'READ' }
+        status: { not: 'READ' },
+        createdAt: { gte: rangeStart }
       }
     })
 
-    // Get total conversation count
+    // Get total conversation count (within range)
     const totalConversations = await prisma.conversation.count({
       where: {
-        artisanId: user.id
+        artisanId: user.id,
+        createdAt: { gte: rangeStart }
       }
     })
 
@@ -86,11 +116,28 @@ export async function GET() {
       }
     })
 
-    // Calculate stats
+    // Get total reviews and portfolio items within range for stat cards
+    const [rangeReviewCount, rangePortfolioCount] = await Promise.all([
+      prisma.review.count({
+        where: {
+          profileId: user.profile?.id,
+          isApproved: true,
+          createdAt: { gte: rangeStart }
+        }
+      }),
+      prisma.portfolioItem.count({
+        where: {
+          profileId: user.profile?.id,
+          createdAt: { gte: rangeStart }
+        }
+      })
+    ])
+
+    // Calculate stats (range-filtered where appropriate)
     const stats = {
-      totalProjects: user.profile?.portfolioItems.length || 0,
-      totalReviews: user.profile?.totalReviews || 0,
-      averageRating: user.profile?.averageRating || 0,
+      totalProjects: rangePortfolioCount,
+      totalReviews: rangeReviewCount,
+      averageRating: user.profile?.averageRating || 0, // All-time (rating doesn't change per range)
       unreadMessages: unreadMessageCount,
       totalConversations,
       newConversationsThisMonth,

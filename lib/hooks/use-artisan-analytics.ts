@@ -40,12 +40,12 @@ export interface ArtisanAnalyticsData {
 // Query keys
 export const artisanAnalyticsKeys = {
   all: ['artisan-analytics'] as const,
-  data: () => [...artisanAnalyticsKeys.all, 'data'] as const,
+  data: (range?: string) => [...artisanAnalyticsKeys.all, 'data', range ?? '30d'] as const,
 }
 
 // Fetch function
-async function fetchArtisanAnalytics(): Promise<ArtisanAnalyticsData> {
-  const response = await fetch('/api/artisan/stats')
+async function fetchArtisanAnalytics(range: string): Promise<ArtisanAnalyticsData> {
+  const response = await fetch(`/api/artisan/stats?range=${encodeURIComponent(range)}`)
   
   if (!response.ok) {
     throw new Error('Failed to fetch analytics')
@@ -57,11 +57,12 @@ async function fetchArtisanAnalytics(): Promise<ArtisanAnalyticsData> {
 /**
  * Hook for fetching artisan analytics data
  * Uses the /api/artisan/stats endpoint
+ * @param range - Time range: '7d', '30d', '90d', '1y' (default: '30d')
  */
-export function useArtisanAnalytics() {
+export function useArtisanAnalytics(range: string = '30d') {
   return useQuery({
-    queryKey: artisanAnalyticsKeys.data(),
-    queryFn: fetchArtisanAnalytics,
+    queryKey: artisanAnalyticsKeys.data(range),
+    queryFn: () => fetchArtisanAnalytics(range),
   })
 }
 

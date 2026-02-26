@@ -137,8 +137,7 @@ export default function AnalyticsPage() {
                   {formatCurrency(data?.projectStats.averageBudget ?? 0)}
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  <TrendingUp className="inline h-3 w-3 mr-1" />
-                  +12.5% from last month
+                  Based on agreed job prices
                 </p>
               </>
             )}
