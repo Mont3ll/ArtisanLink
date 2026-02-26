@@ -1,7 +1,7 @@
 'use client';
 import * as Clerk from '@clerk/elements/common';
 import * as SignUp from '@clerk/elements/sign-up';
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -17,8 +17,24 @@ import { cn } from '@/lib/utils';
 import { Loader2, Hammer, Users } from 'lucide-react';
 import { SiGoogle } from 'react-icons/si';
 
+const ROLE_COOKIE_NAME = 'artisanlink_signup_role';
+
 export default function SignUpPage() {
   const [role, setRole] = useState('client');
+
+  const setRoleCookie = useCallback((selectedRole: string) => {
+    document.cookie = `${ROLE_COOKIE_NAME}=${selectedRole}; path=/; max-age=3600; SameSite=Lax`;
+  }, []);
+
+  // Set the default cookie on mount
+  useEffect(() => {
+    setRoleCookie('client');
+  }, [setRoleCookie]);
+
+  const handleRoleSelect = (selectedRole: string) => {
+    setRole(selectedRole);
+    setRoleCookie(selectedRole);
+  };
 
   return (
     <div className="grid w-full grow items-center px-4 sm:justify-center min-h-svh">
@@ -49,7 +65,7 @@ export default function SignUpPage() {
                             'h-auto p-4 justify-start text-left',
                             role === 'client' && 'bg-emerald-700 hover:bg-emerald-800'
                           )}
-                          onClick={() => setRole('client')}
+                          onClick={() => handleRoleSelect('client')}
                         >
                           <div className="flex items-center gap-3">
                             <Users className="w-5 h-5" />
@@ -66,7 +82,7 @@ export default function SignUpPage() {
                             'h-auto p-4 justify-start text-left',
                             role === 'artisan' && 'bg-emerald-700 hover:bg-emerald-800'
                           )}
-                          onClick={() => setRole('artisan')}
+                          onClick={() => handleRoleSelect('artisan')}
                         >
                           <div className="flex items-center gap-3">
                             <Hammer className="w-5 h-5" />

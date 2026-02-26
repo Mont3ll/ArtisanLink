@@ -22,6 +22,11 @@ export default async function DashboardRedirectPage() {
   // Get role from Clerk's session claims (set during sign-up/sign-in)
   const role = (sessionClaims?.publicMetadata as { role?: string })?.role?.toLowerCase()
 
+  // If no role is set, redirect to after-sign-up to assign one
+  if (!role) {
+    redirect("/after-sign-up")
+  }
+
   // Redirect based on role
   switch (role) {
     case "admin":
