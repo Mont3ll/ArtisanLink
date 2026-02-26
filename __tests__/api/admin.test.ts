@@ -51,6 +51,7 @@ vi.mock('@/lib/prisma', () => ({
     },
     verificationHistory: {
       create: vi.fn(),
+      findMany: vi.fn(),
     },
     $transaction: vi.fn(),
   },
@@ -355,13 +356,17 @@ describe('Admin API Routes', () => {
       vi.mocked(auth).mockResolvedValue({ userId: 'clerk-admin-1' } as never)
       vi.mocked(prisma.user.findUnique).mockResolvedValue({ role: 'ADMIN' } as never)
       vi.mocked(prisma.user.findMany).mockResolvedValue(mockPendingArtisans as never)
+      vi.mocked(prisma.profile.count).mockResolvedValue(0 as never)
+      vi.mocked(prisma.verificationHistory.findMany).mockResolvedValue([] as never)
 
       const response = await getPendingVerifications()
       const data = await response.json()
 
       expect(response.status).toBe(200)
-      expect(data).toHaveLength(1)
-      expect(data[0].profile.artisanStatus).toBe('PENDING')
+      expect(data.pendingArtisans).toHaveLength(1)
+      expect(data.pendingArtisans[0].profile.artisanStatus).toBe('PENDING')
+      expect(data.stats).toBeDefined()
+      expect(data.stats.totalPending).toBe(1)
     })
   })
 

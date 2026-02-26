@@ -199,7 +199,6 @@ export default function SettingsPage() {
     
     updateCertificate.mutate({
       certificateUrl: certificateUrl.trim(),
-      certificateUploadedAt: new Date().toISOString()
     }, {
       onSuccess: () => showSuccess('Certificate saved! It will be reviewed for verification.')
     })
@@ -231,7 +230,6 @@ export default function SettingsPage() {
     if (url) {
       updateCertificate.mutate({
         certificateUrl: url,
-        certificateUploadedAt: new Date().toISOString()
       }, {
         onSuccess: () => showSuccess('Certificate uploaded! It will be reviewed for verification.')
       })

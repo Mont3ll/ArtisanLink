@@ -173,7 +173,6 @@ export {
 // Admin verification hooks
 export {
   usePendingVerifications,
-  useVerificationStats,
   useAdminVerification,
   useProcessVerification,
   adminVerificationKeys,

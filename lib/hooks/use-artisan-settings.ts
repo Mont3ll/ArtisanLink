@@ -58,7 +58,6 @@ export interface LocationUpdate {
 
 export interface CertificateUpdate {
   certificateUrl: string
-  certificateUploadedAt: string
 }
 
 // Query keys

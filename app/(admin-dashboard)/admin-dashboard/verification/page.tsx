@@ -73,7 +73,8 @@ function TableRowSkeleton() {
 
 export default function VerificationPage() {
   const [selectedArtisan, setSelectedArtisan] = useState<PendingArtisan | null>(null)
-  const [verificationNotes, setVerificationNotes] = useState("")
+  const [rejectionReason, setRejectionReason] = useState("")
+  const [adminNotes, setAdminNotes] = useState("")
   const [searchTerm, setSearchTerm] = useState("")
   const [dialogOpen, setDialogOpen] = useState(false)
 
@@ -94,11 +95,17 @@ export default function VerificationPage() {
   // Handle verification action
   const handleVerification = async (artisanId: string, action: 'APPROVE' | 'REJECT') => {
     processVerification.mutate(
-      { artisanId, action, reason: verificationNotes },
+      { 
+        artisanId, 
+        action, 
+        reason: action === 'REJECT' ? rejectionReason : undefined,
+        adminNotes: adminNotes || undefined,
+      },
       {
         onSuccess: () => {
           setSelectedArtisan(null)
-          setVerificationNotes("")
+          setRejectionReason("")
+          setAdminNotes("")
           setDialogOpen(false)
         },
       }
@@ -273,7 +280,7 @@ export default function VerificationPage() {
                       <TableCell>
                         <div className="flex items-center space-x-3">
                           <Avatar>
-                            <AvatarImage src="" />
+                            <AvatarImage src={artisan.profile?.profileImage || ""} />
                             <AvatarFallback>{getInitials(artisan.firstName, artisan.lastName)}</AvatarFallback>
                           </Avatar>
                           <div>
@@ -308,7 +315,8 @@ export default function VerificationPage() {
                           setDialogOpen(open)
                           if (!open) {
                             setSelectedArtisan(null)
-                            setVerificationNotes("")
+                            setRejectionReason("")
+                            setAdminNotes("")
                           }
                         }}>
                           <DialogTrigger asChild>
@@ -400,13 +408,43 @@ export default function VerificationPage() {
                                   </div>
                                 )}
 
-                                {/* Verification Notes */}
+                                {/* ID Document */}
+                                {selectedArtisan.profile?.idDocumentUrl && (
+                                  <div className="space-y-2">
+                                    <p className="font-medium">ID Document:</p>
+                                    <div className="flex items-center gap-3">
+                                      <Button variant="outline" asChild>
+                                        <a href={selectedArtisan.profile.idDocumentUrl} target="_blank" rel="noopener noreferrer">
+                                          <FileText className="h-4 w-4 mr-2" />
+                                          View ID Document
+                                        </a>
+                                      </Button>
+                                      {selectedArtisan.profile.idDocumentType && (
+                                        <span className="text-sm text-muted-foreground">
+                                          ({selectedArtisan.profile.idDocumentType.replace(/_/g, ' ')})
+                                        </span>
+                                      )}
+                                    </div>
+                                  </div>
+                                )}
+
+                                {/* Rejection Reason (user-facing) */}
                                 <div className="space-y-2">
-                                  <label className="font-medium">Verification Notes:</label>
+                                  <label className="font-medium">Rejection Reason (shown to artisan):</label>
                                   <Textarea
-                                    placeholder="Add notes about your verification decision..."
-                                    value={verificationNotes}
-                                    onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setVerificationNotes(e.target.value)}
+                                    placeholder="Explain why the application is being rejected (required for rejection)..."
+                                    value={rejectionReason}
+                                    onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setRejectionReason(e.target.value)}
+                                  />
+                                </div>
+
+                                {/* Admin Notes (internal) */}
+                                <div className="space-y-2">
+                                  <label className="font-medium">Admin Notes (internal only):</label>
+                                  <Textarea
+                                    placeholder="Add internal notes about this verification decision..."
+                                    value={adminNotes}
+                                    onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setAdminNotes(e.target.value)}
                                   />
                                 </div>
 
