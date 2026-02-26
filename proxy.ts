@@ -18,6 +18,17 @@ export const proxy = clerkMiddleware(async (auth, req) => {
   // Debug logging
   // console.log("[middleware] userId:", userId, "| role:", role, "| pathname:", url.pathname);
 
+  // Let transitional auth routes through without role checks.
+  // These handle role assignment / resolution and must not be intercepted,
+  // otherwise the proxy creates a redirect loop when the JWT hasn't
+  // refreshed yet after sign-up.
+  if (
+    url.pathname === "/after-sign-up" ||
+    url.pathname === "/after-sign-in"
+  ) {
+    return NextResponse.next();
+  }
+
   if (!userId || !isProtectedRoute(req)) {
     return NextResponse.next();
   }

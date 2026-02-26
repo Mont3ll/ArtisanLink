@@ -3,21 +3,21 @@ import { auth, currentUser } from '@clerk/nextjs/server'
 import { prisma } from '@/lib/prisma'
 import { UserRole } from '@/app/generated/prisma'
 
-// Map Clerk role (lowercase) to database role (uppercase enum)
-function mapClerkRoleToDbRole(clerkRole: string | undefined): UserRole {
-  if (!clerkRole) return 'CLIENT'
+// Map Clerk role (lowercase) to database role (uppercase enum).
+// Returns null if role is unknown/missing — callers must handle this.
+function mapClerkRoleToDbRole(clerkRole: string | undefined): UserRole | null {
+  if (!clerkRole) return null
   
   const roleMap: Record<string, UserRole> = {
     'admin': 'ADMIN',
     'artisan': 'ARTISAN',
     'client': 'CLIENT',
-    // Also handle uppercase in case it's already uppercase
     'ADMIN': 'ADMIN',
     'ARTISAN': 'ARTISAN',
     'CLIENT': 'CLIENT',
   }
   
-  return roleMap[clerkRole] || 'CLIENT'
+  return roleMap[clerkRole] ?? null
 }
 
 export async function POST() {
@@ -40,6 +40,17 @@ export async function POST() {
     })
 
     if (!user) {
+      // If Clerk has no role yet, don't create the user — /after-sign-up
+      // will handle creation with the correct role from the signup cookie.
+      // Creating here with a guessed role causes artisans to be demoted.
+      if (!dbRole) {
+        return NextResponse.json({
+          success: true,
+          user: null,
+          message: 'User not yet created — awaiting role assignment',
+        })
+      }
+
       // Create user in database with role from Clerk
       user = await prisma.user.create({
         data: {
@@ -66,9 +77,9 @@ export async function POST() {
         include: { profile: true }
       })
     } else {
-      // User exists - check if role needs to be updated
-      // Only update if Clerk has a different role AND the role actually changed
-      if (clerkRole && user.role !== dbRole) {
+      // User exists — only update role if Clerk explicitly provides one
+      // that differs from the DB. Never downgrade when Clerk role is missing.
+      if (dbRole && user.role !== dbRole) {
         user = await prisma.user.update({
           where: { clerkId: userId },
           data: {
