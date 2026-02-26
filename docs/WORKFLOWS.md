@@ -49,7 +49,7 @@ User visits site → Clicks Sign Up → Clerk Authentication → User sync to DB
 ### Flow Overview
 
 ```
-Client User → Applies to become Artisan → Creates ArtisanProfile → Submits for Verification → Admin Reviews → Approved/Rejected
+User signs up as Artisan → Profile created → Submits certificate/ID for Verification → Admin Reviews → Approved/Rejected
 ```
 
 ### Detailed Steps
@@ -67,11 +67,12 @@ Client User → Applies to become Artisan → Creates ArtisanProfile → Submits
   - Bio/description
   - Profile photo
 
-**API Route:** `POST /api/artisan/profile`
+**API Route:** `PATCH /api/artisan/profile`
 
 **Database Changes:**
-- `ArtisanProfile` created with `verificationStatus: PENDING`
-- `User.role` remains `CLIENT` until verified
+- `Profile` updated with `artisanStatus: PENDING`
+- `User.role` is set to `ARTISAN` at sign-up via Clerk `publicMetadata`
+- Artisan does **not** appear in search results until `artisanStatus: VERIFIED`
 
 #### 2. Verification Queue
 
@@ -79,7 +80,7 @@ Client User → Applies to become Artisan → Creates ArtisanProfile → Submits
 - New applications appear in "Artisan Verification" section
 - Shows: Name, Profession, Experience, Application Date
 
-**API Route:** `GET /api/admin/verification`
+**API Route:** `GET /api/admin/verification/pending`
 
 #### 3. Admin Review
 
@@ -96,25 +97,34 @@ Client User → Applies to become Artisan → Creates ArtisanProfile → Submits
 - **Approve** - Grants verified status
 - **Reject** - Denies with reason provided
 
-**API Route:** `POST /api/admin/verification/[userId]`
+**API Route:** `POST /api/admin/verification/process`
+
+**Request Body:**
+```json
+{
+  "artisanId": "<user-id>",
+  "action": "APPROVE" | "REJECT",
+  "rejectionReason": "...",
+  "adminNotes": "..."
+}
+```
 
 #### 4. Status Update
 
 **On Approval:**
-- `ArtisanProfile.verificationStatus` → `VERIFIED`
-- `User.role` → `ARTISAN`
+- `Profile.artisanStatus` → `VERIFIED`
 - Email notification sent to user
 - Artisan profile appears in search results
 
 **On Rejection:**
-- `ArtisanProfile.verificationStatus` → `REJECTED`
+- `Profile.artisanStatus` → `REJECTED`
 - Rejection reason stored
 - Email notification with feedback
 - User can reapply with corrections
 
 ### Database Models Involved
 - `User` - Role updated on approval
-- `ArtisanProfile` - Verification status and professional details
+- `Profile` - Verification status (`artisanStatus`) and professional details
 - `VerificationHistory` (if implemented) - Audit trail
 
 ---

@@ -51,11 +51,13 @@ export async function GET(request: Request) {
     const sortOrder = searchParams.get('sortOrder') === 'asc' ? 'asc' : 'desc'
 
     // Build where clause for profiles
+    // Only show verified artisans in search results (security requirement)
     const where: Record<string, unknown> = {
       user: {
         role: 'ARTISAN',
         status: 'ACTIVE'
-      }
+      },
+      artisanStatus: 'VERIFIED'
     }
 
     // Text search on profession, bio, name
@@ -102,10 +104,8 @@ export async function GET(request: Request) {
       where.isAvailable = true
     }
 
-    // Verified filter
-    if (verifiedOnly) {
-      where.artisanStatus = 'VERIFIED'
-    }
+    // Note: artisanStatus: 'VERIFIED' is already enforced in the base WHERE clause.
+    // The verifiedOnly param is kept for backwards compatibility but has no additional effect.
 
     // Specialization filter
     if (specialization) {
@@ -223,12 +223,13 @@ export async function GET(request: Request) {
       })
     }
 
-    // Get available filter options for faceted search
+    // Get available filter options for faceted search (only verified artisans)
     const [professions, counties, specializations] = await Promise.all([
       prisma.profile.groupBy({
         by: ['profession'],
         where: {
           user: { role: 'ARTISAN', status: 'ACTIVE' },
+          artisanStatus: 'VERIFIED',
           profession: { not: null }
         },
         _count: { profession: true },
@@ -239,6 +240,7 @@ export async function GET(request: Request) {
         by: ['county'],
         where: {
           user: { role: 'ARTISAN', status: 'ACTIVE' },
+          artisanStatus: 'VERIFIED',
           county: { not: null }
         },
         _count: { county: true },

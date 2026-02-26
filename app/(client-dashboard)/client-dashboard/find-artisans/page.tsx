@@ -107,7 +107,7 @@ function ArtisanCard({
               <div className="flex items-center gap-2">
                 <CardTitle className="text-base">{artisan.name}</CardTitle>
                 {artisan.isVerified && (
-                  <BadgeCheck className="h-4 w-4 text-blue-500" />
+                  <BadgeCheck className="h-4 w-4 text-emerald-500" />
                 )}
               </div>
               <CardDescription className="text-sm">

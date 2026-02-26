@@ -75,7 +75,7 @@ export function AdminTasksTable({
   const getActivityIcon = (type: string) => {
     switch (type) {
       case 'user_joined':
-        return <User className="h-4 w-4 text-blue-500" />
+        return <User className="h-4 w-4 text-emerald-500" />
       case 'subscription_paid':
         return <DollarSign className="h-4 w-4 text-green-500" />
       case 'review_submitted':

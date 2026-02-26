@@ -265,8 +265,8 @@ export default function SearchPage() {
                     searchData.results.users.slice(0, 5).map((user) => (
                       <div key={user.id} className="flex items-center justify-between p-3 border rounded-lg">
                         <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-                            <User className="h-4 w-4 text-blue-600" />
+                          <div className="w-8 h-8 bg-emerald-100 rounded-full flex items-center justify-center">
+                            <User className="h-4 w-4 text-emerald-600" />
                           </div>
                           <div>
                             <div className="font-medium">{user.name}</div>
@@ -377,8 +377,8 @@ export default function SearchPage() {
                   searchData.results.users.map((user) => (
                     <div key={user.id} className="flex items-center justify-between p-4 border rounded-lg">
                       <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
-                          <User className="h-6 w-6 text-blue-600" />
+                        <div className="w-12 h-12 bg-emerald-100 rounded-full flex items-center justify-center">
+                          <User className="h-6 w-6 text-emerald-600" />
                         </div>
                         <div>
                           <div className="font-medium text-lg">{user.name}</div>

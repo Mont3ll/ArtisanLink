@@ -161,7 +161,7 @@ export function ProfileCompletion({ profile }: ProfileCompletionProps) {
   // Get completion status label
   const getStatusLabel = () => {
     if (completionPercentage === 100) return { label: 'Complete', color: 'bg-green-500' }
-    if (completionPercentage >= 80) return { label: 'Almost There', color: 'bg-blue-500' }
+    if (completionPercentage >= 80) return { label: 'Almost There', color: 'bg-emerald-500' }
     if (completionPercentage >= 50) return { label: 'Good Progress', color: 'bg-yellow-500' }
     return { label: 'Getting Started', color: 'bg-orange-500' }
   }

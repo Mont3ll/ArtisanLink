@@ -61,7 +61,7 @@ export default function HelpPage() {
             <Card className="hover:shadow-lg transition-shadow">
               <CardHeader>
                 <div className="flex items-center gap-3">
-                  <Book className="h-8 w-8 text-blue-600" />
+                  <Book className="h-8 w-8 text-emerald-600" />
                   <div>
                     <CardTitle className="text-lg">Admin Guide</CardTitle>
                     <CardDescription>Complete administrator handbook</CardDescription>
@@ -154,7 +154,7 @@ export default function HelpPage() {
             <Card className="hover:shadow-lg transition-shadow">
               <CardHeader>
                 <div className="flex items-center gap-3">
-                  <Video className="h-8 w-8 text-blue-600" />
+                  <Video className="h-8 w-8 text-emerald-600" />
                   <div>
                     <CardTitle className="text-lg">User Verification</CardTitle>
                     <CardDescription>8-minute tutorial</CardDescription>
@@ -239,7 +239,7 @@ export default function HelpPage() {
                 <CardDescription>Common questions and answers</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="border-l-4 border-blue-500 pl-4">
+                <div className="border-l-4 border-emerald-500 pl-4">
                   <h4 className="font-medium">How do I reset a user&apos;s password?</h4>
                   <p className="text-sm text-muted-foreground mt-1">
                     Navigate to User Management, find the user, and click the reset password option.
@@ -270,7 +270,7 @@ export default function HelpPage() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="flex items-center gap-3 p-3 border rounded-lg">
-                  <Book className="h-8 w-8 text-blue-600" />
+                  <Book className="h-8 w-8 text-emerald-600" />
                   <div className="flex-1">
                     <h4 className="font-medium">Knowledge Base</h4>
                     <p className="text-sm text-muted-foreground">Searchable articles and guides</p>
@@ -307,7 +307,7 @@ export default function HelpPage() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="flex items-center gap-3 p-4 border rounded-lg">
-                  <Mail className="h-6 w-6 text-blue-600" />
+                  <Mail className="h-6 w-6 text-emerald-600" />
                   <div>
                     <h4 className="font-medium">Email Support</h4>
                     <p className="text-sm text-muted-foreground">admin-support@artisanlink.ke</p>

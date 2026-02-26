@@ -14,7 +14,7 @@ export default function Cta() {
       <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900" />
       <div className="absolute inset-0 bg-animated-grid opacity-20" />
       <div className="absolute top-10 left-10 w-32 h-32 bg-amber-400/20 rounded-full blur-xl animate-float" />
-      <div className="absolute bottom-10 right-10 w-24 h-24 bg-blue-400/20 rounded-full blur-xl animate-float-delayed" />
+      <div className="absolute bottom-10 right-10 w-24 h-24 bg-emerald-400/20 rounded-full blur-xl animate-float-delayed" />
 
       <div className="relative z-10 rounded-2xl text-white p-8 lg:p-12">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">

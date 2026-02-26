@@ -372,8 +372,8 @@ export default function LocationsPage() {
                   counties.map((county) => (
                     <div key={county.id} className="flex items-center justify-between p-4 border rounded-lg">
                       <div className="flex items-center gap-4">
-                        <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-                          <Globe className="h-5 w-5 text-blue-600" />
+                        <div className="w-10 h-10 bg-emerald-100 rounded-full flex items-center justify-center">
+                          <Globe className="h-5 w-5 text-emerald-600" />
                         </div>
                         <div>
                           <div className="font-medium">{county.name} County</div>
