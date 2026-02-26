@@ -35,10 +35,13 @@ export default async function AfterSignUp() {
   const cookieStore = await cookies();
   const cookieRole = cookieStore.get(ROLE_COOKIE_NAME)?.value;
 
-  // Validate: only allow "client" or "artisan" — never "admin"
-  const role: AllowedRole = ALLOWED_ROLES.includes(cookieRole as AllowedRole)
-    ? (cookieRole as AllowedRole)
-    : "client";
+  // Validate: only allow "client" or "artisan" — never "admin".
+  // If no cookie exists, the user never selected a role during sign-up.
+  // Redirect them back to /sign-up so they can choose properly.
+  if (!cookieRole || !ALLOWED_ROLES.includes(cookieRole as AllowedRole)) {
+    redirect("/sign-up");
+  }
+  const role: AllowedRole = cookieRole as AllowedRole;
 
   // 1. Set publicMetadata in Clerk (source of truth for role)
   let clerkUser;
@@ -96,11 +99,8 @@ export default async function AfterSignUp() {
   }
 
   // 3. Redirect based on the role we just set (not session claims)
-  switch (role) {
-    case "artisan":
-      redirect("/artisan-dashboard");
-    case "client":
-    default:
-      redirect("/client-dashboard");
+  if (role === "artisan") {
+    redirect("/artisan-dashboard");
   }
+  redirect("/client-dashboard");
 }

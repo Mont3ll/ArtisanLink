@@ -34,8 +34,9 @@ export default async function DashboardRedirectPage() {
     case "artisan":
       redirect("/artisan-dashboard")
     case "client":
-    default:
-      // Default to client dashboard
       redirect("/client-dashboard")
+    default:
+      // Unknown role — send to role assignment
+      redirect("/after-sign-up")
   }
 }

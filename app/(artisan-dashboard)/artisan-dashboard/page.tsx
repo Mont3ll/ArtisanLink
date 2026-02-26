@@ -18,7 +18,8 @@ export default async function ArtisanDashboardPage() {
     } else if (role === "admin") {
       redirect("/admin-dashboard");
     } else {
-      redirect("/sign-in");
+      // No valid role — send to role assignment
+      redirect("/after-sign-up");
     }
     return null;
   }

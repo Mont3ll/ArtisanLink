@@ -45,7 +45,9 @@ export default async function AfterSignIn() {
     case "artisan":
       redirect("/artisan-dashboard");
     case "client":
-    default:
       redirect("/client-dashboard");
+    default:
+      // Unknown role — send to role assignment
+      redirect("/after-sign-up");
   }
 }
