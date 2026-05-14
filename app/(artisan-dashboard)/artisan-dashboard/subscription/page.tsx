@@ -234,8 +234,8 @@ function PaymentStatusDisplay({ status }: { status: PaymentStatus | null }) {
   if (status.status === 'PROCESSING') {
     return (
       <div className="flex flex-col items-center gap-4 py-4">
-        <div className="flex h-16 w-16 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900">
-          <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+        <div className="flex h-16 w-16 items-center justify-center rounded-full bg-emerald-100 dark:bg-emerald-900">
+          <Loader2 className="h-8 w-8 animate-spin text-emerald-600" />
         </div>
         <div className="text-center">
           <p className="font-medium">Processing Payment</p>

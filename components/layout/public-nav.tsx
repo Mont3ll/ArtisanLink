@@ -9,7 +9,6 @@ import { useAuth } from "@clerk/nextjs";
 
 const navLinks = [
   { label: "Browse Artisans", href: "/artisans" },
-  { label: "How It Works", href: "/#how-it-works" },
   { label: "Pricing", href: "/pricing" },
   { label: "For Artisans", href: "/for-artisans" },
 ];

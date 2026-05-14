@@ -151,7 +151,7 @@ function ConversationItem({
                   {conversation.lastMessage.senderId === currentUserId && (
                     <span className="text-muted-foreground">
                       {conversation.lastMessage.status === "READ" ? (
-                        <CheckCheck className="h-3 w-3 text-blue-500" />
+                        <CheckCheck className="h-3 w-3 text-emerald-600" />
                       ) : (
                         <Check className="h-3 w-3" />
                       )}

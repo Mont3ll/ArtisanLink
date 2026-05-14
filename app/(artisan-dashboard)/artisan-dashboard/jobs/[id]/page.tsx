@@ -109,9 +109,9 @@ const categoryIcons: Record<string, React.ReactNode> = {
 const statusConfig: Record<string, { label: string; variant: "default" | "secondary" | "destructive" | "outline"; icon: React.ReactNode; color: string }> = {
   REQUESTED: { label: "New Request", variant: "outline", icon: <Clock className="h-4 w-4" />, color: "text-gray-500" },
   QUOTED: { label: "Quote Sent", variant: "secondary", icon: <FileText className="h-4 w-4" />, color: "text-yellow-500" },
-  ACCEPTED: { label: "Accepted", variant: "default", icon: <CheckCircle2 className="h-4 w-4" />, color: "text-blue-500" },
+  ACCEPTED: { label: "Accepted", variant: "default", icon: <CheckCircle2 className="h-4 w-4" />, color: "text-emerald-600" },
   DEPOSIT_PAID: { label: "Deposit Paid", variant: "default", icon: <DollarSign className="h-4 w-4" />, color: "text-green-500" },
-  IN_PROGRESS: { label: "In Progress", variant: "default", icon: <Loader2 className="h-4 w-4 animate-spin" />, color: "text-blue-500" },
+  IN_PROGRESS: { label: "In Progress", variant: "default", icon: <Loader2 className="h-4 w-4 animate-spin" />, color: "text-emerald-600" },
   COMPLETED: { label: "Completed", variant: "secondary", icon: <CheckCircle2 className="h-4 w-4" />, color: "text-green-500" },
   PAID: { label: "Paid", variant: "default", icon: <CheckCircle2 className="h-4 w-4" />, color: "text-green-500" },
   CANCELLED: { label: "Cancelled", variant: "destructive", icon: <XCircle className="h-4 w-4" />, color: "text-red-500" },
@@ -693,10 +693,10 @@ export default function ArtisanJobDetailsPage() {
                     
                     {/* Revision Notice */}
                     {revisionRequested && lineItems.length > 0 && (
-                      <div className="p-3 bg-blue-50 border border-blue-200 rounded-md">
+                      <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-md">
                         <div className="flex items-start gap-2">
-                          <Info className="h-4 w-4 text-blue-600 mt-0.5 flex-shrink-0" />
-                          <p className="text-sm text-blue-800">
+                          <Info className="h-4 w-4 text-emerald-600 mt-0.5 flex-shrink-0" />
+                          <p className="text-sm text-emerald-800">
                             Your previous quote items have been loaded. Edit quantities, prices, or add/remove items as needed based on the client&apos;s feedback.
                           </p>
                         </div>
@@ -926,15 +926,15 @@ export default function ArtisanJobDetailsPage() {
 
                         {/* Material info */}
                         {calculations.materialsCost > 0 && (
-                          <div className="p-3 bg-blue-50 rounded-md space-y-1">
-                            <div className="flex items-center gap-2 text-sm text-blue-700">
+                          <div className="p-3 bg-emerald-50 rounded-md space-y-1">
+                            <div className="flex items-center gap-2 text-sm text-emerald-700">
                               <Package className="h-4 w-4" />
                               <span>
                                 Materials: {formatCurrency(calculations.materialsCost)} ({calculations.materialPercentage.toFixed(0)}% of total)
                               </span>
                             </div>
                             {calculations.maxDeposit > DEPOSIT_CONFIG.STANDARD_MAX_PERCENT && (
-                              <p className="text-xs text-blue-600">
+                              <p className="text-xs text-emerald-600">
                                 {calculations.depositTierDescription} - higher deposit available
                               </p>
                             )}

@@ -44,7 +44,7 @@ interface NotificationsResponse {
 function getNotificationIcon(type: Notification["type"]) {
   switch (type) {
     case "MESSAGE":
-      return <MessageSquare className="h-4 w-4 text-blue-500" />;
+      return <MessageSquare className="h-4 w-4 text-emerald-600" />;
     case "REVIEW":
       return <Star className="h-4 w-4 text-yellow-500" />;
     case "VERIFICATION":
@@ -241,7 +241,7 @@ export function NotificationBell() {
                       </div>
                       {!notification.isRead && (
                         <div className="flex-shrink-0">
-                          <div className="h-2 w-2 rounded-full bg-blue-500" />
+                          <div className="h-2 w-2 rounded-full bg-emerald-500" />
                         </div>
                       )}
                     </div>
@@ -267,7 +267,7 @@ export function NotificationBell() {
                     </div>
                     {!notification.isRead && (
                       <div className="flex-shrink-0">
-                        <div className="h-2 w-2 rounded-full bg-blue-500" />
+                        <div className="h-2 w-2 rounded-full bg-emerald-500" />
                       </div>
                     )}
                   </div>

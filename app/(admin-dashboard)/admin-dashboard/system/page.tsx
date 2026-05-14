@@ -57,7 +57,7 @@ export default function SystemPage() {
   const getLogIcon = (level: string) => {
     switch (level) {
       case 'INFO':
-        return <Activity className="h-5 w-5 text-blue-500 mt-0.5" />
+        return <Activity className="h-5 w-5 text-emerald-600 mt-0.5" />
       case 'WARNING':
         return <AlertTriangle className="h-5 w-5 text-yellow-500 mt-0.5" />
       case 'ERROR':
@@ -271,7 +271,7 @@ export default function SystemPage() {
                       </>
                     ) : (
                       <>
-                        <div className="text-2xl font-bold text-blue-600">{data?.systemHealth.api.responseTime || 0}ms</div>
+                        <div className="text-2xl font-bold text-emerald-600">{data?.systemHealth.api.responseTime || 0}ms</div>
                         <div className="text-sm text-muted-foreground">Avg Response</div>
                       </>
                     )}

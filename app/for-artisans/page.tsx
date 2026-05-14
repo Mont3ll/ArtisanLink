@@ -118,17 +118,17 @@ const plans = [
 
 export default function ForArtisansPage() {
   return (
-    <div className="bg-stone-50 text-stone-900 min-h-screen">
+    <div className="bg-white text-[#222] min-h-screen">
       <PublicNav />
 
       {/* Hero */}
-      <section className="py-20 px-6 bg-white border-b border-stone-200">
+      <section className="py-20 px-6 bg-white border-b border-[#ddd]">
         <div className="max-w-4xl mx-auto text-center">
-          <h1 className="text-4xl md:text-6xl font-serif font-bold text-stone-900 leading-tight mb-6">
+          <h1 className="text-4xl md:text-6xl font-serif font-bold text-[#222] leading-tight mb-6">
             Your craft deserves<br />
             <span className="text-emerald-700">more clients.</span>
           </h1>
-          <p className="text-xl text-stone-600 mb-10 max-w-2xl mx-auto leading-relaxed">
+          <p className="text-xl text-[#3f3f3f] mb-10 max-w-2xl mx-auto leading-relaxed">
             Join thousands of verified artisans across Kenya who use ChapaWorks to get discovered, manage jobs, and grow their business — starting free.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
@@ -141,7 +141,7 @@ export default function ForArtisansPage() {
             </Link>
             <Link
               href="/artisans"
-              className="inline-flex items-center gap-2 text-stone-600 hover:text-emerald-700 transition-colors text-sm font-medium"
+              className="inline-flex items-center gap-2 text-[#3f3f3f] hover:text-emerald-700 transition-colors text-sm font-medium"
             >
               See how it looks for clients
               <ChevronRight className="w-4 h-4" />
@@ -158,7 +158,7 @@ export default function ForArtisansPage() {
             ].map((s) => (
               <div key={s.l} className="text-center">
                 <div className="text-2xl font-bold text-emerald-700">{s.v}</div>
-                <div className="text-sm text-stone-500 mt-1">{s.l}</div>
+                <div className="text-sm text-[#6a6a6a] mt-1">{s.l}</div>
               </div>
             ))}
           </div>
@@ -170,19 +170,19 @@ export default function ForArtisansPage() {
         <div className="max-w-5xl mx-auto">
           <div className="text-center mb-14">
             <p className="text-emerald-700 font-medium mb-2 tracking-wide text-sm uppercase">Why artisans choose ChapaWorks</p>
-            <h2 className="text-3xl md:text-4xl font-serif font-bold text-stone-800">
+            <h2 className="text-3xl md:text-4xl font-serif font-bold text-[#222]">
               Everything you need to grow
             </h2>
           </div>
 
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {benefits.map((b) => (
-              <div key={b.title} className="bg-white rounded-xl border border-stone-200 p-6 hover:shadow-md transition-shadow">
+              <div key={b.title} className="bg-white rounded-xl border border-[#ddd] p-6 hover:shadow-md transition-shadow">
                 <div className="w-12 h-12 bg-emerald-100 text-emerald-700 rounded-xl flex items-center justify-center mb-4">
                   {b.icon}
                 </div>
-                <h3 className="font-serif font-bold text-stone-900 mb-2">{b.title}</h3>
-                <p className="text-stone-600 text-sm leading-relaxed">{b.desc}</p>
+                <h3 className="font-serif font-bold text-[#222] mb-2">{b.title}</h3>
+                <p className="text-[#3f3f3f] text-sm leading-relaxed">{b.desc}</p>
               </div>
             ))}
           </div>
@@ -190,22 +190,22 @@ export default function ForArtisansPage() {
       </section>
 
       {/* How it works */}
-      <section className="py-20 px-6 bg-stone-100">
+      <section className="py-20 px-6 bg-[#f2f2f2]">
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-14">
             <p className="text-emerald-700 font-medium mb-2 tracking-wide text-sm uppercase">Getting started</p>
-            <h2 className="text-3xl md:text-4xl font-serif font-bold text-stone-800">Up and running in minutes</h2>
+            <h2 className="text-3xl md:text-4xl font-serif font-bold text-[#222]">Up and running in minutes</h2>
           </div>
 
           <div className="space-y-6">
             {steps.map((s) => (
-              <div key={s.n} className="bg-white rounded-xl border border-stone-200 p-6 flex gap-6 items-start">
+              <div key={s.n} className="bg-white rounded-xl border border-[#ddd] p-6 flex gap-6 items-start">
                 <div className="w-14 h-14 bg-emerald-700 text-white rounded-xl flex items-center justify-center font-bold text-lg flex-shrink-0">
                   {s.n}
                 </div>
                 <div>
-                  <h3 className="font-serif font-bold text-stone-900 text-lg mb-1">{s.title}</h3>
-                  <p className="text-stone-600 text-sm leading-relaxed">{s.desc}</p>
+                  <h3 className="font-serif font-bold text-[#222] text-lg mb-1">{s.title}</h3>
+                  <p className="text-[#3f3f3f] text-sm leading-relaxed">{s.desc}</p>
                 </div>
               </div>
             ))}
@@ -214,25 +214,25 @@ export default function ForArtisansPage() {
       </section>
 
       {/* Testimonials */}
-      <section className="py-20 px-6 bg-white border-y border-stone-200">
+      <section className="py-20 px-6 bg-white border-y border-[#ddd]">
         <div className="max-w-5xl mx-auto">
           <div className="text-center mb-14">
             <p className="text-emerald-700 font-medium mb-2 tracking-wide text-sm uppercase">Success stories</p>
-            <h2 className="text-3xl md:text-4xl font-serif font-bold text-stone-800">Artisans love ChapaWorks</h2>
+            <h2 className="text-3xl md:text-4xl font-serif font-bold text-[#222]">Artisans love ChapaWorks</h2>
           </div>
 
           <div className="grid md:grid-cols-3 gap-6">
             {testimonials.map((t) => (
-              <div key={t.name} className="bg-stone-50 rounded-xl border border-stone-200 p-6">
+              <div key={t.name} className="bg-[#f7f7f7] rounded-xl border border-[#ddd] p-6">
                 <div className="flex gap-0.5 mb-4">
                   {Array.from({ length: t.rating }).map((_, i) => (
                     <Star key={i} className="w-4 h-4 fill-amber-400 text-amber-400" />
                   ))}
                 </div>
-                <p className="text-stone-700 italic mb-4 leading-relaxed text-sm">&ldquo;{t.quote}&rdquo;</p>
+                <p className="text-[#3f3f3f] italic mb-4 leading-relaxed text-sm">&ldquo;{t.quote}&rdquo;</p>
                 <div>
-                  <p className="font-semibold text-stone-900 text-sm">{t.name}</p>
-                  <p className="text-stone-500 text-xs">{t.trade}</p>
+                  <p className="font-semibold text-[#222] text-sm">{t.name}</p>
+                  <p className="text-[#6a6a6a] text-xs">{t.trade}</p>
                 </div>
               </div>
             ))}
@@ -245,7 +245,7 @@ export default function ForArtisansPage() {
         <div className="max-w-5xl mx-auto">
           <div className="text-center mb-14">
             <p className="text-emerald-700 font-medium mb-2 tracking-wide text-sm uppercase">Pricing</p>
-            <h2 className="text-3xl md:text-4xl font-serif font-bold text-stone-800">Start free. Scale when ready.</h2>
+            <h2 className="text-3xl md:text-4xl font-serif font-bold text-[#222]">Start free. Scale when ready.</h2>
           </div>
 
           <div className="grid md:grid-cols-3 gap-6">
@@ -255,7 +255,7 @@ export default function ForArtisansPage() {
                 className={`relative rounded-xl p-7 flex flex-col ${
                   plan.highlight
                     ? "bg-emerald-800 text-white"
-                    : "bg-white border border-stone-200"
+                    : "bg-white border border-[#ddd]"
                 }`}
               >
                 {plan.highlight && (
@@ -263,17 +263,17 @@ export default function ForArtisansPage() {
                     <span className="bg-amber-400 text-amber-900 text-xs font-bold px-3 py-1 rounded-full">BEST VALUE</span>
                   </div>
                 )}
-                <div className={`text-sm font-medium mb-4 ${plan.highlight ? "text-emerald-300" : "text-stone-500"}`}>
+                <div className={`text-sm font-medium mb-4 ${plan.highlight ? "text-emerald-300" : "text-[#6a6a6a]"}`}>
                   {plan.name}
                 </div>
                 <div className="mb-1">
                   <span className="text-3xl font-bold">{plan.price}</span>
-                  <span className={`text-sm ml-1 ${plan.highlight ? "text-emerald-300" : "text-stone-500"}`}>{plan.period}</span>
+                  <span className={`text-sm ml-1 ${plan.highlight ? "text-emerald-300" : "text-[#6a6a6a]"}`}>{plan.period}</span>
                 </div>
-                <p className={`text-sm mb-6 ${plan.highlight ? "text-emerald-200" : "text-stone-500"}`}>{plan.desc}</p>
+                <p className={`text-sm mb-6 ${plan.highlight ? "text-emerald-200" : "text-[#6a6a6a]"}`}>{plan.desc}</p>
                 <ul className="space-y-2.5 mb-8 flex-1">
                   {plan.features.map((f) => (
-                    <li key={f} className={`flex items-start gap-2 text-sm ${plan.highlight ? "text-emerald-100" : "text-stone-600"}`}>
+                    <li key={f} className={`flex items-start gap-2 text-sm ${plan.highlight ? "text-emerald-100" : "text-[#3f3f3f]"}`}>
                       <Check className={`w-4 h-4 mt-0.5 flex-shrink-0 ${plan.highlight ? "text-emerald-300" : "text-emerald-600"}`} />
                       {f}
                     </li>

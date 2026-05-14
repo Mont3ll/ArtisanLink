@@ -152,6 +152,12 @@ export async function GET(request: Request) {
               skillLevel: true
             }
           },
+          portfolioItems: {
+            where: { isPublic: true },
+            orderBy: { createdAt: 'desc' as const },
+            take: 1,
+            select: { imageUrl: true }
+          },
           subscription: {
             select: {
               status: true,
@@ -197,6 +203,7 @@ export async function GET(request: Request) {
           total: profile.totalReviews
         },
         specializations: profile.specializations,
+        portfolioThumbnail: (profile as { portfolioItems?: Array<{ imageUrl: string }> }).portfolioItems?.[0]?.imageUrl ?? null,
         memberSince: profile.user.createdAt,
         distance: null as number | null
       }

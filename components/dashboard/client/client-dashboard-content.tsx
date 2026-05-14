@@ -118,7 +118,7 @@ export function ClientDashboardContent() {
 
   const getActivityIcon = (iconType: string) => {
     switch (iconType) {
-      case 'message': return <MessageSquare className="w-4 h-4 text-blue-600" />
+      case 'message': return <MessageSquare className="w-4 h-4 text-emerald-600" />
       case 'user': return <User className="w-4 h-4 text-green-600" />
       case 'heart': return <Heart className="w-4 h-4 text-red-600" />
       default: return <Clock className="w-4 h-4 text-muted-foreground" />

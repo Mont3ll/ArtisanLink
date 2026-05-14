@@ -6,9 +6,6 @@ import { useRouter } from "next/navigation";
 import {
   Search,
   MapPin,
-  Star,
-  BadgeCheck,
-  Heart,
   ArrowRight,
   Wrench,
   MessageCircle,
@@ -17,20 +14,10 @@ import {
 } from "lucide-react";
 import PublicNav from "@/components/layout/public-nav";
 import TesseractLogo from "@/components/common/TesseractLogo";
+import { ArtisanCard, ArtisanCardSkeleton, type ArtisanCardData } from "@/components/artisan";
 
-interface LiveArtisan {
-  id: string;
-  name: string;
-  profession: string | null;
+interface LiveArtisan extends ArtisanCardData {
   bio: string | null;
-  profileImage: string | null;
-  location: { city: string | null; county: string | null };
-  hourlyRate: number | null;
-  isAvailable: boolean;
-  isVerified: boolean;
-  isPremium: boolean;
-  rating: { average: number; total: number };
-  specializations: Array<{ name: string }>;
   distance?: number | null;
 }
 
@@ -54,7 +41,6 @@ export default function Home() {
   const [artisansLoading, setArtisansLoading] = useState(true);
   const [heroQuery, setHeroQuery] = useState("");
   const [heroLocation, setHeroLocation] = useState("");
-  const [savedIds, setSavedIds] = useState<Set<string>>(new Set());
 
   const fetchArtisans = useCallback(() => {
     setArtisansLoading(true);
@@ -80,13 +66,6 @@ export default function Home() {
     router.push(`/artisans${params.toString() ? "?" + params.toString() : ""}`);
   };
 
-  const toggleSave = (id: string) => {
-    setSavedIds((prev) => {
-      const next = new Set(prev);
-      next.has(id) ? next.delete(id) : next.add(id);
-      return next;
-    });
-  };
 
   return (
     <div className="min-h-screen bg-white text-[#222]">
@@ -167,12 +146,7 @@ export default function Home() {
               ))
             : artisans.length > 0
             ? artisans.map((artisan) => (
-                <ArtisanCard
-                  key={artisan.id}
-                  artisan={artisan}
-                  saved={savedIds.has(artisan.id)}
-                  onSave={() => toggleSave(artisan.id)}
-                />
+                <ArtisanCard key={artisan.id} artisan={artisan} />
               ))
             : (
               <div className="col-span-full text-center py-16">
@@ -272,126 +246,3 @@ export default function Home() {
   );
 }
 
-/* ─────────────────────────────────────────────────────────────
-   Artisan Card — Airbnb-style, photo-first
-───────────────────────────────────────────────────────────── */
-function ArtisanCard({
-  artisan,
-  saved,
-  onSave,
-}: {
-  artisan: LiveArtisan;
-  saved: boolean;
-  onSave: () => void;
-}) {
-  const initials = artisan.name.split(" ").map((n) => n[0]).join("").slice(0, 2).toUpperCase();
-  const locationStr = [artisan.location.city, artisan.location.county].filter(Boolean).join(", ") || "Kenya";
-
-  return (
-    <div className="group cursor-pointer">
-      <Link href={`/artisans/${artisan.id}`} className="block">
-        {/* Photo area */}
-        <div className="relative aspect-square rounded-xl overflow-hidden bg-[#f2f2f2] mb-3">
-          {artisan.profileImage ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={artisan.profileImage}
-              alt={artisan.name}
-              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-            />
-          ) : (
-            <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-emerald-50 to-emerald-100">
-              <span className="text-4xl font-bold text-emerald-600">{initials}</span>
-            </div>
-          )}
-
-          {/* Availability badge */}
-          {artisan.isAvailable && (
-            <div className="absolute top-3 left-3 flex items-center gap-1 bg-white/90 backdrop-blur-sm px-2 py-1 rounded-full text-xs font-medium text-emerald-700 shadow-sm">
-              <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-              Available
-            </div>
-          )}
-
-          {/* Premium badge */}
-          {artisan.isPremium && (
-            <div className="absolute top-3 left-3 bg-white/90 backdrop-blur-sm px-2 py-1 rounded-full text-xs font-medium text-amber-700 shadow-sm">
-              ⭐ Featured
-            </div>
-          )}
-
-          {/* Verified badge */}
-          {artisan.isVerified && (
-            <div className="absolute bottom-3 left-3">
-              <div className="bg-white/90 backdrop-blur-sm rounded-full p-1 shadow-sm">
-                <BadgeCheck className="w-4 h-4 text-emerald-600" />
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* Metadata */}
-        <div className="space-y-0.5">
-          {/* Name + rating */}
-          <div className="flex items-start justify-between gap-2">
-            <p className="font-medium text-[#222] text-sm truncate">{artisan.name}</p>
-            {artisan.rating.total > 0 && (
-              <div className="flex items-center gap-1 flex-shrink-0">
-                <Star className="w-3.5 h-3.5 fill-[#222] text-[#222]" />
-                <span className="text-xs text-[#222] font-medium">{artisan.rating.average.toFixed(1)}</span>
-              </div>
-            )}
-          </div>
-
-          {/* Profession + location */}
-          <p className="text-[#6a6a6a] text-sm truncate">
-            {artisan.profession}{artisan.profession && locationStr ? " · " : ""}{locationStr}
-          </p>
-
-          {/* Price */}
-          {artisan.hourlyRate && (
-            <p className="text-[#222] text-sm">
-              <span className="font-medium">KES {artisan.hourlyRate.toLocaleString()}</span>
-              <span className="text-[#6a6a6a]"> / hr</span>
-            </p>
-          )}
-        </div>
-      </Link>
-
-      {/* Save button — outside Link to avoid nested links */}
-      <button
-        onClick={(e) => { e.preventDefault(); onSave(); }}
-        className="absolute top-3 right-3 w-8 h-8 flex items-center justify-center"
-        aria-label={saved ? "Remove from saved" : "Save artisan"}
-        style={{ position: "absolute" }}
-      >
-        <div className="w-8 h-8 rounded-full bg-white/80 hover:bg-white backdrop-blur-sm flex items-center justify-center transition-colors shadow-sm">
-          <Heart
-            className={`w-4 h-4 transition-colors ${saved ? "fill-emerald-700 text-emerald-700" : "text-[#222]"}`}
-          />
-        </div>
-      </button>
-    </div>
-  );
-}
-
-/* ─────────────────────────────────────────────────────────────
-   Skeleton — matches ArtisanCard exactly
-───────────────────────────────────────────────────────────── */
-function ArtisanCardSkeleton() {
-  return (
-    <div className="animate-pulse">
-      {/* Photo area */}
-      <div className="aspect-square rounded-xl bg-[#f2f2f2] mb-3" />
-      {/* Name + rating row */}
-      <div className="flex items-center justify-between gap-2 mb-1">
-        <div className="h-4 bg-[#f2f2f2] rounded w-3/4" />
-        <div className="h-3.5 bg-[#f2f2f2] rounded w-8 flex-shrink-0" />
-      </div>
-      {/* Profession + location */}
-      <div className="h-3.5 bg-[#f2f2f2] rounded w-2/3 mb-1" />
-      {/* Price */}
-      <div className="h-3.5 bg-[#f2f2f2] rounded w-1/3" />
-    </div>
-  );
-}

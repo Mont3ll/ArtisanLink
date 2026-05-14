@@ -81,7 +81,7 @@ export function AdminTasksTable({
       case 'review_submitted':
         return <MessageSquare className="h-4 w-4 text-purple-500" />
       case 'message_sent':
-        return <MessageSquare className="h-4 w-4 text-blue-500" />
+        return <MessageSquare className="h-4 w-4 text-emerald-600" />
       default:
         return <AlertTriangle className="h-4 w-4 text-muted-foreground" />
     }
@@ -94,7 +94,7 @@ export function AdminTasksTable({
       case 'warning':
         return <AlertTriangle className="h-4 w-4 text-yellow-500" />
       case 'info':
-        return <AlertTriangle className="h-4 w-4 text-blue-500" />
+        return <AlertTriangle className="h-4 w-4 text-emerald-600" />
       default:
         return <AlertTriangle className="h-4 w-4 text-muted-foreground" />
     }

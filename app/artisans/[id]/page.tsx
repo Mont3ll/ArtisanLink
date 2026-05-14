@@ -72,60 +72,60 @@ export default function PublicArtisanProfilePage() {
 
   if (isLoading) {
     return (
-      <div className="bg-stone-50 min-h-screen">
+      <div className="bg-white min-h-screen">
         <PublicNav />
         <div className="max-w-5xl mx-auto px-6 py-8">
           {/* Back link skeleton */}
           <div className="animate-pulse">
-            <div className="h-4 bg-stone-200 rounded w-28 mb-6" />
+            <div className="h-4 bg-[#f2f2f2] rounded w-28 mb-6" />
             {/* Profile header card skeleton */}
-            <div className="bg-white rounded-xl border border-stone-200 p-6 mb-6">
+            <div className="bg-white rounded-xl border border-[#ddd] p-6 mb-6">
               <div className="flex flex-col sm:flex-row gap-6 items-start">
                 {/* Avatar */}
-                <div className="w-24 h-24 rounded-full bg-stone-200 flex-shrink-0" />
+                <div className="w-24 h-24 rounded-full bg-[#f2f2f2] flex-shrink-0" />
                 <div className="flex-1 space-y-3">
-                  <div className="h-7 bg-stone-200 rounded w-48" />
-                  <div className="h-4 bg-stone-200 rounded w-32" />
+                  <div className="h-7 bg-[#f2f2f2] rounded w-48" />
+                  <div className="h-4 bg-[#f2f2f2] rounded w-32" />
                   <div className="flex gap-4">
-                    <div className="h-3.5 bg-stone-200 rounded w-20" />
-                    <div className="h-3.5 bg-stone-200 rounded w-24" />
-                    <div className="h-3.5 bg-stone-200 rounded w-20" />
+                    <div className="h-3.5 bg-[#f2f2f2] rounded w-20" />
+                    <div className="h-3.5 bg-[#f2f2f2] rounded w-24" />
+                    <div className="h-3.5 bg-[#f2f2f2] rounded w-20" />
                   </div>
-                  <div className="h-8 bg-stone-200 rounded w-24" />
-                  <div className="h-16 bg-stone-100 rounded-xl" />
+                  <div className="h-8 bg-[#f2f2f2] rounded w-24" />
+                  <div className="h-16 bg-[#f2f2f2] rounded-xl" />
                 </div>
               </div>
             </div>
             {/* Main grid skeleton */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               <div className="lg:col-span-2 space-y-6">
-                <div className="bg-white rounded-xl border border-stone-200 p-6">
-                  <div className="h-5 bg-stone-200 rounded w-16 mb-3" />
+                <div className="bg-white rounded-xl border border-[#ddd] p-6">
+                  <div className="h-5 bg-[#f2f2f2] rounded w-16 mb-3" />
                   <div className="space-y-2">
-                    <div className="h-3 bg-stone-200 rounded" />
-                    <div className="h-3 bg-stone-200 rounded w-5/6" />
-                    <div className="h-3 bg-stone-200 rounded w-4/5" />
+                    <div className="h-3 bg-[#f2f2f2] rounded" />
+                    <div className="h-3 bg-[#f2f2f2] rounded w-5/6" />
+                    <div className="h-3 bg-[#f2f2f2] rounded w-4/5" />
                   </div>
                 </div>
-                <div className="bg-white rounded-xl border border-stone-200 p-6">
-                  <div className="h-5 bg-stone-200 rounded w-24 mb-4" />
+                <div className="bg-white rounded-xl border border-[#ddd] p-6">
+                  <div className="h-5 bg-[#f2f2f2] rounded w-24 mb-4" />
                   <div className="grid grid-cols-3 gap-3">
                     {Array.from({ length: 6 }).map((_, i) => (
-                      <div key={i} className="aspect-square rounded-lg bg-stone-200" />
+                      <div key={i} className="aspect-square rounded-lg bg-[#f2f2f2]" />
                     ))}
                   </div>
                 </div>
               </div>
               <div className="space-y-5">
-                <div className="bg-white rounded-xl border border-stone-200 p-5">
-                  <div className="h-5 bg-stone-200 rounded w-16 mb-3" />
+                <div className="bg-white rounded-xl border border-[#ddd] p-5">
+                  <div className="h-5 bg-[#f2f2f2] rounded w-16 mb-3" />
                   <div className="flex flex-wrap gap-2">
                     {Array.from({ length: 4 }).map((_, i) => (
-                      <div key={i} className="h-6 bg-stone-200 rounded w-20" />
+                      <div key={i} className="h-6 bg-[#f2f2f2] rounded w-20" />
                     ))}
                   </div>
                 </div>
-                <div className="bg-white rounded-xl border border-stone-200 p-5 h-36" />
+                <div className="bg-white rounded-xl border border-[#ddd] p-5 h-36" />
                 <div className="bg-emerald-800 rounded-xl p-5 h-40" />
               </div>
             </div>
@@ -137,12 +137,12 @@ export default function PublicArtisanProfilePage() {
 
   if (error || !artisan) {
     return (
-      <div className="bg-stone-50 min-h-screen">
+      <div className="bg-white min-h-screen">
         <PublicNav />
         <div className="max-w-5xl mx-auto px-6 py-20 text-center">
-          <BadgeCheck className="w-12 h-12 text-stone-300 mx-auto mb-4" />
-          <h1 className="text-2xl font-serif font-bold text-stone-800 mb-3">Artisan not found</h1>
-          <p className="text-stone-500 mb-6">This artisan may no longer be available or the link is invalid.</p>
+          <BadgeCheck className="w-12 h-12 text-[#c1c1c1] mx-auto mb-4" />
+          <h1 className="text-2xl font-serif font-bold text-[#222] mb-3">Artisan not found</h1>
+          <p className="text-[#6a6a6a] mb-6">This artisan may no longer be available or the link is invalid.</p>
           <Link href="/artisans" className="bg-emerald-700 text-white px-6 py-3 rounded-lg font-medium hover:bg-emerald-800 transition-colors inline-block">
             Browse Artisans
           </Link>
@@ -156,21 +156,21 @@ export default function PublicArtisanProfilePage() {
     : [];
 
   return (
-    <div className="bg-stone-50 text-stone-900 min-h-screen">
+    <div className="bg-white text-[#222] min-h-screen">
       <PublicNav />
 
       <div className="max-w-5xl mx-auto px-6 py-8">
         {/* Back */}
         <Link
           href="/artisans"
-          className="inline-flex items-center gap-2 text-stone-500 hover:text-emerald-700 transition-colors text-sm mb-6"
+          className="inline-flex items-center gap-2 text-[#6a6a6a] hover:text-emerald-700 transition-colors text-sm mb-6"
         >
           <ArrowLeft className="w-4 h-4" />
           Back to artisans
         </Link>
 
         {/* Profile Header Card */}
-        <div className="bg-white rounded-xl border border-stone-200 p-6 mb-6">
+        <div className="bg-white rounded-xl border border-[#ddd] p-6 mb-6">
           <div className="flex flex-col sm:flex-row gap-6 items-start">
             {/* Avatar */}
             <div className="flex-shrink-0 relative">
@@ -179,10 +179,10 @@ export default function PublicArtisanProfilePage() {
                 <img
                   src={artisan.profileImage}
                   alt={artisan.name}
-                  className="w-24 h-24 rounded-full object-cover border-4 border-stone-100 shadow-md"
+                  className="w-24 h-24 rounded-full object-cover border-4 border-[#ebebeb] shadow-md"
                 />
               ) : (
-                <div className="w-24 h-24 rounded-full bg-emerald-100 flex items-center justify-center border-4 border-stone-100 shadow-md">
+                <div className="w-24 h-24 rounded-full bg-emerald-100 flex items-center justify-center border-4 border-[#ebebeb] shadow-md">
                   <span className="text-emerald-700 font-bold text-2xl">{initials}</span>
                 </div>
               )}
@@ -196,7 +196,7 @@ export default function PublicArtisanProfilePage() {
             {/* Info */}
             <div className="flex-1 min-w-0">
               <div className="flex flex-wrap items-center gap-2 mb-1">
-                <h1 className="text-2xl font-serif font-bold text-stone-900">{artisan.name}</h1>
+                <h1 className="text-2xl font-serif font-bold text-[#222]">{artisan.name}</h1>
                 {artisan.isPremium && (
                   <span className="text-xs bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full font-medium">⭐ Premium</span>
                 )}
@@ -206,7 +206,7 @@ export default function PublicArtisanProfilePage() {
                     Available
                   </span>
                 ) : (
-                  <span className="text-xs bg-stone-100 text-stone-500 px-2 py-1 rounded-full font-medium">Busy</span>
+                  <span className="text-xs bg-[#f2f2f2] text-[#6a6a6a] px-2 py-1 rounded-full font-medium">Busy</span>
                 )}
               </div>
 
@@ -214,10 +214,10 @@ export default function PublicArtisanProfilePage() {
                 <p className="text-lg text-emerald-700 font-medium mb-3">{artisan.profession}</p>
               )}
 
-              <div className="flex flex-wrap gap-4 text-sm text-stone-500 mb-4">
+              <div className="flex flex-wrap gap-4 text-sm text-[#6a6a6a] mb-4">
                 <div className="flex items-center gap-1">
                   <Star className="w-4 h-4 text-amber-400 fill-amber-400" />
-                  <span className="font-semibold text-stone-700">{artisan.rating.average.toFixed(1)}</span>
+                  <span className="font-semibold text-[#3f3f3f]">{artisan.rating.average.toFixed(1)}</span>
                   <span>({artisan.rating.total} reviews)</span>
                 </div>
                 {(artisan.location.city || artisan.location.county) && (
@@ -239,19 +239,19 @@ export default function PublicArtisanProfilePage() {
               </div>
 
               {artisan.hourlyRate && (
-                <p className="text-2xl font-bold text-stone-900 mb-4">
-                  KES {artisan.hourlyRate.toLocaleString()}<span className="text-base font-normal text-stone-500">/hour</span>
+                <p className="text-2xl font-bold text-[#222] mb-4">
+                  KES {artisan.hourlyRate.toLocaleString()}<span className="text-base font-normal text-[#6a6a6a]">/hour</span>
                 </p>
               )}
 
               {/* CTA Panel */}
-              <div className="flex flex-wrap gap-3 p-4 bg-stone-50 rounded-xl border border-stone-200">
+              <div className="flex flex-wrap gap-3 p-4 bg-[#f7f7f7] rounded-xl border border-[#ddd]">
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-stone-700">Interested in hiring {artisan.name.split(" ")[0]}?</p>
-                  <p className="text-xs text-stone-500 mt-0.5">Sign in or create a free account to message, save, or request a job quote.</p>
+                  <p className="text-sm font-medium text-[#3f3f3f]">Interested in hiring {artisan.name.split(" ")[0]}?</p>
+                  <p className="text-xs text-[#6a6a6a] mt-0.5">Sign in or create a free account to message, save, or request a job quote.</p>
                 </div>
                 <div className="flex gap-2 flex-shrink-0">
-                  <Link href="/sign-in" className="flex items-center gap-2 border border-stone-300 px-4 py-2 rounded-lg text-sm font-medium hover:border-emerald-600 hover:text-emerald-700 transition-colors">
+                  <Link href="/sign-in" className="flex items-center gap-2 border border-[#ddd] px-4 py-2 rounded-lg text-sm font-medium hover:border-emerald-600 hover:text-emerald-700 transition-colors">
                     <Heart className="w-4 h-4" /> Save
                   </Link>
                   <Link href="/sign-in" className="flex items-center gap-2 bg-emerald-700 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-emerald-800 transition-colors">
@@ -268,22 +268,22 @@ export default function PublicArtisanProfilePage() {
           <div className="lg:col-span-2 space-y-6">
             {/* Bio */}
             {artisan.bio && (
-              <div className="bg-white rounded-xl border border-stone-200 p-6">
-                <h2 className="font-serif font-bold text-stone-800 text-lg mb-3">About</h2>
-                <p className="text-stone-600 whitespace-pre-line leading-relaxed">{artisan.bio}</p>
+              <div className="bg-white rounded-xl border border-[#ddd] p-6">
+                <h2 className="font-serif font-bold text-[#222] text-lg mb-3">About</h2>
+                <p className="text-[#3f3f3f] whitespace-pre-line leading-relaxed">{artisan.bio}</p>
               </div>
             )}
 
             {/* Portfolio */}
             {artisan.portfolio.length > 0 && (
-              <div className="bg-white rounded-xl border border-stone-200 p-6">
-                <h2 className="font-serif font-bold text-stone-800 text-lg mb-4">Portfolio</h2>
+              <div className="bg-white rounded-xl border border-[#ddd] p-6">
+                <h2 className="font-serif font-bold text-[#222] text-lg mb-4">Portfolio</h2>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                   {artisan.portfolio.map((item) => (
                     <button
                       key={item.id}
                       onClick={() => { setSelectedPortfolio(item); setPortfolioImageIdx(0); }}
-                      className="group relative aspect-square rounded-lg overflow-hidden bg-stone-100 hover:ring-2 hover:ring-emerald-600 transition-all"
+                      className="group relative aspect-square rounded-lg overflow-hidden bg-[#f2f2f2] hover:ring-2 hover:ring-emerald-600 transition-all"
                     >
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img
@@ -305,31 +305,31 @@ export default function PublicArtisanProfilePage() {
           <div className="space-y-5">
             {/* Skills */}
             {artisan.specializations.length > 0 && (
-              <div className="bg-white rounded-xl border border-stone-200 p-5">
-                <h3 className="flex items-center gap-2 font-serif font-bold text-stone-800 mb-3">
+              <div className="bg-white rounded-xl border border-[#ddd] p-5">
+                <h3 className="flex items-center gap-2 font-serif font-bold text-[#222] mb-3">
                   <Award className="w-4 h-4 text-emerald-700" /> Skills
                 </h3>
                 <div className="flex flex-wrap gap-2">
                   {artisan.specializations.map((s) => (
-                    <span key={s.name} className="px-2 py-1 bg-stone-100 text-stone-600 rounded text-xs">{s.name}</span>
+                    <span key={s.name} className="px-2 py-1 bg-[#f2f2f2] text-[#3f3f3f] rounded text-xs">{s.name}</span>
                   ))}
                 </div>
               </div>
             )}
 
             {/* Details */}
-            <div className="bg-white rounded-xl border border-stone-200 p-5">
-              <h3 className="font-serif font-bold text-stone-800 mb-3">Details</h3>
-              <div className="space-y-3 text-sm text-stone-600">
+            <div className="bg-white rounded-xl border border-[#ddd] p-5">
+              <h3 className="font-serif font-bold text-[#222] mb-3">Details</h3>
+              <div className="space-y-3 text-sm text-[#3f3f3f]">
                 {(artisan.location.city || artisan.location.county) && (
                   <div className="flex items-center gap-2">
-                    <MapPin className="w-4 h-4 text-stone-400 flex-shrink-0" />
+                    <MapPin className="w-4 h-4 text-[#929292] flex-shrink-0" />
                     {locationStr}
                   </div>
                 )}
                 {artisan.website && (
                   <div className="flex items-center gap-2">
-                    <Globe className="w-4 h-4 text-stone-400 flex-shrink-0" />
+                    <Globe className="w-4 h-4 text-[#929292] flex-shrink-0" />
                     <a
                       href={artisan.website.startsWith("http") ? artisan.website : `https://${artisan.website}`}
                       target="_blank"
@@ -340,7 +340,7 @@ export default function PublicArtisanProfilePage() {
                     </a>
                   </div>
                 )}
-                <div className="pt-2 border-t border-stone-100 text-xs text-stone-400">
+                <div className="pt-2 border-t border-[#ebebeb] text-xs text-[#929292]">
                   Member since {new Date(artisan.memberSince).toLocaleDateString("en-KE", { year: "numeric", month: "long" })}
                 </div>
               </div>
@@ -371,9 +371,9 @@ export default function PublicArtisanProfilePage() {
             className="bg-white rounded-xl max-w-2xl w-full max-h-[90vh] overflow-auto"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="p-4 border-b border-stone-200 flex items-center justify-between">
-              <h3 className="font-semibold text-stone-800">{selectedPortfolio.title}</h3>
-              <button onClick={() => setSelectedPortfolio(null)} className="text-stone-400 hover:text-stone-900 text-xl leading-none">✕</button>
+            <div className="p-4 border-b border-[#ddd] flex items-center justify-between">
+              <h3 className="font-semibold text-[#222]">{selectedPortfolio.title}</h3>
+              <button onClick={() => setSelectedPortfolio(null)} className="text-[#929292] hover:text-[#222] text-xl leading-none">✕</button>
             </div>
             {portfolioImages.length > 0 && (
               <div className="relative">
@@ -381,7 +381,7 @@ export default function PublicArtisanProfilePage() {
                 <img
                   src={portfolioImages[portfolioImageIdx]}
                   alt={selectedPortfolio.title}
-                  className="w-full max-h-80 object-contain bg-stone-100"
+                  className="w-full max-h-80 object-contain bg-[#f2f2f2]"
                 />
                 {portfolioImages.length > 1 && (
                   <>
@@ -389,13 +389,13 @@ export default function PublicArtisanProfilePage() {
                       className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/90 rounded-full p-1.5 shadow hover:bg-white transition-colors"
                       onClick={() => setPortfolioImageIdx(i => Math.max(0, i - 1))}
                     >
-                      <ChevronLeft className="w-4 h-4 text-stone-700" />
+                      <ChevronLeft className="w-4 h-4 text-[#3f3f3f]" />
                     </button>
                     <button
                       className="absolute right-2 top-1/2 -translate-y-1/2 bg-white/90 rounded-full p-1.5 shadow hover:bg-white transition-colors"
                       onClick={() => setPortfolioImageIdx(i => Math.min(portfolioImages.length - 1, i + 1))}
                     >
-                      <ChevronRight className="w-4 h-4 text-stone-700" />
+                      <ChevronRight className="w-4 h-4 text-[#3f3f3f]" />
                     </button>
                     <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1">
                       {portfolioImages.map((_, i) => (
@@ -408,10 +408,10 @@ export default function PublicArtisanProfilePage() {
             )}
             <div className="p-4">
               {selectedPortfolio.description && (
-                <p className="text-sm text-stone-600 mb-3">{selectedPortfolio.description}</p>
+                <p className="text-sm text-[#3f3f3f] mb-3">{selectedPortfolio.description}</p>
               )}
               {selectedPortfolio.category && (
-                <span className="px-2 py-1 bg-stone-100 text-stone-600 rounded text-xs">{selectedPortfolio.category}</span>
+                <span className="px-2 py-1 bg-[#f2f2f2] text-[#3f3f3f] rounded text-xs">{selectedPortfolio.category}</span>
               )}
             </div>
           </div>

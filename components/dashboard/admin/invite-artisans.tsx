@@ -256,8 +256,8 @@ export default function InviteArtisans() {
               <p className="text-2xl font-bold">{invites.length}</p>
               <p className="text-xs text-muted-foreground">Total Invites</p>
             </div>
-            <div className="bg-blue-50 dark:bg-blue-950/30 rounded-lg p-3 text-center">
-              <p className="text-2xl font-bold text-blue-600">{pendingCount}</p>
+            <div className="bg-emerald-50 dark:bg-emerald-950/30 rounded-lg p-3 text-center">
+              <p className="text-2xl font-bold text-emerald-600">{pendingCount}</p>
               <p className="text-xs text-muted-foreground">Pending</p>
             </div>
             <div className="bg-green-50 dark:bg-green-950/30 rounded-lg p-3 text-center">

@@ -398,9 +398,9 @@ export default function DatabasePage() {
                 {isLoading ? (
                   <Skeleton className="h-32 w-full" />
                 ) : (
-                  <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
+                  <div className="p-4 bg-emerald-50 rounded-lg border border-emerald-200">
                     <div className="flex items-start gap-3">
-                      <MessageSquare className="h-5 w-5 text-blue-600 mt-0.5" />
+                      <MessageSquare className="h-5 w-5 text-emerald-600 mt-0.5" />
                       <div className="text-sm text-blue-800">
                         <p className="font-medium mb-1">Production Monitoring</p>
                         <p>{performance?.note ?? 'No performance notes available'}</p>

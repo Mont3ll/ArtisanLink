@@ -10,16 +10,16 @@ export const metadata: Metadata = {
 
 export default function PricingPage() {
   return (
-    <div className="bg-stone-50 text-stone-900 min-h-screen">
+    <div className="bg-white text-[#222] min-h-screen">
       <PublicNav />
 
       {/* Hero */}
-      <section className="py-16 px-6 border-b border-stone-200 bg-white text-center">
+      <section className="py-16 px-6 border-b border-[#ddd] bg-white text-center">
         <p className="text-emerald-700 font-medium mb-3 tracking-wide text-sm uppercase">Pricing</p>
-        <h1 className="text-3xl md:text-5xl font-serif font-bold text-stone-800 mb-4">
+        <h1 className="text-3xl md:text-5xl font-serif font-bold text-[#222] mb-4">
           Free for clients. Fair for artisans.
         </h1>
-        <p className="text-stone-500 max-w-2xl mx-auto text-lg">
+        <p className="text-[#6a6a6a] max-w-2xl mx-auto text-lg">
           Browse, message, and hire artisans at no cost. Artisans choose a plan that fits their ambition.
         </p>
       </section>
@@ -30,12 +30,12 @@ export default function PricingPage() {
           <div className="grid md:grid-cols-3 gap-6">
 
             {/* Client — Free */}
-            <div className="bg-white rounded-xl border border-stone-200 p-8 flex flex-col hover:shadow-lg transition-shadow">
+            <div className="bg-white rounded-xl border border-[#ddd] p-8 flex flex-col hover:shadow-lg transition-shadow">
               <div className="inline-flex items-center gap-2 bg-emerald-100 text-emerald-700 px-3 py-1 rounded-full text-sm font-medium mb-6 w-fit">
                 For Clients
               </div>
-              <div className="text-4xl font-bold text-stone-900 mb-1">Free</div>
-              <p className="text-stone-500 text-sm mb-8">No fees, no hidden costs</p>
+              <div className="text-4xl font-bold text-[#222] mb-1">Free</div>
+              <p className="text-[#6a6a6a] text-sm mb-8">No fees, no hidden costs</p>
               <ul className="space-y-3 mb-8 flex-1">
                 {[
                   "Browse unlimited artisan profiles",
@@ -44,7 +44,7 @@ export default function PricingPage() {
                   "Request jobs & receive quotes",
                   "Satisfaction guarantee",
                 ].map((f) => (
-                  <li key={f} className="flex items-start gap-3 text-sm text-stone-600">
+                  <li key={f} className="flex items-start gap-3 text-sm text-[#3f3f3f]">
                     <Check className="w-4 h-4 text-emerald-600 mt-0.5 flex-shrink-0" />
                     {f}
                   </li>
@@ -59,15 +59,15 @@ export default function PricingPage() {
             </div>
 
             {/* Artisan — Monthly */}
-            <div className="bg-white rounded-xl border border-stone-200 p-8 flex flex-col hover:shadow-lg transition-shadow">
+            <div className="bg-white rounded-xl border border-[#ddd] p-8 flex flex-col hover:shadow-lg transition-shadow">
               <div className="inline-flex items-center gap-2 bg-amber-100 text-amber-700 px-3 py-1 rounded-full text-sm font-medium mb-6 w-fit">
                 Monthly
               </div>
               <div className="mb-1">
-                <span className="text-4xl font-bold text-stone-900">KES 150</span>
-                <span className="text-stone-500 text-sm ml-1">/month</span>
+                <span className="text-4xl font-bold text-[#222]">KES 150</span>
+                <span className="text-[#6a6a6a] text-sm ml-1">/month</span>
               </div>
-              <p className="text-stone-500 text-sm mb-8">Artisan subscription</p>
+              <p className="text-[#6a6a6a] text-sm mb-8">Artisan subscription</p>
               <ul className="space-y-3 mb-8 flex-1">
                 {[
                   "Professional profile & portfolio",
@@ -77,7 +77,7 @@ export default function PricingPage() {
                   "Premium profile badge",
                   "Reduced 5% commission rate",
                 ].map((f) => (
-                  <li key={f} className="flex items-start gap-3 text-sm text-stone-600">
+                  <li key={f} className="flex items-start gap-3 text-sm text-[#3f3f3f]">
                     <Check className="w-4 h-4 text-emerald-600 mt-0.5 flex-shrink-0" />
                     {f}
                   </li>
@@ -131,20 +131,20 @@ export default function PricingPage() {
           </div>
 
           {/* Commission note */}
-          <div className="mt-10 bg-white rounded-xl border border-stone-200 p-6 text-center">
-            <h3 className="font-serif font-bold text-stone-800 mb-2">How commissions work</h3>
-            <p className="text-stone-500 text-sm max-w-2xl mx-auto">
+          <div className="mt-10 bg-white rounded-xl border border-[#ddd] p-6 text-center">
+            <h3 className="font-serif font-bold text-[#222] mb-2">How commissions work</h3>
+            <p className="text-[#6a6a6a] text-sm max-w-2xl mx-auto">
               ChapaWorks charges a small platform commission only when you complete a paid job.{" "}
-              <strong className="text-stone-700">Standard rate: 10%.</strong>{" "}
+              <strong className="text-[#3f3f3f]">Standard rate: 10%.</strong>{" "}
               Subscribers enjoy a reduced{" "}
-              <strong className="text-stone-700">5% rate</strong> on all completed jobs.
+              <strong className="text-[#3f3f3f]">5% rate</strong> on all completed jobs.
               During the current testing phase all payments are handled directly in cash between client and artisan.
             </p>
           </div>
 
           {/* FAQ teaser */}
           <div className="mt-12 text-center">
-            <p className="text-stone-500 mb-3">Have questions about pricing?</p>
+            <p className="text-[#6a6a6a] mb-3">Have questions about pricing?</p>
             <Link
               href="/#faq"
               className="inline-flex items-center gap-2 text-emerald-700 font-medium hover:text-emerald-800 transition-colors"
@@ -156,8 +156,8 @@ export default function PricingPage() {
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-stone-200 py-8 px-6 text-center">
-        <p className="text-sm text-stone-400">
+      <footer className="border-t border-[#ddd] py-8 px-6 text-center">
+        <p className="text-sm text-[#929292]">
           &copy; {new Date().getFullYear()} ChapaWorks — Connecting Clients with Skilled Artisans in Kenya
         </p>
       </footer>

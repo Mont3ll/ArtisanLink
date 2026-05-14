@@ -4,36 +4,22 @@ import { useState, useEffect, Suspense } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import PublicNav from "@/components/layout/public-nav";
+import { ArtisanCard, ArtisanCardSkeleton, type ArtisanCardData } from "@/components/artisan";
 import {
   Search,
-  MapPin,
-  Star,
-  BadgeCheck,
   ArrowRight,
-  Eye,
-  MessageCircle,
   SlidersHorizontal,
   X,
   ChevronDown,
 } from "lucide-react";
 
-interface Artisan {
-  id: string;
-  name: string;
-  profession: string | null;
+type Artisan = ArtisanCardData & {
   bio: string | null;
-  profileImage: string | null;
-  location: { city: string | null; county: string | null };
   experience: number | null;
-  hourlyRate: number | null;
-  isAvailable: boolean;
-  isVerified: boolean;
-  isPremium: boolean;
-  rating: { average: number; total: number };
-  specializations: Array<{ name: string; skillLevel: string }>;
   memberSince: string;
   distance: number | null;
-}
+  portfolioThumbnail?: string | null;
+};
 
 interface Facets {
   professions: Array<{ name: string | null; count: number }>;
@@ -42,7 +28,7 @@ interface Facets {
 
 export default function BrowseArtisansPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-stone-50 flex items-center justify-center"><div className="w-6 h-6 border-2 border-emerald-600 border-t-transparent rounded-full animate-spin" /></div>}>
+    <Suspense fallback={<div className="min-h-screen bg-white flex items-center justify-center"><div className="w-6 h-6 border-2 border-emerald-600 border-t-transparent rounded-full animate-spin" /></div>}>
       <BrowseArtisansContent />
     </Suspense>
   );
@@ -110,30 +96,30 @@ function BrowseArtisansContent() {
   const hasFilters = query || profession || county;
 
   return (
-    <div className="bg-stone-50 text-stone-900 min-h-screen">
+    <div className="bg-white text-[#222] min-h-screen">
       <PublicNav />
 
       {/* Hero Search */}
-      <div className="py-14 px-6 border-b border-stone-200 bg-white">
+      <div className="py-14 px-6 border-b border-[#ddd] bg-white">
         <div className="max-w-3xl mx-auto text-center mb-8">
           <p className="text-emerald-700 font-medium mb-2 tracking-wide text-sm uppercase">Browse Artisans</p>
-          <h1 className="text-3xl md:text-4xl font-serif font-bold text-stone-800 mb-3">
+          <h1 className="text-3xl md:text-4xl font-serif font-bold text-[#222] mb-3">
             Discover skilled professionals
           </h1>
-          <p className="text-stone-500">
+          <p className="text-[#6a6a6a]">
             All verified, rated by real clients across Kenya
           </p>
         </div>
 
         <div className="max-w-3xl mx-auto">
-          <form onSubmit={handleSearch} className="bg-white rounded-xl shadow-lg border border-stone-200 p-2 flex flex-col sm:flex-row gap-2 mb-4">
+          <form onSubmit={handleSearch} className="bg-white rounded-xl shadow-lg border border-[#ddd] p-2 flex flex-col sm:flex-row gap-2 mb-4">
             <div className="flex-1 flex items-center gap-3 px-4 py-3">
-              <Search className="w-5 h-5 text-stone-400 flex-shrink-0" />
+              <Search className="w-5 h-5 text-[#929292] flex-shrink-0" />
               <input
                 value={searchInput}
                 onChange={(e) => setSearchInput(e.target.value)}
                 placeholder="Search by profession, name, or skill…"
-                className="w-full outline-none text-stone-800 placeholder:text-stone-400 bg-transparent"
+                className="w-full outline-none text-[#222] placeholder:text-[#929292] bg-transparent"
               />
             </div>
             <button
@@ -149,7 +135,7 @@ function BrowseArtisansContent() {
           <div className="flex items-center gap-3 flex-wrap">
             <button
               onClick={() => setShowFilters(!showFilters)}
-              className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium border transition-colors ${showFilters ? "bg-emerald-700 text-white border-emerald-700" : "bg-white text-stone-600 border-stone-300 hover:border-emerald-600 hover:text-emerald-700"}`}
+              className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium border transition-colors ${showFilters ? "bg-emerald-700 text-white border-emerald-700" : "bg-white text-[#3f3f3f] border-[#ddd] hover:border-emerald-600 hover:text-emerald-700"}`}
             >
               <SlidersHorizontal className="w-4 h-4" />
               Filters
@@ -168,61 +154,61 @@ function BrowseArtisansContent() {
               </button>
             )}
             {hasFilters && (
-              <button onClick={clearFilters} className="text-sm text-stone-500 hover:text-stone-700 underline">Clear all</button>
+              <button onClick={clearFilters} className="text-sm text-[#6a6a6a] hover:text-[#3f3f3f] underline">Clear all</button>
             )}
           </div>
 
           {/* Expanded filters */}
           {showFilters && (
-            <div className="mt-4 bg-white rounded-xl border border-stone-200 p-5 grid sm:grid-cols-3 gap-4">
+            <div className="mt-4 bg-white rounded-xl border border-[#ddd] p-5 grid sm:grid-cols-3 gap-4">
               <div>
-                <label className="block text-xs font-semibold text-stone-500 uppercase tracking-wide mb-2">Profession</label>
+                <label className="block text-xs font-semibold text-[#6a6a6a] uppercase tracking-wide mb-2">Profession</label>
                 <div className="relative">
                   <select
                     value={profession}
                     onChange={(e) => { setProfession(e.target.value); setPage(1); }}
-                    className="w-full appearance-none bg-stone-50 border border-stone-200 rounded-lg px-3 py-2 text-sm text-stone-800 outline-none focus:border-emerald-600 pr-8"
+                    className="w-full appearance-none bg-white border border-[#ddd] rounded-lg px-3 py-2 text-sm text-[#222] outline-none focus:border-emerald-600 pr-8"
                   >
                     <option value="">All Professions</option>
                     {facets?.professions?.filter(p => p.name).map((p) => (
                       <option key={p.name!} value={p.name!}>{p.name} ({p.count})</option>
                     ))}
                   </select>
-                  <ChevronDown className="absolute right-3 top-2.5 w-4 h-4 text-stone-400 pointer-events-none" />
+                  <ChevronDown className="absolute right-3 top-2.5 w-4 h-4 text-[#929292] pointer-events-none" />
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-stone-500 uppercase tracking-wide mb-2">County</label>
+                <label className="block text-xs font-semibold text-[#6a6a6a] uppercase tracking-wide mb-2">County</label>
                 <div className="relative">
                   <select
                     value={county}
                     onChange={(e) => { setCounty(e.target.value); setPage(1); }}
-                    className="w-full appearance-none bg-stone-50 border border-stone-200 rounded-lg px-3 py-2 text-sm text-stone-800 outline-none focus:border-emerald-600 pr-8"
+                    className="w-full appearance-none bg-white border border-[#ddd] rounded-lg px-3 py-2 text-sm text-[#222] outline-none focus:border-emerald-600 pr-8"
                   >
                     <option value="">All Counties</option>
                     {facets?.counties?.filter(c => c.name).map((c) => (
                       <option key={c.name!} value={c.name!}>{c.name} ({c.count})</option>
                     ))}
                   </select>
-                  <ChevronDown className="absolute right-3 top-2.5 w-4 h-4 text-stone-400 pointer-events-none" />
+                  <ChevronDown className="absolute right-3 top-2.5 w-4 h-4 text-[#929292] pointer-events-none" />
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-stone-500 uppercase tracking-wide mb-2">Sort By</label>
+                <label className="block text-xs font-semibold text-[#6a6a6a] uppercase tracking-wide mb-2">Sort By</label>
                 <div className="relative">
                   <select
                     value={sortBy}
                     onChange={(e) => { setSortBy(e.target.value); setPage(1); }}
-                    className="w-full appearance-none bg-stone-50 border border-stone-200 rounded-lg px-3 py-2 text-sm text-stone-800 outline-none focus:border-emerald-600 pr-8"
+                    className="w-full appearance-none bg-white border border-[#ddd] rounded-lg px-3 py-2 text-sm text-[#222] outline-none focus:border-emerald-600 pr-8"
                   >
                     <option value="rating">Highest Rated</option>
                     <option value="reviews">Most Reviews</option>
                     <option value="rate">Hourly Rate</option>
                     <option value="recent">Newest</option>
                   </select>
-                  <ChevronDown className="absolute right-3 top-2.5 w-4 h-4 text-stone-400 pointer-events-none" />
+                  <ChevronDown className="absolute right-3 top-2.5 w-4 h-4 text-[#929292] pointer-events-none" />
                 </div>
               </div>
             </div>
@@ -235,14 +221,14 @@ function BrowseArtisansContent() {
         <div className="max-w-6xl mx-auto">
           {/* Count */}
           <div className="flex items-center justify-between mb-8">
-            <p className="text-stone-500 text-sm">
+            <p className="text-[#6a6a6a] text-sm">
               {isLoading ? (
-                <span className="inline-block w-32 h-4 bg-stone-200 rounded animate-pulse" />
+                <span className="inline-block w-32 h-4 bg-[#f2f2f2] rounded animate-pulse" />
               ) : (
-                <>Showing <strong className="text-stone-800">{artisans.length}</strong> of <strong className="text-stone-800">{total}</strong> artisans{query && <> for "<em>{query}</em>"</>}</>
+                <>Showing <strong className="text-[#222]">{artisans.length}</strong> of <strong className="text-[#222]">{total}</strong> artisans{query && <> for "<em>{query}</em>"</>}</>
               )}
             </p>
-            <p className="text-xs text-stone-400 hidden sm:block">
+            <p className="text-xs text-[#929292] hidden sm:block">
               <Link href="/sign-in" className="text-emerald-700 hover:underline">Sign in</Link> to message & save favourites
             </p>
           </div>
@@ -253,24 +239,24 @@ function BrowseArtisansContent() {
               {Array.from({ length: 8 }).map((_, i) => (
                 <div key={i} className="animate-pulse">
                   {/* Photo area — matches ArtisanCard */}
-                  <div className="aspect-square rounded-xl bg-stone-200 mb-3" />
+                  <div className="aspect-square rounded-xl bg-[#f2f2f2] mb-3" />
                   {/* Name + rating row */}
                   <div className="flex items-center justify-between gap-2 mb-1">
-                    <div className="h-4 bg-stone-200 rounded w-3/4" />
-                    <div className="h-3.5 bg-stone-200 rounded w-8 flex-shrink-0" />
+                    <div className="h-4 bg-[#f2f2f2] rounded w-3/4" />
+                    <div className="h-3.5 bg-[#f2f2f2] rounded w-8 flex-shrink-0" />
                   </div>
                   {/* Profession + location */}
-                  <div className="h-3.5 bg-stone-200 rounded w-2/3 mb-1" />
+                  <div className="h-3.5 bg-[#f2f2f2] rounded w-2/3 mb-1" />
                   {/* Price */}
-                  <div className="h-3.5 bg-stone-200 rounded w-1/3" />
+                  <div className="h-3.5 bg-[#f2f2f2] rounded w-1/3" />
                 </div>
               ))}
             </div>
           ) : artisans.length === 0 ? (
             <div className="text-center py-20">
-              <Search className="w-12 h-12 text-stone-300 mx-auto mb-4" />
-              <h2 className="text-xl font-serif font-bold text-stone-700 mb-2">No artisans found</h2>
-              <p className="text-stone-500 mb-6">Try adjusting your search or clearing filters</p>
+              <Search className="w-12 h-12 text-[#c1c1c1] mx-auto mb-4" />
+              <h2 className="text-xl font-serif font-bold text-[#3f3f3f] mb-2">No artisans found</h2>
+              <p className="text-[#6a6a6a] mb-6">Try adjusting your search or clearing filters</p>
               <button onClick={clearFilters} className="bg-emerald-700 text-white px-6 py-3 rounded-lg font-medium hover:bg-emerald-800 transition-colors">
                 Clear all filters
               </button>
@@ -289,15 +275,15 @@ function BrowseArtisansContent() {
               <button
                 disabled={page <= 1}
                 onClick={() => setPage(p => p - 1)}
-                className="px-5 py-2.5 border border-stone-300 rounded-lg text-sm font-medium hover:bg-stone-100 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                className="px-5 py-2.5 border border-[#ddd] rounded-lg text-sm font-medium hover:bg-[#f2f2f2] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 Previous
               </button>
-              <span className="text-sm text-stone-500">Page {page} of {totalPages}</span>
+              <span className="text-sm text-[#6a6a6a]">Page {page} of {totalPages}</span>
               <button
                 disabled={page >= totalPages}
                 onClick={() => setPage(p => p + 1)}
-                className="px-5 py-2.5 border border-stone-300 rounded-lg text-sm font-medium hover:bg-stone-100 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                className="px-5 py-2.5 border border-[#ddd] rounded-lg text-sm font-medium hover:bg-[#f2f2f2] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 Next
               </button>
@@ -327,76 +313,3 @@ function BrowseArtisansContent() {
   );
 }
 
-function ArtisanCard({ artisan }: { artisan: Artisan }) {
-  const initials = artisan.name.split(" ").map((n) => n[0]).join("").slice(0, 2).toUpperCase();
-  const locationStr = [artisan.location.city, artisan.location.county].filter(Boolean).join(", ") || "Kenya";
-
-  return (
-    <Link
-      href={`/artisans/${artisan.id}`}
-      className="group cursor-pointer block"
-    >
-      {/* Photo area — Airbnb style, photo-first */}
-      <div className="relative aspect-square rounded-xl overflow-hidden bg-stone-100 mb-3">
-        {artisan.profileImage ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={artisan.profileImage}
-            alt={artisan.name}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-          />
-        ) : (
-          <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-emerald-50 to-emerald-100">
-            <span className="text-4xl font-bold text-emerald-600">{initials}</span>
-          </div>
-        )}
-
-        {/* Availability */}
-        {artisan.isAvailable && (
-          <div className="absolute top-3 left-3 flex items-center gap-1 bg-white/90 backdrop-blur-sm px-2 py-1 rounded-full text-xs font-medium text-emerald-700 shadow-sm">
-            <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-            Available
-          </div>
-        )}
-
-        {/* Premium badge */}
-        {artisan.isPremium && !artisan.isAvailable && (
-          <div className="absolute top-3 left-3 bg-white/90 backdrop-blur-sm px-2 py-1 rounded-full text-xs font-medium text-amber-700 shadow-sm">
-            ⭐ Featured
-          </div>
-        )}
-
-        {/* Verified */}
-        {artisan.isVerified && (
-          <div className="absolute bottom-3 left-3">
-            <div className="bg-white/90 backdrop-blur-sm rounded-full p-1 shadow-sm">
-              <BadgeCheck className="w-4 h-4 text-emerald-600" />
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* Compact metadata — below photo */}
-      <div className="space-y-0.5">
-        <div className="flex items-start justify-between gap-2">
-          <p className="font-medium text-stone-900 text-sm truncate">{artisan.name}</p>
-          {artisan.rating.total > 0 && (
-            <div className="flex items-center gap-1 flex-shrink-0">
-              <Star className="w-3.5 h-3.5 fill-stone-800 text-stone-800" />
-              <span className="text-xs text-stone-800 font-medium">{artisan.rating.average.toFixed(1)}</span>
-            </div>
-          )}
-        </div>
-        <p className="text-stone-500 text-sm truncate">
-          {artisan.profession}{artisan.profession && locationStr ? " · " : ""}{locationStr}
-        </p>
-        {artisan.hourlyRate && (
-          <p className="text-stone-900 text-sm">
-            <span className="font-medium">KES {artisan.hourlyRate.toLocaleString()}</span>
-            <span className="text-stone-500"> / hr</span>
-          </p>
-        )}
-      </div>
-    </Link>
-  );
-}

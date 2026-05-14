@@ -18,7 +18,6 @@ export default function Header() {
 
   const navItems = [
     { title: "Browse Artisans", href: "/artisans" },
-    { title: "How It Works", href: "/#how-it-works" },
     { title: "Pricing", href: "/pricing" },
     { title: "For Artisans", href: "/for-artisans" },
     ...(isSignedIn ? [{ title: "Dashboard", href: "/dashboard" }] : [
@@ -96,14 +95,6 @@ export default function Header() {
                 <div className="nav-element relative flex flex-col items-center py-3 px-3 cursor-pointer group">
                   <Link href="/artisans" className="text-sm text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 transition-colors">
                     Browse Artisans
-                  </Link>
-                  <div className="nav-indicator absolute w-1 h-1 bg-slate-900 dark:bg-slate-100 rounded-full bottom-0 transform scale-0 group-hover:scale-100 transition-transform duration-200 ease-out"></div>
-                </div>
-              </Magnetic>
-              <Magnetic>
-                <div className="nav-element relative flex flex-col items-center py-3 px-3 cursor-pointer group">
-                  <Link href="/#how-it-works" className="text-sm text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 transition-colors">
-                    How It Works
                   </Link>
                   <div className="nav-indicator absolute w-1 h-1 bg-slate-900 dark:bg-slate-100 rounded-full bottom-0 transform scale-0 group-hover:scale-100 transition-transform duration-200 ease-out"></div>
                 </div>
