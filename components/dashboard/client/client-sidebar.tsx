@@ -9,12 +9,12 @@ import {
   IconHeart,
   IconSettings,
   IconHelp,
-  IconInnerShadowTop,
   IconStar,
   IconBriefcase,
   IconChartBar,
 } from "@tabler/icons-react"
 import { useUser } from "@clerk/nextjs"
+import TesseractLogo from "@/components/common/TesseractLogo";
 
 import { NavMain, type NavItem } from "@/components/shared/nav-main";
 import { NavDocuments } from "@/components/shared/nav-documents";
@@ -113,7 +113,7 @@ export function ClientSidebar({ ...props }: React.ComponentProps<typeof Sidebar>
               className="data-[slot=sidebar-menu-button]:!p-1.5"
             >
               <a href="/client-dashboard">
-                <IconInnerShadowTop className="!size-5" />
+                <TesseractLogo size={20} strokeWidth={1.75} className="!size-5" />
                 <span className="text-base font-semibold">ChapaWorks Client</span>
               </a>
             </SidebarMenuButton>

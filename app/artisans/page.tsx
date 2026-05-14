@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import PublicNav from "@/components/layout/public-nav";
 import {
   Search,
   MapPin,
@@ -99,25 +100,7 @@ export default function BrowseArtisansPage() {
 
   return (
     <div className="bg-stone-50 text-stone-900 min-h-screen">
-      {/* Nav */}
-      <nav className="sticky top-0 z-50 bg-stone-50/95 backdrop-blur-sm border-b border-stone-200">
-        <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
-          <Link href="/" className="text-2xl font-serif font-bold text-emerald-800">
-            ChapaWorks
-          </Link>
-          <div className="hidden md:flex items-center gap-8">
-            <Link href="/#features" className="text-sm text-stone-600 hover:text-emerald-700 transition-colors">Features</Link>
-            <Link href="/artisans" className="text-sm text-emerald-700 font-semibold border-b border-emerald-700 pb-0.5">Browse Artisans</Link>
-            <Link href="/#pricing" className="text-sm text-stone-600 hover:text-emerald-700 transition-colors">Pricing</Link>
-          </div>
-          <div className="flex items-center gap-4">
-            <Link href="/sign-in" className="text-sm font-medium text-stone-600 hover:text-stone-900 transition-colors">Sign In</Link>
-            <Link href="/sign-up" className="bg-emerald-700 text-white px-5 py-2.5 rounded-md text-sm font-medium hover:bg-emerald-800 transition-colors">
-              Get Started
-            </Link>
-          </div>
-        </div>
-      </nav>
+      <PublicNav />
 
       {/* Hero Search */}
       <div className="py-14 px-6 border-b border-stone-200 bg-white">

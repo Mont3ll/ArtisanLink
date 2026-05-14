@@ -29,6 +29,7 @@ import {
   Filter,
   ChevronRight,
 } from "lucide-react";
+import PublicNav from "@/components/layout/public-nav";
 
 // Register GSAP plugins
 if (typeof window !== "undefined") {
@@ -705,58 +706,7 @@ export default function Home() {
       className="bg-stone-50 text-stone-900 min-h-screen font-sans overflow-x-hidden"
     >
       {/* Navigation */}
-      <nav className="sticky top-0 z-50 bg-stone-50/95 backdrop-blur-sm border-b border-stone-200">
-        <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
-          <Link
-            href="/"
-            className="text-2xl font-serif font-bold text-emerald-800"
-          >
-            ChapaWorks
-          </Link>
-
-          <div className="hidden md:flex items-center gap-8">
-            <a
-              href="#how-it-works"
-              className="text-sm text-stone-600 hover:text-emerald-700 transition-colors"
-            >
-              How It Works
-            </a>
-            <a
-              href="#artisans"
-              className="text-sm text-stone-600 hover:text-emerald-700 transition-colors"
-            >
-              Browse Artisans
-            </a>
-            <a
-              href="#stories"
-              className="text-sm text-stone-600 hover:text-emerald-700 transition-colors"
-            >
-              Success Stories
-            </a>
-            <a
-              href="#faq"
-              className="text-sm text-stone-600 hover:text-emerald-700 transition-colors"
-            >
-              FAQ
-            </a>
-          </div>
-
-          <div className="flex items-center gap-4">
-            <Link
-              href="/sign-in"
-              className="text-sm font-medium text-stone-600 hover:text-stone-900 transition-colors"
-            >
-              Sign In
-            </Link>
-            <Link
-              href="/sign-up"
-              className="magnetic-btn bg-emerald-700 text-white px-5 py-2.5 rounded-md text-sm font-medium hover:bg-emerald-800 transition-colors inline-block"
-            >
-              Get Started
-            </Link>
-          </div>
-        </div>
-      </nav>
+      <PublicNav />
 
       {/* Hero - Editorial Style with Search Focus */}
       <section

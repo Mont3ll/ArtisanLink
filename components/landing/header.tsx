@@ -5,6 +5,7 @@ import { useState, useRef, useEffect } from "react";
 import { Menu, X } from "lucide-react";
 import { useAuth } from "@clerk/nextjs";
 import gsap from "gsap";
+import TesseractLogo from "../common/TesseractLogo";
 import RoundedButton from "../common/RoundedButton";
 import Magnetic from "../common/Magnetic";
 import Curve from "../common/Curve";
@@ -16,14 +17,14 @@ export default function Header() {
   const navItemsRef = useRef<(HTMLElement | null)[]>([]);
 
   const navItems = [
-    { title: "Features", href: "#features" },
-    { title: "Pricing", href: "#pricing" },
-    { title: "FAQ", href: "#faq" },
-    ...(isSignedIn ? [] : [{ title: "Get Started", href: "/sign-up" }]),
-    { 
-      title: isSignedIn ? "Dashboard" : "Sign In", 
-      href: isSignedIn ? "/dashboard" : "/sign-in" 
-    },
+    { title: "Browse Artisans", href: "/artisans" },
+    { title: "How It Works", href: "/#how-it-works" },
+    { title: "Pricing", href: "/pricing" },
+    { title: "For Artisans", href: "/sign-up?role=artisan" },
+    ...(isSignedIn ? [{ title: "Dashboard", href: "/dashboard" }] : [
+      { title: "Sign In", href: "/sign-in" },
+      { title: "Get Started", href: "/sign-up" },
+    ]),
   ];
 
   useEffect(() => {
@@ -76,26 +77,23 @@ export default function Header() {
     <header className="border-b bg-white/80 dark:bg-slate-900/80 backdrop-blur-md sticky top-0 z-40">
       <div className="max-w-7xl mx-auto px-6 md:px-8 lg:px-12">
         <div className="flex items-center justify-between h-16">
-          {/* Logo */}
+          {/* Logo — far left with tesseract */}
           <Magnetic>
-            <Link href="/" className="font-bold text-xl text-slate-900 dark:text-slate-100" aria-label="Home">
-              ChapaWorks
+            <Link href="/" className="flex items-center gap-2.5 group" aria-label="Home">
+              <span className="text-slate-900 dark:text-slate-100 group-hover:text-emerald-700 transition-colors">
+                <TesseractLogo size={20} strokeWidth={1.75} />
+              </span>
+              <span className="font-serif font-bold text-lg text-slate-900 dark:text-slate-100">
+                ChapaWorks
+              </span>
             </Link>
           </Magnetic>
 
-          {/* Centered Navigation */}
+          {/* Centered Navigation — page links */}
           <nav aria-label="Primary" className="hidden md:flex items-center justify-center flex-1">
-            <div className="flex items-center gap-8">
+            <div className="flex items-center gap-1">
               <Magnetic>
-                <div className="nav-element relative flex flex-col items-center py-3 px-4 cursor-pointer group">
-                  <a href="#features" className="text-sm text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 transition-colors">
-                    Features
-                  </a>
-                  <div className="nav-indicator absolute w-1 h-1 bg-slate-900 dark:bg-slate-100 rounded-full bottom-0 transform scale-0 group-hover:scale-100 transition-transform duration-200 ease-out"></div>
-                </div>
-              </Magnetic>
-              <Magnetic>
-                <div className="nav-element relative flex flex-col items-center py-3 px-4 cursor-pointer group">
+                <div className="nav-element relative flex flex-col items-center py-3 px-3 cursor-pointer group">
                   <Link href="/artisans" className="text-sm text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 transition-colors">
                     Browse Artisans
                   </Link>
@@ -103,18 +101,26 @@ export default function Header() {
                 </div>
               </Magnetic>
               <Magnetic>
-                <div className="nav-element relative flex flex-col items-center py-3 px-4 cursor-pointer group">
-                  <a href="#pricing" className="text-sm text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 transition-colors">
-                    Pricing
-                  </a>
+                <div className="nav-element relative flex flex-col items-center py-3 px-3 cursor-pointer group">
+                  <Link href="/#how-it-works" className="text-sm text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 transition-colors">
+                    How It Works
+                  </Link>
                   <div className="nav-indicator absolute w-1 h-1 bg-slate-900 dark:bg-slate-100 rounded-full bottom-0 transform scale-0 group-hover:scale-100 transition-transform duration-200 ease-out"></div>
                 </div>
               </Magnetic>
               <Magnetic>
-                <div className="nav-element relative flex flex-col items-center py-3 px-4 cursor-pointer group">
-                  <a href="#faq" className="text-sm text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 transition-colors">
-                    FAQ
-                  </a>
+                <div className="nav-element relative flex flex-col items-center py-3 px-3 cursor-pointer group">
+                  <Link href="/pricing" className="text-sm text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 transition-colors">
+                    Pricing
+                  </Link>
+                  <div className="nav-indicator absolute w-1 h-1 bg-slate-900 dark:bg-slate-100 rounded-full bottom-0 transform scale-0 group-hover:scale-100 transition-transform duration-200 ease-out"></div>
+                </div>
+              </Magnetic>
+              <Magnetic>
+                <div className="nav-element relative flex flex-col items-center py-3 px-3 cursor-pointer group">
+                  <Link href="/sign-up?role=artisan" className="text-sm text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 transition-colors">
+                    For Artisans
+                  </Link>
                   <div className="nav-indicator absolute w-1 h-1 bg-slate-900 dark:bg-slate-100 rounded-full bottom-0 transform scale-0 group-hover:scale-100 transition-transform duration-200 ease-out"></div>
                 </div>
               </Magnetic>
@@ -126,19 +132,19 @@ export default function Header() {
             {!isSignedIn && (
               <Magnetic>
                 <Link 
-                  href="/sign-up" 
+                  href="/sign-in" 
                   className="text-sm text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 transition-colors px-4 py-2"
                 >
-                  Get Started
+                  Sign In
                 </Link>
               </Magnetic>
             )}
             <RoundedButton 
-              href={isSignedIn ? "/dashboard" : "/sign-in"}
+              href={isSignedIn ? "/dashboard" : "/sign-up"}
               backgroundColor="#1e293b"
               className="text-slate-900 dark:text-slate-100 font-medium"
             >
-              {isSignedIn ? "Dashboard" : "Sign In"}
+              {isSignedIn ? "Dashboard" : "Get Started"}
             </RoundedButton>
           </div>
 
@@ -191,7 +197,7 @@ export default function Header() {
                 className="text-slate-400 text-sm"
               >
                 <p>ChapaWorks</p>
-                <p>Connect with skilled artisans</p>
+                <p>Kenya&apos;s trusted artisan marketplace</p>
               </div>
             </div>
             

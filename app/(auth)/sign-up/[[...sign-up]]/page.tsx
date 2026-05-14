@@ -15,8 +15,10 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
-import { Loader2, Hammer, Users, Mail } from 'lucide-react';
+import { Loader2, Users, Mail } from 'lucide-react';
 import { SiGoogle } from 'react-icons/si';
+import Link from 'next/link';
+import TesseractLogo from '@/components/common/TesseractLogo';
 
 const ROLE_COOKIE_NAME = 'chapaworks_signup_role';
 
@@ -59,7 +61,15 @@ export default function SignUpPage() {
   };
 
   return (
-    <div className="grid w-full grow items-center px-4 sm:justify-center min-h-svh">
+    <div className="min-h-svh bg-stone-50 flex flex-col">
+      {/* Minimal top nav */}
+      <nav className="px-6 py-4 border-b border-stone-200 bg-white">
+        <Link href="/" className="inline-flex items-center gap-2.5 group">
+          <span className="text-emerald-700"><TesseractLogo size={20} strokeWidth={1.75} /></span>
+          <span className="text-lg font-serif font-bold text-emerald-800">ChapaWorks</span>
+        </Link>
+      </nav>
+      <div className="flex-1 grid w-full grow items-center px-4 sm:justify-center">
       <SignUp.Root>
         <Clerk.Loading>
           {(isGlobalLoading: boolean) => (
@@ -67,8 +77,8 @@ export default function SignUpPage() {
               <SignUp.Step name="start">
                 <Card className="w-full sm:w-96">
                   <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <Hammer className="w-6 h-6 text-emerald-700" />
+                    <CardTitle className="flex items-center gap-2 text-stone-900">
+                      <TesseractLogo size={22} strokeWidth={1.75} className="text-emerald-700" />
                       Join ChapaWorks
                     </CardTitle>
                     <CardDescription>
@@ -123,7 +133,7 @@ export default function SignUpPage() {
                           onClick={() => handleRoleSelect('artisan')}
                         >
                           <div className="flex items-center gap-3">
-                            <Hammer className="w-5 h-5" />
+                            <TesseractLogo size={20} strokeWidth={1.75} />
                             <div>
                               <div className="font-medium">Artisan</div>
                               <div className="text-sm opacity-80">Showcase your skills and get hired</div>
@@ -330,6 +340,7 @@ export default function SignUpPage() {
           )}
         </Clerk.Loading>
       </SignUp.Root>
+      </div>
     </div>
   );
 }
