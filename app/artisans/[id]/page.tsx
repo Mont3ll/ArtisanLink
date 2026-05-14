@@ -74,11 +74,61 @@ export default function PublicArtisanProfilePage() {
     return (
       <div className="bg-stone-50 min-h-screen">
         <PublicNav />
-        <div className="max-w-5xl mx-auto px-6 py-10">
-          <div className="animate-pulse space-y-4">
-            <div className="h-48 bg-stone-200 rounded-xl" />
-            <div className="h-32 bg-stone-200 rounded-xl" />
-            <div className="h-64 bg-stone-200 rounded-xl" />
+        <div className="max-w-5xl mx-auto px-6 py-8">
+          {/* Back link skeleton */}
+          <div className="animate-pulse">
+            <div className="h-4 bg-stone-200 rounded w-28 mb-6" />
+            {/* Profile header card skeleton */}
+            <div className="bg-white rounded-xl border border-stone-200 p-6 mb-6">
+              <div className="flex flex-col sm:flex-row gap-6 items-start">
+                {/* Avatar */}
+                <div className="w-24 h-24 rounded-full bg-stone-200 flex-shrink-0" />
+                <div className="flex-1 space-y-3">
+                  <div className="h-7 bg-stone-200 rounded w-48" />
+                  <div className="h-4 bg-stone-200 rounded w-32" />
+                  <div className="flex gap-4">
+                    <div className="h-3.5 bg-stone-200 rounded w-20" />
+                    <div className="h-3.5 bg-stone-200 rounded w-24" />
+                    <div className="h-3.5 bg-stone-200 rounded w-20" />
+                  </div>
+                  <div className="h-8 bg-stone-200 rounded w-24" />
+                  <div className="h-16 bg-stone-100 rounded-xl" />
+                </div>
+              </div>
+            </div>
+            {/* Main grid skeleton */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <div className="lg:col-span-2 space-y-6">
+                <div className="bg-white rounded-xl border border-stone-200 p-6">
+                  <div className="h-5 bg-stone-200 rounded w-16 mb-3" />
+                  <div className="space-y-2">
+                    <div className="h-3 bg-stone-200 rounded" />
+                    <div className="h-3 bg-stone-200 rounded w-5/6" />
+                    <div className="h-3 bg-stone-200 rounded w-4/5" />
+                  </div>
+                </div>
+                <div className="bg-white rounded-xl border border-stone-200 p-6">
+                  <div className="h-5 bg-stone-200 rounded w-24 mb-4" />
+                  <div className="grid grid-cols-3 gap-3">
+                    {Array.from({ length: 6 }).map((_, i) => (
+                      <div key={i} className="aspect-square rounded-lg bg-stone-200" />
+                    ))}
+                  </div>
+                </div>
+              </div>
+              <div className="space-y-5">
+                <div className="bg-white rounded-xl border border-stone-200 p-5">
+                  <div className="h-5 bg-stone-200 rounded w-16 mb-3" />
+                  <div className="flex flex-wrap gap-2">
+                    {Array.from({ length: 4 }).map((_, i) => (
+                      <div key={i} className="h-6 bg-stone-200 rounded w-20" />
+                    ))}
+                  </div>
+                </div>
+                <div className="bg-white rounded-xl border border-stone-200 p-5 h-36" />
+                <div className="bg-emerald-800 rounded-xl p-5 h-40" />
+              </div>
+            </div>
           </div>
         </div>
       </div>

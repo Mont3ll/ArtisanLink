@@ -249,23 +249,20 @@ function BrowseArtisansContent() {
 
           {/* Grid */}
           {isLoading ? (
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {Array.from({ length: 6 }).map((_, i) => (
-                <div key={i} className="bg-white rounded-xl border border-stone-200 overflow-hidden animate-pulse">
-                  <div className="p-6">
-                    <div className="flex items-start gap-4 mb-4">
-                      <div className="w-16 h-16 rounded-full bg-stone-200 flex-shrink-0" />
-                      <div className="flex-1 space-y-2">
-                        <div className="h-4 bg-stone-200 rounded w-3/4" />
-                        <div className="h-3 bg-stone-200 rounded w-1/2" />
-                        <div className="h-3 bg-stone-200 rounded w-2/3" />
-                      </div>
-                    </div>
-                    <div className="space-y-2">
-                      <div className="h-3 bg-stone-200 rounded w-full" />
-                      <div className="h-3 bg-stone-200 rounded w-2/3" />
-                    </div>
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              {Array.from({ length: 8 }).map((_, i) => (
+                <div key={i} className="animate-pulse">
+                  {/* Photo area — matches ArtisanCard */}
+                  <div className="aspect-square rounded-xl bg-stone-200 mb-3" />
+                  {/* Name + rating row */}
+                  <div className="flex items-center justify-between gap-2 mb-1">
+                    <div className="h-4 bg-stone-200 rounded w-3/4" />
+                    <div className="h-3.5 bg-stone-200 rounded w-8 flex-shrink-0" />
                   </div>
+                  {/* Profession + location */}
+                  <div className="h-3.5 bg-stone-200 rounded w-2/3 mb-1" />
+                  {/* Price */}
+                  <div className="h-3.5 bg-stone-200 rounded w-1/3" />
                 </div>
               ))}
             </div>
@@ -279,7 +276,7 @@ function BrowseArtisansContent() {
               </button>
             </div>
           ) : (
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {artisans.map((artisan, i) => (
                 <ArtisanCard key={artisan.id || i} artisan={artisan} />
               ))}
@@ -337,99 +334,68 @@ function ArtisanCard({ artisan }: { artisan: Artisan }) {
   return (
     <Link
       href={`/artisans/${artisan.id}`}
-      className="group bg-white rounded-xl border border-stone-200 overflow-hidden hover:shadow-xl transition-all duration-300 flex flex-col"
+      className="group cursor-pointer block"
     >
-      <div className="p-6 flex-1 flex flex-col">
-        <div className="flex items-start gap-4 mb-4">
-          <div className="relative flex-shrink-0">
-            {artisan.profileImage ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={artisan.profileImage}
-                alt={artisan.name}
-                className="w-16 h-16 rounded-full object-cover group-hover:scale-110 transition-transform duration-300"
-              />
-            ) : (
-              <div className="w-16 h-16 rounded-full bg-emerald-100 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-                <span className="text-emerald-700 font-bold text-lg">{initials}</span>
-              </div>
-            )}
-            {artisan.isVerified && (
-              <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-emerald-500 rounded-full flex items-center justify-center">
-                <BadgeCheck className="w-4 h-4 text-white" />
-              </div>
-            )}
+      {/* Photo area — Airbnb style, photo-first */}
+      <div className="relative aspect-square rounded-xl overflow-hidden bg-stone-100 mb-3">
+        {artisan.profileImage ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={artisan.profileImage}
+            alt={artisan.name}
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+          />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-emerald-50 to-emerald-100">
+            <span className="text-4xl font-bold text-emerald-600">{initials}</span>
           </div>
+        )}
 
-          <div className="flex-1 min-w-0">
-            <h3 className="font-semibold text-lg text-stone-900 group-hover:text-emerald-700 transition-colors truncate">
-              {artisan.name}
-            </h3>
-            <p className="text-emerald-700 text-sm font-medium truncate">{artisan.profession}</p>
-            <div className="flex items-center gap-1 text-sm text-stone-500 mt-1">
-              <MapPin className="w-3 h-3 flex-shrink-0" />
-              <span className="truncate">{locationStr}</span>
+        {/* Availability */}
+        {artisan.isAvailable && (
+          <div className="absolute top-3 left-3 flex items-center gap-1 bg-white/90 backdrop-blur-sm px-2 py-1 rounded-full text-xs font-medium text-emerald-700 shadow-sm">
+            <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+            Available
+          </div>
+        )}
+
+        {/* Premium badge */}
+        {artisan.isPremium && !artisan.isAvailable && (
+          <div className="absolute top-3 left-3 bg-white/90 backdrop-blur-sm px-2 py-1 rounded-full text-xs font-medium text-amber-700 shadow-sm">
+            ⭐ Featured
+          </div>
+        )}
+
+        {/* Verified */}
+        {artisan.isVerified && (
+          <div className="absolute bottom-3 left-3">
+            <div className="bg-white/90 backdrop-blur-sm rounded-full p-1 shadow-sm">
+              <BadgeCheck className="w-4 h-4 text-emerald-600" />
             </div>
           </div>
-
-          {artisan.isPremium && (
-            <span className="text-xs bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full font-medium flex-shrink-0">⭐</span>
-          )}
-        </div>
-
-        <div className="flex items-center gap-4 mb-4 text-sm">
-          <div className="flex items-center gap-1">
-            <Star className="w-4 h-4 text-amber-400 fill-amber-400" />
-            <span className="font-medium">{artisan.rating.average.toFixed(1)}</span>
-            <span className="text-stone-400">({artisan.rating.total})</span>
-          </div>
-          {artisan.specializations.length > 0 && (
-            <>
-              <span className="text-stone-300">|</span>
-              <span className="text-stone-500 truncate">{artisan.specializations[0]?.name}</span>
-            </>
-          )}
-        </div>
-
-        {/* Flex-1 spacer: specialization tags grow to fill available space */}
-        <div className="flex-1">
-          {artisan.specializations.length > 0 && (
-            <div className="flex flex-wrap gap-2">
-              {artisan.specializations.slice(0, 3).map((s, j) => (
-                <span key={j} className="px-2 py-1 bg-stone-100 text-stone-600 rounded text-xs">{s.name}</span>
-              ))}
-            </div>
-          )}
-        </div>
-
-        {/* Price + availability — always at bottom of content area */}
-        <div className="flex items-center justify-between pt-4 mt-4 border-t border-stone-100">
-          <div>
-            {artisan.hourlyRate ? (
-              <>
-                <span className="text-lg font-bold text-stone-900">KES {artisan.hourlyRate.toLocaleString()}</span>
-                <span className="text-stone-500 text-sm">/hour</span>
-              </>
-            ) : (
-              <span className="text-stone-400 text-sm">Rate on request</span>
-            )}
-          </div>
-          <span className={`px-2 py-1 rounded-full text-xs font-medium ${artisan.isAvailable ? "bg-green-100 text-green-700" : "bg-stone-100 text-stone-500"}`}>
-            {artisan.isAvailable ? "Available" : "Busy"}
-          </span>
-        </div>
+        )}
       </div>
 
-      {/* Button row — always at card bottom, with proper horizontal padding */}
-      <div className="px-4 py-3 bg-stone-50 border-t border-stone-100 flex gap-3">
-        <span className="flex-1 py-2.5 border border-stone-300 rounded-lg text-sm font-medium group-hover:border-emerald-600 group-hover:text-emerald-700 transition-colors flex items-center justify-center gap-2">
-          <Eye className="w-4 h-4" />
-          View Profile
-        </span>
-        <span className="flex-1 py-2.5 bg-emerald-700 text-white rounded-lg text-sm font-medium hover:bg-emerald-800 transition-colors flex items-center justify-center gap-2">
-          <MessageCircle className="w-4 h-4" />
-          Message
-        </span>
+      {/* Compact metadata — below photo */}
+      <div className="space-y-0.5">
+        <div className="flex items-start justify-between gap-2">
+          <p className="font-medium text-stone-900 text-sm truncate">{artisan.name}</p>
+          {artisan.rating.total > 0 && (
+            <div className="flex items-center gap-1 flex-shrink-0">
+              <Star className="w-3.5 h-3.5 fill-stone-800 text-stone-800" />
+              <span className="text-xs text-stone-800 font-medium">{artisan.rating.average.toFixed(1)}</span>
+            </div>
+          )}
+        </div>
+        <p className="text-stone-500 text-sm truncate">
+          {artisan.profession}{artisan.profession && locationStr ? " · " : ""}{locationStr}
+        </p>
+        {artisan.hourlyRate && (
+          <p className="text-stone-900 text-sm">
+            <span className="font-medium">KES {artisan.hourlyRate.toLocaleString()}</span>
+            <span className="text-stone-500"> / hr</span>
+          </p>
+        )}
       </div>
     </Link>
   );
