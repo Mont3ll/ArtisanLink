@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
-    "build": "prisma generate && next build",
+    "build": "PRISMA_SCHEMA_ENGINE_BINARY=/home/mel/Documents/Projects/klassmate/node_modules/@prisma/engines/schema-engine-linux-musl-openssl-3.0.x prisma generate && next build",
     "start": "next start",
     "lint": "eslint",
     "test": "vitest",
@@ -14,7 +14,7 @@
     "test:e2e:ui": "playwright test --ui",
     "test:e2e:headed": "playwright test --headed",
     "test:e2e:debug": "playwright test --debug",
-    "db:generate": "prisma generate",
+    "db:generate": "PRISMA_SCHEMA_ENGINE_BINARY=/home/mel/Documents/Projects/klassmate/node_modules/@prisma/engines/schema-engine-linux-musl-openssl-3.0.x prisma generate",
     "db:push": "prisma db push",
     "db:migrate": "prisma migrate dev",
     "db:seed": "tsx prisma/seed.ts",
