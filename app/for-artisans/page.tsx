@@ -15,7 +15,6 @@ import {
   ChevronRight,
 } from "lucide-react";
 import type { Metadata } from "next";
-import TesseractLogo from "@/components/common/TesseractLogo";
 
 export const metadata: Metadata = {
   title: "For Artisans — ChapaWorks",
@@ -125,10 +124,6 @@ export default function ForArtisansPage() {
       {/* Hero */}
       <section className="py-20 px-6 bg-white border-b border-stone-200">
         <div className="max-w-4xl mx-auto text-center">
-          <div className="inline-flex items-center gap-2 bg-emerald-100 text-emerald-700 px-3 py-1.5 rounded-full text-sm font-medium mb-6">
-            <TesseractLogo size={14} strokeWidth={2} />
-            For Artisans
-          </div>
           <h1 className="text-4xl md:text-6xl font-serif font-bold text-stone-900 leading-tight mb-6">
             Your craft deserves<br />
             <span className="text-emerald-700">more clients.</span>

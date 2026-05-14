@@ -33,9 +33,9 @@ export async function seedAdmins(): Promise<{ admins: Awaited<ReturnType<typeof 
     prisma.user.create({
       data: {
         clerkId: SEED_ADMIN_CLERK_ID,
-        email: 'admin@chapaworks.co.ke',
-        firstName: 'System',
-        lastName: 'Administrator',
+        email: process.env.SEED_ADMIN_EMAIL || 'meluseno@gmail.com',
+        firstName: 'Mel',
+        lastName: 'Useno',
         phone: '+254700000001',
         role: UserRole.ADMIN,
         status: UserStatus.ACTIVE,

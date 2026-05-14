@@ -610,13 +610,13 @@ export default function Home() {
 
   const categories = [
     { id: "all", name: "All Artisans", count: 15847 },
-    { id: "Carpenter", name: "Carpentry", count: 3420 },
-    { id: "Electrician", name: "Electrical", count: 2890 },
-    { id: "Plumber", name: "Plumbing", count: 2150 },
-    { id: "Painter", name: "Painting", count: 1980 },
-    { id: "Tailor", name: "Tailoring", count: 1650 },
-    { id: "Mason", name: "Masonry", count: 1420 },
-    { id: "Welder", name: "Welding", count: 1180 },
+    { id: "Carpenter", name: "Carpenter", count: 3420 },
+    { id: "Electrician", name: "Electrician", count: 2890 },
+    { id: "Plumber", name: "Plumber", count: 2150 },
+    { id: "Painter", name: "Painter", count: 1980 },
+    { id: "Tailor", name: "Tailor", count: 1650 },
+    { id: "Mason", name: "Mason", count: 1420 },
+    { id: "Welder", name: "Welder", count: 1180 },
   ];
 
   const howItWorks = [
@@ -1185,21 +1185,20 @@ export default function Home() {
 
       {/* Pricing */}
       <section ref={pricingRef} id="pricing" className="py-24 px-6">
-        <div className="max-w-6xl mx-auto">
+        <div className="max-w-5xl mx-auto">
           <div className="text-center mb-12">
             <p className="text-emerald-700 font-medium mb-2 tracking-wide text-sm uppercase">
               Simple Pricing
             </p>
             <h2 className="text-3xl md:text-4xl font-serif font-bold text-stone-800 mb-4">
-              Free for clients. Fair for artisans.
+              Completely free for clients.
             </h2>
-            <p className="text-stone-600 max-w-2xl mx-auto">
-              Browse, message, and hire artisans at no cost. Artisans pay a
-              small commission only when they complete paid work.
+            <p className="text-stone-600 max-w-xl mx-auto">
+              Browse, message, and hire any artisan at absolutely no cost. No subscriptions, no hidden fees — ever.
             </p>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+          <div className="grid md:grid-cols-2 gap-8 max-w-3xl mx-auto">
             {/* Client — Free */}
             <div className="pricing-card bg-white rounded-xl shadow-sm border border-stone-200 p-8 hover:shadow-xl transition-shadow duration-300 flex flex-col">
               <div className="inline-flex items-center gap-2 bg-emerald-100 text-emerald-700 px-3 py-1 rounded-full text-sm font-medium mb-6 w-fit">
@@ -1207,14 +1206,15 @@ export default function Home() {
                 For Clients
               </div>
               <div className="text-4xl font-bold mb-1">Free</div>
-              <p className="text-stone-500 mb-6 text-sm">No fees, no hidden costs</p>
+              <p className="text-stone-500 mb-6 text-sm">Always. No credit card needed.</p>
               <ul className="space-y-3 mb-8 flex-1">
                 {[
-                  "Browse unlimited artisan profiles",
-                  "View portfolios & reviews",
-                  "Message artisans directly",
-                  "Request jobs through chat",
-                  "Satisfaction guarantee",
+                  "Browse unlimited verified artisan profiles",
+                  "View portfolios & client reviews",
+                  "Message artisans directly for free",
+                  "Request jobs & receive detailed quotes",
+                  "Cash payment handled between you & artisan",
+                  "Satisfaction guarantee on all work",
                 ].map((item, i) => (
                   <li key={i} className="flex items-center gap-3 text-sm">
                     <Check className="w-4 h-4 text-emerald-600 flex-shrink-0" />
@@ -1230,72 +1230,35 @@ export default function Home() {
               </Link>
             </div>
 
-            {/* Artisan — Monthly */}
-            <div className="pricing-card bg-white rounded-xl shadow-sm border border-stone-200 p-8 hover:shadow-xl transition-shadow duration-300 flex flex-col">
-              <div className="inline-flex items-center gap-2 bg-amber-100 text-amber-700 px-3 py-1 rounded-full text-sm font-medium mb-6 w-fit">
+            {/* For Artisans — teaser */}
+            <div className="pricing-card bg-stone-800 text-white rounded-xl shadow-sm p-8 hover:shadow-xl transition-shadow duration-300 flex flex-col">
+              <div className="inline-flex items-center gap-2 bg-stone-700 text-stone-200 px-3 py-1 rounded-full text-sm font-medium mb-6 w-fit">
                 <Sparkles className="w-4 h-4" />
-                Monthly
+                For Artisans
               </div>
-              <div className="mb-1">
-                <span className="text-4xl font-bold">KES 150</span>
-                <span className="text-stone-500 text-sm ml-1">/month</span>
+              <div className="text-4xl font-bold mb-1">KES 150
+                <span className="text-stone-400 text-base font-normal ml-1">/mo</span>
               </div>
-              <p className="text-stone-500 mb-6 text-sm">Artisan subscription</p>
+              <p className="text-stone-400 mb-6 text-sm">Grow your craft business.</p>
               <ul className="space-y-3 mb-8 flex-1">
                 {[
-                  "Professional profile & portfolio",
-                  "Priority listing in search",
-                  "Receive messages from clients",
-                  "Manage job requests easily",
-                  "Premium badge",
-                ].map((item, i) => (
-                  <li key={i} className="flex items-center gap-3 text-sm">
-                    <Check className="w-4 h-4 text-emerald-600 flex-shrink-0" />
-                    <span>{item}</span>
-                  </li>
-                ))}
-              </ul>
-              <Link
-                href="/sign-up?role=artisan"
-                className="magnetic-btn block w-full border border-emerald-700 text-emerald-700 text-center py-3 rounded-lg font-medium hover:bg-emerald-50 transition-colors text-sm"
-              >
-                Join as Artisan
-              </Link>
-            </div>
-
-            {/* Artisan — Annual */}
-            <div className="pricing-card relative bg-emerald-800 text-white rounded-xl shadow-sm border border-emerald-700 p-8 hover:shadow-xl transition-shadow duration-300 flex flex-col">
-              <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                <span className="bg-amber-400 text-amber-900 text-xs font-bold px-3 py-1 rounded-full">BEST VALUE</span>
-              </div>
-              <div className="inline-flex items-center gap-2 bg-emerald-700 text-emerald-200 px-3 py-1 rounded-full text-sm font-medium mb-6 w-fit">
-                <Sparkles className="w-4 h-4" />
-                Annual
-              </div>
-              <div className="mb-1">
-                <span className="text-4xl font-bold">KES 1,500</span>
-                <span className="text-emerald-300 text-sm ml-1">/year</span>
-              </div>
-              <p className="text-emerald-300 mb-6 text-sm">Save KES 300 vs monthly</p>
-              <ul className="space-y-3 mb-8 flex-1">
-                {[
-                  "All Monthly features",
-                  "Featured on homepage",
-                  "Analytics dashboard",
-                  "Priority support",
+                  "Professional profile & portfolio showcase",
+                  "Priority placement in search results",
+                  "Reduced 5% commission rate",
                   "Verified artisan badge",
+                  "Analytics dashboard",
                 ].map((item, i) => (
                   <li key={i} className="flex items-center gap-3 text-sm">
-                    <Check className="w-4 h-4 text-emerald-300 flex-shrink-0" />
-                    <span className="text-emerald-100">{item}</span>
+                    <Check className="w-4 h-4 text-emerald-400 flex-shrink-0" />
+                    <span className="text-stone-200">{item}</span>
                   </li>
                 ))}
               </ul>
               <Link
-                href="/sign-up?role=artisan"
+                href="/for-artisans"
                 className="magnetic-btn block w-full bg-amber-400 text-amber-900 text-center py-3 rounded-lg font-bold hover:bg-amber-300 transition-colors text-sm"
               >
-                Get Annual Plan
+                Learn More →
               </Link>
             </div>
           </div>
@@ -1357,25 +1320,30 @@ export default function Home() {
               Ready to find your perfect artisan?
             </h2>
             <p className="text-emerald-200 text-lg mb-10 max-w-2xl mx-auto">
-              Join thousands of Kenyans who&apos;ve discovered a better way to
-              hire skilled professionals. Browse, connect, and hire—all for
-              free.
+              Thousands of verified artisans are waiting. Browse by skill, location, and rating
+              — it&apos;s completely free for clients.
             </p>
           </div>
           <div className="cta-buttons flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link
-              href="/sign-up"
-              className="magnetic-btn bg-white text-emerald-800 px-10 py-4 rounded-lg font-medium hover:bg-stone-100 transition-colors inline-block"
+              href="/artisans"
+              className="magnetic-btn bg-white text-emerald-800 px-10 py-4 rounded-lg font-bold hover:bg-stone-100 transition-colors inline-block"
             >
-              Start Browsing Free
+              Browse Artisans Now
             </Link>
             <Link
-              href="/sign-up?role=artisan"
+              href="/sign-up"
               className="magnetic-btn border border-emerald-600 px-10 py-4 rounded-lg font-medium hover:bg-emerald-700 transition-colors inline-block"
             >
-              Join as Artisan
+              Create Free Account
             </Link>
           </div>
+          <p className="text-emerald-300 text-sm mt-6">
+            Are you a skilled artisan?{" "}
+            <Link href="/for-artisans" className="underline hover:text-white">
+              Join ChapaWorks as an artisan →
+            </Link>
+          </p>
         </div>
       </section>
 
