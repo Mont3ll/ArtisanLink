@@ -610,13 +610,13 @@ export default function Home() {
 
   const categories = [
     { id: "all", name: "All Artisans", count: 15847 },
-    { id: "carpentry", name: "Carpentry", count: 3420 },
-    { id: "electrical", name: "Electrical", count: 2890 },
-    { id: "plumbing", name: "Plumbing", count: 2150 },
-    { id: "painting", name: "Painting", count: 1980 },
-    { id: "tailoring", name: "Tailoring", count: 1650 },
-    { id: "masonry", name: "Masonry", count: 1420 },
-    { id: "welding", name: "Welding", count: 1180 },
+    { id: "Carpenter", name: "Carpentry", count: 3420 },
+    { id: "Electrician", name: "Electrical", count: 2890 },
+    { id: "Plumber", name: "Plumbing", count: 2150 },
+    { id: "Painter", name: "Painting", count: 1980 },
+    { id: "Tailor", name: "Tailoring", count: 1650 },
+    { id: "Mason", name: "Masonry", count: 1420 },
+    { id: "Welder", name: "Welding", count: 1180 },
   ];
 
   const howItWorks = [

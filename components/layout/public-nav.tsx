@@ -11,7 +11,7 @@ const navLinks = [
   { label: "Browse Artisans", href: "/artisans" },
   { label: "How It Works", href: "/#how-it-works" },
   { label: "Pricing", href: "/pricing" },
-  { label: "For Artisans", href: "/sign-up?role=artisan" },
+  { label: "For Artisans", href: "/for-artisans" },
 ];
 
 export default function PublicNav() {
@@ -26,7 +26,7 @@ export default function PublicNav() {
 
   return (
     <nav className="sticky top-0 z-50 bg-stone-50/95 backdrop-blur-sm border-b border-stone-200">
-      <div className="max-w-6xl mx-auto px-4 py-0 flex items-center justify-between h-16">
+      <div className="max-w-6xl mx-auto flex items-center justify-between h-16">
         {/* Logo — far left */}
         <Link
           href="/"
@@ -98,7 +98,7 @@ export default function PublicNav() {
       {/* Mobile menu */}
       {mobileOpen && (
         <div className="md:hidden bg-white border-t border-stone-200 shadow-lg">
-          <div className="max-w-6xl mx-auto px-4 py-4 space-y-1">
+          <div className="max-w-6xl mx-auto py-4 space-y-1">
             {navLinks.map((link) => (
               <Link
                 key={link.href}

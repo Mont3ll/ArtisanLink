@@ -20,7 +20,7 @@ export default function Header() {
     { title: "Browse Artisans", href: "/artisans" },
     { title: "How It Works", href: "/#how-it-works" },
     { title: "Pricing", href: "/pricing" },
-    { title: "For Artisans", href: "/sign-up?role=artisan" },
+    { title: "For Artisans", href: "/for-artisans" },
     ...(isSignedIn ? [{ title: "Dashboard", href: "/dashboard" }] : [
       { title: "Sign In", href: "/sign-in" },
       { title: "Get Started", href: "/sign-up" },
@@ -75,7 +75,7 @@ export default function Header() {
 
   return (
     <header className="border-b bg-white/80 dark:bg-slate-900/80 backdrop-blur-md sticky top-0 z-40">
-      <div className="max-w-7xl mx-auto px-6 md:px-8 lg:px-12">
+      <div className="max-w-7xl mx-auto">
         <div className="flex items-center justify-between h-16">
           {/* Logo — far left with tesseract */}
           <Magnetic>
@@ -118,7 +118,7 @@ export default function Header() {
               </Magnetic>
               <Magnetic>
                 <div className="nav-element relative flex flex-col items-center py-3 px-3 cursor-pointer group">
-                  <Link href="/sign-up?role=artisan" className="text-sm text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 transition-colors">
+                  <Link href="/for-artisans" className="text-sm text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 transition-colors">
                     For Artisans
                   </Link>
                   <div className="nav-indicator absolute w-1 h-1 bg-slate-900 dark:bg-slate-100 rounded-full bottom-0 transform scale-0 group-hover:scale-100 transition-transform duration-200 ease-out"></div>
