@@ -45,12 +45,17 @@ const adminNavData = {
       icon: IconDashboard,
     },
     {
-      title: "User Management",
+      title: "Artisans",
+      url: "/admin-dashboard/artisans",
+      icon: IconHammer,
+    },
+    {
+      title: "Users",
       url: "/admin-dashboard/users",
       icon: IconUsers,
     },
     {
-      title: "Artisan Verification",
+      title: "Verification",
       url: "/admin-dashboard/verification",
       icon: IconShield,
     },
@@ -75,7 +80,7 @@ const adminNavData = {
       icon: IconReportMoney,
     },
     {
-      title: "System Monitoring",
+      title: "Monitoring",
       url: "/admin-dashboard/monitoring",
       icon: IconBell,
     },
@@ -102,11 +107,6 @@ const adminNavData = {
       name: "System Reports",
       url: "/admin-dashboard/reports",
       icon: IconFileDescription,
-    },
-    {
-      name: "Artisan Directory",
-      url: "/admin-dashboard/artisans",
-      icon: IconHammer,
     },
     {
       name: "System Health",
