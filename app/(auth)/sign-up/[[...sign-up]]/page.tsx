@@ -1,345 +1,249 @@
 'use client';
 import * as Clerk from '@clerk/elements/common';
 import * as SignUp from '@clerk/elements/sign-up';
-import { useState, useCallback, useEffect } from 'react';
+import { useCallback, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { Button } from '@/components/ui/button';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { cn } from '@/lib/utils';
-import { Loader2, Users, Mail } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 import { SiGoogle } from 'react-icons/si';
 import Link from 'next/link';
 import TesseractLogo from '@/components/common/TesseractLogo';
+import { Mail } from 'lucide-react';
 
 const ROLE_COOKIE_NAME = 'chapaworks_signup_role';
 
 export default function SignUpPage() {
   const searchParams = useSearchParams();
   const inviteToken = searchParams.get('invite');
-  const inviteRole = searchParams.get('role'); // pre-set role from invite link
-  const [role, setRole] = useState(inviteRole === 'artisan' ? 'artisan' : 'client');
-  const [inviteInfo, setInviteInfo] = useState<{ email?: string; name?: string; message?: string } | null>(null);
+  // Role comes from URL only — no in-page role selector
+  const urlRole = searchParams.get('role') === 'artisan' ? 'artisan' : 'client';
 
   const setRoleCookie = useCallback((selectedRole: string) => {
     document.cookie = `${ROLE_COOKIE_NAME}=${selectedRole}; path=/; max-age=3600; SameSite=Lax`;
   }, []);
 
-  // Set role cookie on mount
+  // Set role cookie immediately on mount from URL param
   useEffect(() => {
-    setRoleCookie(role);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    setRoleCookie(urlRole);
+  }, [urlRole, setRoleCookie]);
 
-  // Validate invite token on mount
+  // Validate invite token and set artisan role if valid
   useEffect(() => {
     if (!inviteToken) return;
     fetch(`/api/admin/invites/${inviteToken}`)
       .then((r) => r.json())
       .then((data) => {
-        if (data.valid && data.invite) {
-          setInviteInfo(data.invite);
-          setRole('artisan');
+        if (data.valid) {
           setRoleCookie('artisan');
         }
       })
-      .catch(() => { /* ignore */ });
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [inviteToken]);
+      .catch(() => {});
+  }, [inviteToken, setRoleCookie]);
 
-  const handleRoleSelect = (selectedRole: string) => {
-    setRole(selectedRole);
-    setRoleCookie(selectedRole);
-  };
+  const isArtisan = urlRole === 'artisan';
+  const roleLabel = isArtisan ? 'artisan' : 'client';
+  const headline = isArtisan
+    ? 'Join as an Artisan'
+    : 'Create Your Account';
+  const subheadline = isArtisan
+    ? 'Showcase your skills, get discovered by clients across Kenya.'
+    : 'Find and hire verified artisans near you.';
 
   return (
     <div className="min-h-svh bg-stone-50 flex flex-col">
-      {/* Minimal top nav */}
-      <nav className="px-6 py-4 border-b border-stone-200 bg-white">
+      {/* Minimal nav */}
+      <nav className="px-6 py-4 border-b border-stone-200 bg-white flex items-center justify-between">
         <Link href="/" className="inline-flex items-center gap-2.5 group">
           <span className="text-emerald-700"><TesseractLogo size={20} strokeWidth={1.75} /></span>
           <span className="text-lg font-serif font-bold text-emerald-800">ChapaWorks</span>
         </Link>
+        <span className="text-sm text-stone-500">
+          Already have an account?{' '}
+          <Link href="/sign-in" className="text-emerald-700 font-medium hover:underline">Sign in</Link>
+        </span>
       </nav>
-      <div className="flex-1 grid w-full grow items-center px-4 sm:justify-center">
-      <SignUp.Root>
-        <Clerk.Loading>
-          {(isGlobalLoading: boolean) => (
-            <div className="w-full sm:w-96">
-              <SignUp.Step name="start">
-                <Card className="w-full sm:w-96">
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2 text-stone-900">
-                      <TesseractLogo size={22} strokeWidth={1.75} className="text-emerald-700" />
-                      Join ChapaWorks
-                    </CardTitle>
-                    <CardDescription>
-                      Connect with skilled artisans across Kenya
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="grid gap-y-4">
+
+      <div className="flex-1 flex items-center justify-center px-4 py-10">
+        <SignUp.Root>
+          <Clerk.Loading>
+            {(isGlobalLoading: boolean) => (
+              <div className="w-full max-w-md">
+                <SignUp.Step name="start">
+                  {/* Role badge */}
+                  <div className="text-center mb-8">
+                    <div className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium mb-4 ${
+                      isArtisan
+                        ? 'bg-amber-100 text-amber-700'
+                        : 'bg-emerald-100 text-emerald-700'
+                    }`}>
+                      {isArtisan
+                        ? <TesseractLogo size={14} strokeWidth={2} />
+                        : null}
+                      Signing up as {roleLabel}
+                    </div>
+                    <h1 className="text-2xl md:text-3xl font-serif font-bold text-stone-900 mb-2">
+                      {headline}
+                    </h1>
+                    <p className="text-stone-500 text-sm">{subheadline}</p>
+                  </div>
+
+                  <div className="bg-white rounded-xl border border-stone-200 shadow-sm p-8">
                     {/* Invite Banner */}
-                    {inviteInfo && (
-                      <div className="rounded-lg bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800 p-3">
-                        <div className="flex items-start gap-2">
-                          <Mail className="h-4 w-4 text-emerald-600 mt-0.5 flex-shrink-0" />
-                          <div>
-                            <p className="text-sm font-medium text-emerald-800 dark:text-emerald-200">
-                              You&apos;ve been invited to join as an Artisan!
-                            </p>
-                            {inviteInfo.message && (
-                              <p className="text-xs text-emerald-700 dark:text-emerald-300 mt-1 italic">&ldquo;{inviteInfo.message}&rdquo;</p>
-                            )}
-                          </div>
-                        </div>
+                    {inviteToken && (
+                      <div className="rounded-lg bg-emerald-50 border border-emerald-200 p-3 mb-6 flex items-start gap-2">
+                        <Mail className="h-4 w-4 text-emerald-600 mt-0.5 flex-shrink-0" />
+                        <p className="text-sm text-emerald-700 font-medium">
+                          You&apos;ve been invited to join as an artisan!
+                        </p>
                       </div>
                     )}
-                    {/* Role Selection */}
-                    <div className="space-y-3">
-                      <Label>I want to join as:</Label>
-                      <div className="grid grid-cols-1 gap-2">
-                        <Button
-                          type="button"
-                          variant={role === 'client' ? 'default' : 'outline'}
-                          className={cn(
-                            'h-auto p-4 justify-start text-left',
-                            role === 'client' && 'bg-emerald-700 hover:bg-emerald-800'
-                          )}
-                          onClick={() => handleRoleSelect('client')}
-                        >
-                          <div className="flex items-center gap-3">
-                            <Users className="w-5 h-5" />
-                            <div>
-                              <div className="font-medium">Client</div>
-                              <div className="text-sm opacity-80">Find and hire skilled artisans</div>
-                            </div>
-                          </div>
-                        </Button>
-                        <Button
-                          type="button"
-                          variant={role === 'artisan' ? 'default' : 'outline'}
-                          className={cn(
-                            'h-auto p-4 justify-start text-left',
-                            role === 'artisan' && 'bg-emerald-700 hover:bg-emerald-800'
-                          )}
-                          onClick={() => handleRoleSelect('artisan')}
-                        >
-                          <div className="flex items-center gap-3">
-                            <TesseractLogo size={20} strokeWidth={1.75} />
-                            <div>
-                              <div className="font-medium">Artisan</div>
-                              <div className="text-sm opacity-80">Showcase your skills and get hired</div>
-                            </div>
-                          </div>
-                        </Button>
-                      </div>
+
+                    {/* Google OAuth */}
+                    <Clerk.Connection name="google" asChild>
+                      <button
+                        disabled={isGlobalLoading}
+                        className="w-full flex items-center justify-center gap-3 border border-stone-200 rounded-lg px-4 py-3 text-sm font-medium text-stone-700 hover:bg-stone-50 hover:border-stone-300 transition-colors disabled:opacity-60"
+                      >
+                        <Clerk.Loading scope="provider:google">
+                          {(isLoading: boolean) =>
+                            isLoading ? (
+                              <Loader2 className="size-4 animate-spin" />
+                            ) : (
+                              <>
+                                <SiGoogle className="size-4" />
+                                Continue with Google
+                              </>
+                            )
+                          }
+                        </Clerk.Loading>
+                      </button>
+                    </Clerk.Connection>
+
+                    <div className="flex items-center gap-3 my-6">
+                      <div className="flex-1 h-px bg-stone-200" />
+                      <span className="text-xs text-stone-400 font-medium uppercase tracking-wide">or</span>
+                      <div className="flex-1 h-px bg-stone-200" />
                     </div>
-                    
-                    <div>
-                      <Clerk.Connection name="google" asChild>
-                        <Button
-                          className="w-full"
-                          size="sm"
-                          variant="outline"
-                          type="button"
+
+                    {/* Email field */}
+                    <Clerk.Field name="emailAddress" className="mb-4">
+                      <Clerk.Label className="block text-sm font-medium text-stone-700 mb-1.5">
+                        Email address
+                      </Clerk.Label>
+                      <Clerk.Input
+                        type="email"
+                        required
+                        className="w-full border border-stone-200 rounded-lg px-4 py-2.5 text-sm text-stone-900 outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-colors placeholder:text-stone-400"
+                        placeholder="you@example.com"
+                      />
+                      <Clerk.FieldError className="mt-1 text-xs text-red-600 block" />
+                    </Clerk.Field>
+
+                    {/* Password field */}
+                    <Clerk.Field name="password" className="mb-6">
+                      <Clerk.Label className="block text-sm font-medium text-stone-700 mb-1.5">
+                        Password
+                      </Clerk.Label>
+                      <Clerk.Input
+                        type="password"
+                        required
+                        className="w-full border border-stone-200 rounded-lg px-4 py-2.5 text-sm text-stone-900 outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-colors placeholder:text-stone-400"
+                        placeholder="Create a strong password"
+                      />
+                      <Clerk.FieldError className="mt-1 text-xs text-red-600 block" />
+                    </Clerk.Field>
+
+                    {/* CAPTCHA */}
+                    <div id="clerk-captcha" className="mb-4" />
+
+                    {/* Submit */}
+                    <SignUp.Action submit asChild>
+                      <button
+                        disabled={isGlobalLoading}
+                        className="w-full bg-emerald-700 text-white py-3 rounded-lg font-semibold text-sm hover:bg-emerald-800 transition-colors disabled:opacity-60 flex items-center justify-center gap-2"
+                      >
+                        <Clerk.Loading>
+                          {(isLoading: boolean) =>
+                            isLoading ? (
+                              <><Loader2 className="size-4 animate-spin" /> Creating account…</>
+                            ) : (
+                              `Create ${isArtisan ? 'Artisan' : ''} Account`
+                            )
+                          }
+                        </Clerk.Loading>
+                      </button>
+                    </SignUp.Action>
+
+                    <p className="text-center text-xs text-stone-400 mt-4">
+                      By signing up you agree to our{' '}
+                      <Link href="/terms" className="underline hover:text-stone-600">Terms</Link>{' '}
+                      and{' '}
+                      <Link href="/privacy" className="underline hover:text-stone-600">Privacy Policy</Link>.
+                    </p>
+                  </div>
+
+                  {/* Switch role link */}
+                  <p className="text-center text-sm text-stone-500 mt-6">
+                    {isArtisan ? (
+                      <>Looking to hire?{' '}
+                        <Link href="/sign-up" className="text-emerald-700 font-medium hover:underline">
+                          Sign up as a client
+                        </Link>
+                      </>
+                    ) : (
+                      <>Are you an artisan?{' '}
+                        <Link href="/sign-up?role=artisan" className="text-emerald-700 font-medium hover:underline">
+                          Sign up as an artisan
+                        </Link>
+                      </>
+                    )}
+                  </p>
+                </SignUp.Step>
+
+                <SignUp.Step name="verifications">
+                  <div className="bg-white rounded-xl border border-stone-200 shadow-sm p-8 max-w-md w-full mx-auto">
+                    <div className="text-center mb-6">
+                      <div className="w-12 h-12 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <Mail className="w-6 h-6 text-emerald-600" />
+                      </div>
+                      <h2 className="text-xl font-serif font-bold text-stone-900 mb-2">Check your email</h2>
+                      <p className="text-sm text-stone-500">We sent a verification code to your email address.</p>
+                    </div>
+
+                    <SignUp.Strategy name="email_code">
+                      <Clerk.Field name="code" className="mb-6">
+                        <Clerk.Label className="block text-sm font-medium text-stone-700 mb-1.5 text-center">
+                          Verification code
+                        </Clerk.Label>
+                        <Clerk.Input
+                          type="otp"
+                          autoSubmit
+                          className="w-full border border-stone-200 rounded-lg px-4 py-2.5 text-sm text-stone-900 outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 text-center tracking-widest font-mono"
+                          placeholder="000000"
+                        />
+                        <Clerk.FieldError className="mt-1 text-xs text-red-600 block text-center" />
+                      </Clerk.Field>
+
+                      <SignUp.Action submit asChild>
+                        <button
                           disabled={isGlobalLoading}
+                          className="w-full bg-emerald-700 text-white py-3 rounded-lg font-semibold text-sm hover:bg-emerald-800 transition-colors disabled:opacity-60 flex items-center justify-center gap-2"
                         >
-                          <Clerk.Loading scope="provider:google">
+                          <Clerk.Loading>
                             {(isLoading: boolean) =>
-                              isLoading ? (
-                                <Loader2 className="size-4 animate-spin" />
-                              ) : (
-                                <>
-                                  <SiGoogle className="mr-2 size-4" />
-                                  Google
-                                </>
-                              )
+                              isLoading
+                                ? <><Loader2 className="size-4 animate-spin" /> Verifying…</>
+                                : 'Verify email'
                             }
                           </Clerk.Loading>
-                        </Button>
-                      </Clerk.Connection>
-                    </div>
-                    <p className="flex items-center gap-x-3 text-sm text-muted-foreground before:h-px before:flex-1 before:bg-border after:h-px after:flex-1 after:bg-border">
-                      or
-                    </p>
-                    <Clerk.Field name="emailAddress" className="space-y-2">
-                      <Clerk.Label asChild>
-                        <Label>Email address</Label>
-                      </Clerk.Label>
-                      <Clerk.Input type="email" required asChild>
-                        <Input />
-                      </Clerk.Input>
-                      <Clerk.FieldError className="block text-sm text-destructive" />
-                    </Clerk.Field>
-                    <Clerk.Field name="password" className="space-y-2">
-                      <Clerk.Label asChild>
-                        <Label>Password</Label>
-                      </Clerk.Label>
-                      <Clerk.Input type="password" required asChild>
-                        <Input />
-                      </Clerk.Input>
-                      <Clerk.FieldError className="block text-sm text-destructive" />
-                    </Clerk.Field>
-                    {/* CAPTCHA widget container for Clerk bot protection */}
-                    <div id="clerk-captcha" />
-                  </CardContent>
-                  <CardFooter>
-                    <div className="grid w-full gap-y-4">
-                      <SignUp.Action submit asChild>
-                        <Button disabled={isGlobalLoading}>
-                          <Clerk.Loading>
-                            {(isLoading: boolean) => {
-                              return isLoading ? (
-                                <Loader2 className="size-4 animate-spin" />
-                              ) : (
-                                'Continue'
-                              )
-                            }}
-                          </Clerk.Loading>
-                        </Button>
+                        </button>
                       </SignUp.Action>
-                      <div className="text-center text-sm text-muted-foreground">
-                        Already have an account?
-                        <Button variant="link" size="sm" asChild>
-                          <Clerk.Link navigate="sign-in">Sign in</Clerk.Link>
-                        </Button>
-                      </div>
-                    </div>
-                  </CardFooter>
-                </Card>
-              </SignUp.Step>
-
-              <SignUp.Step name="continue">
-                <Card className="w-full sm:w-96">
-                  <CardHeader>
-                    <CardTitle>Continue registration</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <Clerk.Field name="username" className="space-y-2">
-                      <Clerk.Label asChild>
-                        <Label>Username</Label>
-                      </Clerk.Label>
-                      <Clerk.Input type="text" required asChild>
-                        <Input />
-                      </Clerk.Input>
-                      <Clerk.FieldError className="block text-sm text-destructive" />
-                    </Clerk.Field>
-                  </CardContent>
-                  <CardFooter>
-                    <div className="grid w-full gap-y-4">
-                      <SignUp.Action submit asChild>
-                        <Button disabled={isGlobalLoading}>
-                          <Clerk.Loading>
-                            {(isLoading: boolean) => {
-                              return isLoading ? (
-                                <Loader2 className="size-4 animate-spin" />
-                              ) : (
-                                'Continue'
-                              )
-                            }}
-                          </Clerk.Loading>
-                        </Button>
-                      </SignUp.Action>
-                    </div>
-                  </CardFooter>
-                </Card>
-              </SignUp.Step>
-
-              <SignUp.Step name="verifications">
-                <SignUp.Strategy name="email_code">
-                  <Card className="w-full sm:w-96">
-                    <CardHeader>
-                      <CardTitle>Verify your email</CardTitle>
-                      <CardDescription>
-                        Use the verification code sent to your email address
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent className="grid gap-y-4">
-                      <div className="grid items-center justify-center gap-y-2">
-                        <Clerk.Field name="code" className="space-y-2">
-                          <Clerk.Label className="sr-only">Email address</Clerk.Label>
-                          <div className="flex justify-center text-center">
-                            <Clerk.Input
-                              type="otp"
-                              className="flex justify-center has-[:disabled]:opacity-50"
-                              autoSubmit
-                              render={({ value, status }) => {
-                                return (
-                                  <div
-                                    className={cn(
-                                      'relative flex size-10 items-center justify-center border-y border-r border-input text-sm transition-all first:rounded-l-md first:border-l last:rounded-r-md',
-                                      {
-                                        'bg-accent': status === 'cursor' || status === 'selected',
-                                      }
-                                    )}
-                                  >
-                                    {value}
-                                    {status === 'cursor' && (
-                                      <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
-                                        <div className="animate-caret-blink h-4 w-px bg-foreground duration-1000" />
-                                      </div>
-                                    )}
-                                  </div>
-                                )
-                              }}
-                            />
-                          </div>
-                          <Clerk.FieldError className="block text-center text-sm text-destructive" />
-                        </Clerk.Field>
-                        <SignUp.Action
-                          asChild
-                          resend
-                          className="text-muted-foreground"
-                          fallback={({ resendableAfter }: { resendableAfter: number }) => (
-                            <Button variant="link" size="sm" disabled>
-                              Didn&apos;t receive a code? Resend (
-                              <span className="tabular-nums">{resendableAfter}</span>)
-                            </Button>
-                          )}
-                        >
-                          <Button type="button" variant="link" size="sm">
-                            Didn&apos;t receive a code? Resend
-                          </Button>
-                        </SignUp.Action>
-                      </div>
-                    </CardContent>
-                    <CardFooter>
-                      <div className="grid w-full gap-y-4">
-                        <SignUp.Action submit asChild>
-                          <Button disabled={isGlobalLoading}>
-                            <Clerk.Loading>
-                              {(isLoading: boolean) => {
-                                return isLoading ? (
-                                  <Loader2 className="size-4 animate-spin" />
-                                ) : (
-                                  'Continue'
-                                )
-                              }}
-                            </Clerk.Loading>
-                          </Button>
-                        </SignUp.Action>
-                        <SignUp.Action navigate="start" asChild>
-                          <Button size="sm" variant="link">
-                            Use another method
-                          </Button>
-                        </SignUp.Action>
-                      </div>
-                    </CardFooter>
-                  </Card>
-                </SignUp.Strategy>
-              </SignUp.Step>
-            </div>
-          )}
-        </Clerk.Loading>
-      </SignUp.Root>
+                    </SignUp.Strategy>
+                  </div>
+                </SignUp.Step>
+              </div>
+            )}
+          </Clerk.Loading>
+        </SignUp.Root>
       </div>
     </div>
   );

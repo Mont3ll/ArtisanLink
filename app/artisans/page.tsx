@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import PublicNav from "@/components/layout/public-nav";
 import {
   Search,
@@ -40,6 +41,15 @@ interface Facets {
 }
 
 export default function BrowseArtisansPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-stone-50 flex items-center justify-center"><div className="w-6 h-6 border-2 border-emerald-600 border-t-transparent rounded-full animate-spin" /></div>}>
+      <BrowseArtisansContent />
+    </Suspense>
+  );
+}
+
+function BrowseArtisansContent() {
+  const searchParams = useSearchParams();
   const [artisans, setArtisans] = useState<Artisan[]>([]);
   const [facets, setFacets] = useState<Facets | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -48,11 +58,12 @@ export default function BrowseArtisansPage() {
   const [totalPages, setTotalPages] = useState(1);
   const [showFilters, setShowFilters] = useState(false);
 
-  const [searchInput, setSearchInput] = useState("");
-  const [query, setQuery] = useState("");
-  const [profession, setProfession] = useState("");
-  const [county, setCounty] = useState("");
-  const [sortBy, setSortBy] = useState("rating");
+  // Initialize from URL search params (passed from landing page search bar)
+  const [searchInput, setSearchInput] = useState(() => searchParams.get("q") || "");
+  const [query, setQuery] = useState(() => searchParams.get("q") || "");
+  const [profession, setProfession] = useState(() => searchParams.get("profession") || "");
+  const [county, setCounty] = useState(() => searchParams.get("county") || "");
+  const [sortBy, setSortBy] = useState(() => searchParams.get("sortBy") || "rating");
 
   const fetchArtisans = () => {
     setIsLoading(true);
@@ -326,9 +337,9 @@ function ArtisanCard({ artisan }: { artisan: Artisan }) {
   return (
     <Link
       href={`/artisans/${artisan.id}`}
-      className="group bg-white rounded-xl border border-stone-200 overflow-hidden hover:shadow-xl transition-all duration-300 block"
+      className="group bg-white rounded-xl border border-stone-200 overflow-hidden hover:shadow-xl transition-all duration-300 flex flex-col"
     >
-      <div className="p-6">
+      <div className="p-6 flex-1 flex flex-col">
         <div className="flex items-start gap-4 mb-4">
           <div className="relative flex-shrink-0">
             {artisan.profileImage ? (
@@ -380,15 +391,19 @@ function ArtisanCard({ artisan }: { artisan: Artisan }) {
           )}
         </div>
 
-        {artisan.specializations.length > 0 && (
-          <div className="flex flex-wrap gap-2 mb-4">
-            {artisan.specializations.slice(0, 3).map((s, j) => (
-              <span key={j} className="px-2 py-1 bg-stone-100 text-stone-600 rounded text-xs">{s.name}</span>
-            ))}
-          </div>
-        )}
+        {/* Flex-1 spacer: specialization tags grow to fill available space */}
+        <div className="flex-1">
+          {artisan.specializations.length > 0 && (
+            <div className="flex flex-wrap gap-2">
+              {artisan.specializations.slice(0, 3).map((s, j) => (
+                <span key={j} className="px-2 py-1 bg-stone-100 text-stone-600 rounded text-xs">{s.name}</span>
+              ))}
+            </div>
+          )}
+        </div>
 
-        <div className="flex items-center justify-between pt-4 border-t border-stone-100">
+        {/* Price + availability — always at bottom of content area */}
+        <div className="flex items-center justify-between pt-4 mt-4 border-t border-stone-100">
           <div>
             {artisan.hourlyRate ? (
               <>
@@ -405,7 +420,8 @@ function ArtisanCard({ artisan }: { artisan: Artisan }) {
         </div>
       </div>
 
-      <div className="px-6 py-4 bg-stone-50 border-t border-stone-100 flex gap-3">
+      {/* Button row — always at card bottom, with proper horizontal padding */}
+      <div className="px-4 py-3 bg-stone-50 border-t border-stone-100 flex gap-3">
         <span className="flex-1 py-2.5 border border-stone-300 rounded-lg text-sm font-medium group-hover:border-emerald-600 group-hover:text-emerald-700 transition-colors flex items-center justify-center gap-2">
           <Eye className="w-4 h-4" />
           View Profile

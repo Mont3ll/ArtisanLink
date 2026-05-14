@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import Lenis from "lenis";
@@ -62,6 +63,9 @@ export default function Home() {
   const [activeCategory, setActiveCategory] = useState("all");
   const [liveArtisans, setLiveArtisans] = useState<LiveArtisan[]>([]);
   const [artisansLoading, setArtisansLoading] = useState(true);
+  const [heroQuery, setHeroQuery] = useState("");
+  const [heroLocation, setHeroLocation] = useState("");
+  const router = useRouter();
 
   // Refs for animations
   const containerRef = useRef<HTMLDivElement>(null);
@@ -77,16 +81,33 @@ export default function Home() {
   const ctaRef = useRef<HTMLDivElement>(null);
   const faqContentRefs = useRef<(HTMLDivElement | null)[]>([]);
 
-  // Fetch live artisans from the API
+  // Fetch live artisans from the API — re-runs when activeCategory changes
   useEffect(() => {
-    fetch("/api/search/artisans?limit=3&sortBy=rating")
+    setArtisansLoading(true);
+    const params = new URLSearchParams();
+    params.set("limit", "3");
+    params.set("sortBy", "rating");
+    // Map category tab ID → profession search term
+    if (activeCategory !== "all") {
+      params.set("profession", activeCategory);
+    }
+    fetch(`/api/search/artisans?${params}`)
       .then((r) => r.ok ? r.json() : Promise.reject())
       .then((data) => {
         setLiveArtisans(data.artisans?.slice(0, 3) || []);
       })
       .catch(() => setLiveArtisans([]))
       .finally(() => setArtisansLoading(false));
-  }, []);
+  }, [activeCategory]);
+
+  // Hero search → navigate to /artisans with query params
+  const handleHeroSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    const params = new URLSearchParams();
+    if (heroQuery.trim()) params.set("q", heroQuery.trim());
+    if (heroLocation.trim()) params.set("county", heroLocation.trim());
+    router.push(`/artisans${params.toString() ? "?" + params.toString() : ""}`);
+  };
 
   // Lenis smooth scroll + GSAP animations
   useEffect(() => {
@@ -733,28 +754,32 @@ export default function Home() {
             </p>
 
             {/* Search Bar */}
-            <div className="hero-search bg-white rounded-xl shadow-lg border border-stone-200 p-2 flex flex-col sm:flex-row gap-2 mb-8">
+            <form onSubmit={handleHeroSearch} className="hero-search bg-white rounded-xl shadow-lg border border-stone-200 p-2 flex flex-col sm:flex-row gap-2 mb-8">
               <div className="flex-1 flex items-center gap-3 px-4 py-3">
                 <Search className="w-5 h-5 text-stone-400" />
                 <input
                   type="text"
+                  value={heroQuery}
+                  onChange={(e) => setHeroQuery(e.target.value)}
                   placeholder="What service do you need?"
-                  className="w-full outline-none text-stone-800 placeholder:text-stone-400"
+                  className="w-full outline-none text-stone-800 placeholder:text-stone-400 bg-transparent"
                 />
               </div>
               <div className="flex items-center gap-3 px-4 py-3 border-t sm:border-t-0 sm:border-l border-stone-200">
                 <MapPin className="w-5 h-5 text-stone-400" />
                 <input
                   type="text"
-                  placeholder="Location"
-                  className="w-full sm:w-32 outline-none text-stone-800 placeholder:text-stone-400"
+                  value={heroLocation}
+                  onChange={(e) => setHeroLocation(e.target.value)}
+                  placeholder="County / Location"
+                  className="w-full sm:w-36 outline-none text-stone-800 placeholder:text-stone-400 bg-transparent"
                 />
               </div>
-              <button className="magnetic-btn bg-emerald-700 text-white px-8 py-3 rounded-lg font-medium hover:bg-emerald-800 transition-colors flex items-center justify-center gap-2">
+              <button type="submit" className="magnetic-btn bg-emerald-700 text-white px-8 py-3 rounded-lg font-medium hover:bg-emerald-800 transition-colors flex items-center justify-center gap-2">
                 <Search className="w-4 h-4" />
                 Search
               </button>
-            </div>
+            </form>
 
             {/* Trust Badges */}
             <div className="flex flex-wrap items-center gap-6 text-sm text-stone-500">
@@ -915,9 +940,9 @@ export default function Home() {
                     <Link
                       key={artisan.id || i}
                       href={`/artisans/${artisan.id}`}
-                      className="artisan-card bg-white rounded-xl border border-stone-200 overflow-hidden hover:shadow-xl transition-all duration-300 group block"
+                      className="artisan-card bg-white rounded-xl border border-stone-200 overflow-hidden hover:shadow-xl transition-all duration-300 group block flex flex-col"
                     >
-                      <div className="p-6">
+                      <div className="p-6 flex-1 flex flex-col">
                         <div className="flex items-start gap-4 mb-4">
                           <div className="relative flex-shrink-0">
                             {artisan.profileImage ? (
@@ -964,15 +989,19 @@ export default function Home() {
                           )}
                         </div>
 
-                        {artisan.specializations.length > 0 && (
-                          <div className="flex flex-wrap gap-2 mb-4">
-                            {artisan.specializations.slice(0, 3).map((s, j) => (
-                              <span key={j} className="px-2 py-1 bg-stone-100 text-stone-600 rounded text-xs">{s.name}</span>
-                            ))}
-                          </div>
-                        )}
+                        {/* Specialization tags — flex-1 pushes price to bottom */}
+                        <div className="flex-1">
+                          {artisan.specializations.length > 0 && (
+                            <div className="flex flex-wrap gap-2">
+                              {artisan.specializations.slice(0, 3).map((s, j) => (
+                                <span key={j} className="px-2 py-1 bg-stone-100 text-stone-600 rounded text-xs">{s.name}</span>
+                              ))}
+                            </div>
+                          )}
+                        </div>
 
-                        <div className="flex items-center justify-between pt-4 border-t border-stone-100">
+                        {/* Price + availability — always pinned above button row */}
+                        <div className="flex items-center justify-between pt-4 mt-4 border-t border-stone-100">
                           <div>
                             {artisan.hourlyRate ? (
                               <>
@@ -991,7 +1020,7 @@ export default function Home() {
                         </div>
                       </div>
 
-                      <div className="px-6 py-4 bg-stone-50 border-t border-stone-100 flex gap-3">
+                      <div className="px-4 py-3 bg-stone-50 border-t border-stone-100 flex gap-3">
                         <span className="flex-1 py-2.5 border border-stone-300 rounded-lg text-sm font-medium group-hover:border-emerald-600 group-hover:text-emerald-700 transition-colors flex items-center justify-center gap-2">
                           <Eye className="w-4 h-4" />
                           View Profile
