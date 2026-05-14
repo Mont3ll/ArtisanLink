@@ -248,7 +248,7 @@ describe('initiateB2C', () => {
 
     expect(result.ConversationID).toBe('conv_123')
     expect(result.ResponseCode).toBe('0')
-    expect(result.originatorId).toMatch(/^AL-\d+-[a-z0-9]+$/)
+    expect(result.originatorId).toMatch(/^CW-\d+-[a-z0-9]+$/)
 
     expect(mockFetch).toHaveBeenCalledWith(
       'https://sandbox.safaricom.co.ke/mpesa/b2c/v1/paymentrequest',

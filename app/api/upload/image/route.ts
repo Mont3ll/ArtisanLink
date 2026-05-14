@@ -228,10 +228,10 @@ export async function DELETE(request: NextRequest) {
       )
     }
 
-    // Security: Verify the publicId is within artisanlink folder
-    if (!publicId.startsWith('artisanlink/')) {
+    // Security: Verify the publicId is within chapaworks folder
+    if (!publicId.startsWith('chapaworks/')) {
       return NextResponse.json(
-        { error: 'Invalid publicId - cannot delete files outside of artisanlink folder' },
+        { error: 'Invalid publicId - cannot delete files outside of chapaworks folder' },
         { status: 403 }
       )
     }

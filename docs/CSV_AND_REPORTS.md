@@ -1,10 +1,10 @@
 # CSV Export and Report Generation
 
-This document details the implementation of CSV export and report generation features in ArtisanLink.
+This document details the implementation of CSV export and report generation features in ChapaWorks.
 
 ## Overview
 
-ArtisanLink provides two main data export capabilities:
+ChapaWorks provides two main data export capabilities:
 
 1. **Artisan Payment CSV Export** - Allows artisans to export their payment history
 2. **Admin Report Generation** - Comprehensive reporting system for administrators

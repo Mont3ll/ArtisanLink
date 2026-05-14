@@ -1,8 +1,8 @@
-# ArtisanLink - Project Scope Document
+# ChapaWorks - Project Scope Document
 
 ## Overview
 
-ArtisanLink is a Next.js 16 marketplace platform connecting clients with skilled artisans in Kenya. The platform facilitates service discovery, job requests, quoting, payments via M-Pesa, and artisan payouts.
+ChapaWorks is a Next.js 16 marketplace platform connecting clients with skilled artisans in Kenya. The platform facilitates service discovery, job requests, quoting, payments via M-Pesa, and artisan payouts.
 
 ## Business Model
 

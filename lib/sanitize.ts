@@ -1,5 +1,5 @@
 /**
- * Input sanitization utilities for ArtisanLink
+ * Input sanitization utilities for ChapaWorks
  * 
  * Provides functions to sanitize and validate user inputs to prevent
  * XSS, SQL injection, and other security vulnerabilities.

@@ -1,7 +1,7 @@
 import { defineConfig, devices } from '@playwright/test';
 
 /**
- * Playwright E2E test configuration for ArtisanLink
+ * Playwright E2E test configuration for ChapaWorks
  * @see https://playwright.dev/docs/test-configuration
  * 
  * Note: Browser tests require system dependencies to be installed.

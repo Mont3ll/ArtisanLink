@@ -184,7 +184,7 @@ export async function POST(request: Request) {
         phoneNumber: formattedPhone,
         amount,
         accountReference: `SUB-${result.subscription.id.substring(0, 8)}`,
-        transactionDesc: `ArtisanLink ${plan}`,
+        transactionDesc: `ChapaWorks ${plan}`,
       })
 
       // Update payment with M-Pesa request details

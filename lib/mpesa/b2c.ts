@@ -153,7 +153,7 @@ export function isB2CEnabled(): boolean {
 function generateOriginatorId(): string {
   const timestamp = Date.now()
   const random = Math.random().toString(36).substring(2, 8)
-  return `AL-${timestamp}-${random}` // AL = ArtisanLink
+  return `CW-${timestamp}-${random}` // CW = ChapaWorks
 }
 
 /**

@@ -81,7 +81,7 @@ export default function Hero() {
             local artisans in Kenya
           </h1>
           <p className="hero-animate mt-6 text-lg text-slate-600 dark:text-slate-400 leading-relaxed">
-            ArtisanLink helps clients discover skilled local professionals, view portfolios, and hire with confidence powered by map search and M-Pesa subscriptions.
+            ChapaWorks helps clients discover skilled local professionals, view portfolios, and hire with confidence powered by map search and M-Pesa subscriptions.
           </p>
 
           <div className="hero-animate mt-8 flex gap-4 items-center">

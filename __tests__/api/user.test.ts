@@ -96,6 +96,7 @@ describe('User Sync API', () => {
         firstName: 'New',
         lastName: 'User',
         phoneNumbers: [{ phoneNumber: '+254712345678' }],
+        publicMetadata: { role: 'client' }, // role is required for user creation
       }
       const newUser = {
         id: 'user_new',

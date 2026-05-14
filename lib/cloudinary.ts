@@ -209,7 +209,7 @@ export async function uploadImage(
   const BASE_DELAY = 1000 // 1 second
 
   const uploadOptions: Record<string, unknown> = {
-    folder: `artisanlink/${folder}`,
+    folder: `chapaworks/${folder}`,
     resource_type: 'auto',
     allowed_formats: FOLDER_CONFIG[folder].allowedFormats,
     max_bytes: FOLDER_CONFIG[folder].maxSize,

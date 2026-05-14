@@ -90,7 +90,7 @@ export async function POST(request: Request) {
     await prisma.activityLog.create({
       data: {
         adminId: userId,
-        adminEmail: adminUser.email || 'admin@artisanlink.ke',
+        adminEmail: adminUser.email || 'admin@chapaworks.ke',
         action: action === 'APPROVE' ? 'ARTISAN_VERIFIED' : 'ARTISAN_REJECTED',
         targetType: 'PROFILE',
         targetId: artisanId,

@@ -1,5 +1,5 @@
 /**
- * Payment Processor for ArtisanLink
+ * Payment Processor for ChapaWorks
  * 
  * This module handles the business logic for processing job payments,
  * calculating commissions, and creating payout records for artisans.

@@ -1,5 +1,5 @@
 /**
- * Caching utilities for ArtisanLink API routes
+ * Caching utilities for ChapaWorks API routes
  * 
  * Provides in-memory caching with TTL support and cache header utilities.
  * In production, consider replacing with Redis for distributed caching.

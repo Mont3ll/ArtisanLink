@@ -257,7 +257,7 @@ export function formatPaymentDateShort(dateString: string): string {
 
 export function generateReceiptContent(receiptData: ReceiptData): string {
   return `
-ArtisanLink Kenya - Payment Receipt
+ChapaWorks Kenya - Payment Receipt
 =====================================
 
 Receipt Number: ${receiptData.receiptNumber}

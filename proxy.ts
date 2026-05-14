@@ -1,13 +1,20 @@
 import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 
-const VERIFIED_ROLE_COOKIE = "artisanlink_verified_role";
+const VERIFIED_ROLE_COOKIE = "chapaworks_verified_role";
 
 const isProtectedRoute = createRouteMatcher([
   "/dashboard",
   "/client-dashboard(.*)",
   "/artisan-dashboard(.*)",
   "/admin-dashboard(.*)",
+]);
+
+// Public artisan browsing routes - accessible without login
+const isPublicArtisanRoute = createRouteMatcher([
+  "/artisans(.*)",
+  "/api/search/artisans(.*)",
+  "/api/artisans(.*)",
 ]);
 
 export const proxy = clerkMiddleware(async (auth, req) => {
@@ -29,6 +36,10 @@ export const proxy = clerkMiddleware(async (auth, req) => {
   }
 
   if (!userId || !isProtectedRoute(req)) {
+    // Allow public artisan browsing routes without any role checks
+    if (isPublicArtisanRoute(req) || !userId) {
+      return NextResponse.next();
+    }
     return NextResponse.next();
   }
 

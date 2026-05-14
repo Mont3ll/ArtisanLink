@@ -70,7 +70,7 @@ export function ArtisanSidebar({ ...props }: React.ComponentProps<typeof Sidebar
 
   const userData = {
     name: user?.fullName || "Artisan",
-    email: user?.primaryEmailAddress?.emailAddress || "artisan@artisanlink.ke",
+    email: user?.primaryEmailAddress?.emailAddress || "artisan@chapaworks.ke",
     avatar: user?.imageUrl || "/avatars/artisan.jpg",
   }
 
@@ -120,7 +120,7 @@ export function ArtisanSidebar({ ...props }: React.ComponentProps<typeof Sidebar
             >
               <a href="/artisan-dashboard">
                 <IconInnerShadowTop className="!size-5" />
-                <span className="text-base font-semibold">ArtisanLink Studio</span>
+                <span className="text-base font-semibold">ChapaWorks Studio</span>
               </a>
             </SidebarMenuButton>
           </SidebarMenuItem>

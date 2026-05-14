@@ -6,7 +6,7 @@ describe('Header', () => {
     render(<Header />)
 
     // Brand logo link (using aria-label to get the specific element)
-    expect(screen.getByLabelText('Home')).toHaveTextContent(/ArtisanLink/i)
+    expect(screen.getByLabelText('Home')).toHaveTextContent(/ChapaWorks/i)
     
     // Navigation links (multiple exist due to mobile menu, check at least one)
     expect(screen.getAllByText(/Features/i).length).toBeGreaterThan(0)

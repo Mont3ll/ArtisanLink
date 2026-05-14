@@ -222,7 +222,7 @@ export const env = {
       return process.env.EMAIL_SERVER_PASSWORD
     },
     get from() {
-      return getOptionalEnv('EMAIL_FROM' as keyof Env, 'noreply@artisanlink.co.ke')
+      return getOptionalEnv('EMAIL_FROM' as keyof Env, 'noreply@chapaworks.co.ke')
     },
     get isConfigured() {
       return !!(

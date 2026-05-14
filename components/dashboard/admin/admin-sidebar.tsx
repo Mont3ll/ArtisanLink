@@ -136,7 +136,7 @@ export function AdminSidebar({ ...props }: React.ComponentProps<typeof Sidebar>)
 
   const userData = {
     name: user?.fullName || "Admin User",
-    email: user?.primaryEmailAddress?.emailAddress || "admin@artisanlink.ke",
+    email: user?.primaryEmailAddress?.emailAddress || "admin@chapaworks.ke",
     avatar: user?.imageUrl || "/avatars/admin.jpg",
   }
 
@@ -151,7 +151,7 @@ export function AdminSidebar({ ...props }: React.ComponentProps<typeof Sidebar>)
             >
               <a href="/admin-dashboard">
                 <IconInnerShadowTop className="!size-5" />
-                <span className="text-base font-semibold">ArtisanLink Admin</span>
+                <span className="text-base font-semibold">ChapaWorks Admin</span>
               </a>
             </SidebarMenuButton>
           </SidebarMenuItem>

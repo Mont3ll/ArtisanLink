@@ -1,5 +1,5 @@
 /**
- * API Request Logging Middleware for ArtisanLink
+ * API Request Logging Middleware for ChapaWorks
  * 
  * Provides request/response logging for API routes with timing,
  * status codes, and optional body logging for debugging.

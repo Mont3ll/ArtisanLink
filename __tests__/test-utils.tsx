@@ -1,5 +1,5 @@
 /**
- * Test Utilities for ArtisanLink
+ * Test Utilities for ChapaWorks
  * 
  * This file provides common test wrappers and utilities for component testing.
  * Import these utilities in your tests instead of directly from @testing-library/react.

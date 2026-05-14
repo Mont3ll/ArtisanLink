@@ -87,7 +87,22 @@ function EarningsSummary({
   }
 
   return (
-    <div className="grid gap-4 md:grid-cols-4">
+    <div className="space-y-6">
+      {/* Cash-only mode notice */}
+      <div className="rounded-lg bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 p-4">
+        <div className="flex items-start gap-2">
+          <span className="text-amber-600 text-lg">ℹ️</span>
+          <div>
+            <p className="font-semibold text-amber-800 dark:text-amber-200 text-sm">Cash-Only Payments During Testing Phase</p>
+            <p className="text-amber-700 dark:text-amber-300 text-sm mt-0.5">
+              All client payments are currently handled in cash directly. This earnings dashboard tracks your recorded earnings history.
+              Automated M-Pesa payouts will be re-enabled after the testing phase.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div className="grid gap-4 md:grid-cols-4">
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium">Total Earnings</CardTitle>
@@ -149,6 +164,7 @@ function EarningsSummary({
           )}
         </CardContent>
       </Card>
+    </div>
     </div>
   )
 }

@@ -79,7 +79,7 @@ export default function Header() {
           {/* Logo */}
           <Magnetic>
             <Link href="/" className="font-bold text-xl text-slate-900 dark:text-slate-100" aria-label="Home">
-              ArtisanLink
+              ChapaWorks
             </Link>
           </Magnetic>
 
@@ -91,6 +91,14 @@ export default function Header() {
                   <a href="#features" className="text-sm text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 transition-colors">
                     Features
                   </a>
+                  <div className="nav-indicator absolute w-1 h-1 bg-slate-900 dark:bg-slate-100 rounded-full bottom-0 transform scale-0 group-hover:scale-100 transition-transform duration-200 ease-out"></div>
+                </div>
+              </Magnetic>
+              <Magnetic>
+                <div className="nav-element relative flex flex-col items-center py-3 px-4 cursor-pointer group">
+                  <Link href="/artisans" className="text-sm text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 transition-colors">
+                    Browse Artisans
+                  </Link>
                   <div className="nav-indicator absolute w-1 h-1 bg-slate-900 dark:bg-slate-100 rounded-full bottom-0 transform scale-0 group-hover:scale-100 transition-transform duration-200 ease-out"></div>
                 </div>
               </Magnetic>
@@ -182,7 +190,7 @@ export default function Header() {
                 ref={(el) => { navItemsRef.current[navItems.length] = el; }}
                 className="text-slate-400 text-sm"
               >
-                <p>ArtisanLink</p>
+                <p>ChapaWorks</p>
                 <p>Connect with skilled artisans</p>
               </div>
             </div>

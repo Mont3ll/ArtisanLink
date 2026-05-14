@@ -33,7 +33,7 @@ export async function seedAdmins(): Promise<{ admins: Awaited<ReturnType<typeof 
     prisma.user.create({
       data: {
         clerkId: SEED_ADMIN_CLERK_ID,
-        email: 'admin@artisanlink.co.ke',
+        email: 'admin@chapaworks.co.ke',
         firstName: 'System',
         lastName: 'Administrator',
         phone: '+254700000001',
@@ -43,7 +43,7 @@ export async function seedAdmins(): Promise<{ admins: Awaited<ReturnType<typeof 
         lastLoginAt: new Date(),
         profile: {
           create: {
-            bio: 'System administrator for ArtisanLink platform',
+            bio: 'System administrator for ChapaWorks platform',
             city: 'Nairobi',
             county: 'Nairobi',
             country: 'Kenya',
@@ -56,7 +56,7 @@ export async function seedAdmins(): Promise<{ admins: Awaited<ReturnType<typeof 
     prisma.user.create({
       data: {
         clerkId: 'clerk_admin_002',
-        email: 'support@artisanlink.co.ke',
+        email: 'support@chapaworks.co.ke',
         firstName: 'Customer',
         lastName: 'Support',
         phone: '+254700000002',
@@ -122,7 +122,7 @@ export async function seedClients(count = 40): Promise<{ clients: Awaited<Return
       return prisma.user.create({
         data: {
           clerkId,
-          email: data.index === 0 ? 'client@artisanlink.co.ke' : generateEmail(data.firstName, data.lastName),
+          email: data.index === 0 ? 'client@chapaworks.co.ke' : generateEmail(data.firstName, data.lastName),
           firstName: data.firstName,
           lastName: data.lastName,
           phone: generatePhone(),

@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 
 /**
- * Artisan Onboarding Flow E2E Tests for ArtisanLink
+ * Artisan Onboarding Flow E2E Tests for ChapaWorks
  * Tests the complete artisan registration and profile setup flow
  * 
  * Note: These tests simulate the onboarding flow for unauthenticated users

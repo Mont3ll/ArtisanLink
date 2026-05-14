@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 
 /**
- * Subscription Flow E2E Tests for ArtisanLink
+ * Subscription Flow E2E Tests for ChapaWorks
  * Tests the subscription plans display, checkout flow, and payment pages
  * 
  * Note: Actual M-Pesa payments cannot be tested in E2E without a sandbox environment.

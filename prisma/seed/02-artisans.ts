@@ -129,7 +129,7 @@ export async function seedArtisans(
       return prisma.user.create({
         data: {
           clerkId,
-          email: data.isTestArtisan ? 'artisan@artisanlink.co.ke' : generateEmail(data.firstName, data.lastName),
+          email: data.isTestArtisan ? 'artisan@chapaworks.co.ke' : generateEmail(data.firstName, data.lastName),
           firstName: data.firstName,
           lastName: data.lastName,
           phone: generatePhone(),
@@ -159,7 +159,7 @@ export async function seedArtisans(
               address: `${randomElement(['Plot', 'House', 'Shop', 'Building'])} ${randomInt(1, 500)}, ${data.city}`,
               averageRating: 0,
               totalReviews: 0,
-              certificateUrl: data.artisanStatus !== ArtisanStatus.PENDING ? `https://certificates.artisanlink.co.ke/${data.artisanId}.pdf` : null,
+              certificateUrl: data.artisanStatus !== ArtisanStatus.PENDING ? `https://certificates.chapaworks.co.ke/${data.artisanId}.pdf` : null,
               certificateUploadedAt: randomDate(180),
               verifiedAt: data.artisanStatus === ArtisanStatus.VERIFIED ? randomDate(90) : null,
               verifiedBy: data.artisanStatus === ArtisanStatus.VERIFIED ? adminId : null,

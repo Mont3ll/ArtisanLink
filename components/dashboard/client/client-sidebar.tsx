@@ -59,7 +59,7 @@ export function ClientSidebar({ ...props }: React.ComponentProps<typeof Sidebar>
 
   const userData = {
     name: user?.fullName || "Client",
-    email: user?.primaryEmailAddress?.emailAddress || "client@artisanlink.ke",
+    email: user?.primaryEmailAddress?.emailAddress || "client@chapaworks.ke",
     avatar: user?.imageUrl || "/avatars/client.jpg",
   }
 
@@ -114,7 +114,7 @@ export function ClientSidebar({ ...props }: React.ComponentProps<typeof Sidebar>
             >
               <a href="/client-dashboard">
                 <IconInnerShadowTop className="!size-5" />
-                <span className="text-base font-semibold">ArtisanLink Client</span>
+                <span className="text-base font-semibold">ChapaWorks Client</span>
               </a>
             </SidebarMenuButton>
           </SidebarMenuItem>

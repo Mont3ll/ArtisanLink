@@ -65,7 +65,7 @@ describe('Authentication Integration Tests', () => {
           emailAddresses: [{ emailAddress: 'john@example.com' }],
           phoneNumbers: [],
           imageUrl: 'https://example.com/avatar.png',
-          publicMetadata: {},
+          publicMetadata: { role: 'client' }, // role required for user creation
         };
 
         const newUser = {

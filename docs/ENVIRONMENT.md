@@ -1,6 +1,6 @@
-# ArtisanLink Environment Variables
+# ChapaWorks Environment Variables
 
-This document provides detailed documentation for all environment variables used by ArtisanLink.
+This document provides detailed documentation for all environment variables used by ChapaWorks.
 
 ## Quick Start
 
@@ -715,7 +715,7 @@ Optional | String
 SMS sender ID (must be registered).
 
 ```bash
-AFRICASTALKING_SENDER_ID=ArtisanLink
+AFRICASTALKING_SENDER_ID=ChapaWorks
 ```
 
 ---

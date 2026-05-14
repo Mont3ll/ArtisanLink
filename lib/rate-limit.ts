@@ -1,5 +1,5 @@
 /**
- * Rate limiting utility for ArtisanLink API routes
+ * Rate limiting utility for ChapaWorks API routes
  * 
  * Provides in-memory rate limiting with configurable windows and limits.
  * In production, consider using Redis for distributed rate limiting.

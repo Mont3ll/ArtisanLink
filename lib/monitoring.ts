@@ -1,5 +1,5 @@
 /**
- * Error Tracking and Monitoring for ArtisanLink
+ * Error Tracking and Monitoring for ChapaWorks
  * 
  * Integrates with Sentry for error tracking and provides utilities
  * for capturing errors, performance metrics, and user context.

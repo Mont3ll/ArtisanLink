@@ -1,6 +1,6 @@
-# ArtisanLink User Guide
+# ChapaWorks User Guide
 
-Welcome to ArtisanLink - the marketplace connecting clients with skilled artisans in Kenya.
+Welcome to ChapaWorks - the marketplace connecting clients with skilled artisans in Kenya.
 
 ## Table of Contents
 
@@ -163,7 +163,7 @@ Once you've found an artisan you'd like to work with:
 
 ### Making Payments
 
-ArtisanLink uses M-Pesa for secure payments.
+ChapaWorks uses M-Pesa for secure payments.
 
 #### Paying the Deposit
 
@@ -397,7 +397,7 @@ Track your income and payouts:
 
 #### Commission Structure
 
-ArtisanLink charges a platform commission on completed jobs:
+ChapaWorks charges a platform commission on completed jobs:
 
 - **Promotional Rate (5%)** - Your first 5 completed jobs
 - **Standard Rate (10%)** - All jobs after the first 5
@@ -654,7 +654,7 @@ Toggle dark mode:
 
 ### Mobile Experience
 
-ArtisanLink works on all devices:
+ChapaWorks works on all devices:
 
 - **Desktop** - Full experience
 - **Tablet** - Optimized layout
@@ -666,7 +666,7 @@ ArtisanLink works on all devices:
 
 ### General
 
-**Q: Is ArtisanLink free to use?**
+**Q: Is ChapaWorks free to use?**
 
 A: Yes! Creating an account and browsing artisans is free for clients. Artisans have a free tier with basic features and optional premium subscriptions.
 
@@ -784,4 +784,4 @@ For urgent issues, use in-app support chat during business hours.
 
 ## Updates & Changelog
 
-We regularly update ArtisanLink with new features and improvements. Check the **"What's New"** section in your dashboard for recent updates.
+We regularly update ChapaWorks with new features and improvements. Check the **"What's New"** section in your dashboard for recent updates.

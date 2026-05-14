@@ -67,7 +67,7 @@ const faqCategories = [
     icon: Users,
     faqs: [
       {
-        question: "What types of artisans are on ArtisanLink?",
+        question: "What types of artisans are on ChapaWorks?",
         answer:
           "We have a wide range of skilled artisans including electricians, plumbers, carpenters, painters, masons, welders, mechanics, tailors, furniture makers, and many more. You can filter by profession to find exactly what you need.",
       },
@@ -315,7 +315,7 @@ export default function ClientHelpPage() {
               <div>
                 <h3 className="font-semibold">How It Works</h3>
                 <p className="text-sm text-muted-foreground">
-                  Learn the basics of ArtisanLink
+                  Learn the basics of ChapaWorks
                 </p>
               </div>
             </div>
@@ -458,10 +458,10 @@ export default function ClientHelpPage() {
                 <div>
                   <p className="text-sm font-medium">Email</p>
                   <a
-                    href="mailto:support@artisanlink.co.ke"
+                    href="mailto:support@chapaworks.co.ke"
                     className="text-sm text-primary hover:underline"
                   >
-                    support@artisanlink.co.ke
+                    support@chapaworks.co.ke
                   </a>
                 </div>
               </div>

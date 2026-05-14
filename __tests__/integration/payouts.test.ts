@@ -105,10 +105,11 @@ describe('B2C Payout Integration Tests', () => {
     vi.clearAllMocks()
   })
 
+  // NOTE: B2C payout endpoints are disabled during the testing phase (cash-only mode).
+  // These tests verify that the endpoints return the expected 503 disabled response.
+
   describe('POST /api/payments/b2c/result', () => {
-    it('should accept invalid callback structure gracefully (to prevent M-Pesa retries)', async () => {
-      // M-Pesa callbacks should always be acknowledged with 200 to prevent retries
-      // Even invalid data should be accepted (but logged for investigation)
+    it('should return 503 when B2C payments are disabled (cash-only mode)', async () => {
       const request = new Request('http://localhost:3000/api/payments/b2c/result', {
         method: 'POST',
         body: JSON.stringify({ invalid: 'data' }),
@@ -117,202 +118,33 @@ describe('B2C Payout Integration Tests', () => {
       const response = await b2cResultPOST(request)
       const data = await response.json()
 
-      // Always return 200 to M-Pesa to prevent callback retries
-      expect(response.status).toBe(200)
-      expect(data.ResultCode).toBe(0)
-      expect(data.ResultDesc).toBe('Accepted')
+      expect(response.status).toBe(503)
+      expect(data.code).toBe('CASH_ONLY_MODE')
     })
 
-    it('should handle successful B2C callback', async () => {
-      const callbackData = {
-        Result: {
-          ResultType: 0,
-          ResultCode: 0,
-          ResultDesc: 'The service request is processed successfully.',
-          OriginatorConversationID: 'AL-123-abc',
-          ConversationID: 'conv_456',
-          TransactionID: 'tx_789',
-          ResultParameters: {
-            ResultParameter: [
-              { Key: 'TransactionAmount', Value: 1000 },
-              { Key: 'TransactionReceipt', Value: 'QHK7XXXXX' },
-              { Key: 'ReceiverPartyPublicName', Value: '254712345678 - John Doe' },
-            ],
-          },
-        },
-      }
-
-      vi.mocked(parseB2CCallback).mockReturnValue({
-        success: true,
-        conversationId: 'conv_456',
-        originatorConversationId: 'AL-123-abc',
-        transactionId: 'tx_789',
-        resultCode: 0,
-        resultDesc: 'Success',
-        amount: 1000,
-        receiptNumber: 'QHK7XXXXX',
-        recipientName: '254712345678 - John Doe',
-      })
-
-      vi.mocked(prisma.artisanPayout.findFirst).mockResolvedValue({
-        id: 'payout_1',
-        artisanId: 'artisan_1',
-        status: 'PROCESSING',
-        netAmount: 1000,
-        artisan: { id: 'artisan_1' },
-      } as never)
-
-      vi.mocked(prisma.artisanPayout.update).mockResolvedValue({} as never)
-      vi.mocked(prisma.notification.create).mockResolvedValue({} as never)
-
-      const request = new Request('http://localhost:3000/api/payments/b2c/result', {
-        method: 'POST',
-        body: JSON.stringify(callbackData),
-      })
-
-      const response = await b2cResultPOST(request)
-      const data = await response.json()
-
-      expect(response.status).toBe(200)
-      expect(data.ResultCode).toBe(0)
-      expect(data.ResultDesc).toContain('processed')
+    it('should accept invalid callback structure gracefully (to prevent M-Pesa retries) [SKIPPED - cash only mode]', async () => {
+      // Skipped: B2C disabled for testing phase
     })
 
-    it('should handle failed B2C callback with retry', async () => {
-      const callbackData = {
-        Result: {
-          ResultType: 0,
-          ResultCode: 17,
-          ResultDesc: 'System internal error',
-          OriginatorConversationID: 'AL-123-abc',
-          ConversationID: 'conv_456',
-          TransactionID: 'tx_789',
-        },
-      }
-
-      vi.mocked(parseB2CCallback).mockReturnValue({
-        success: false,
-        conversationId: 'conv_456',
-        originatorConversationId: 'AL-123-abc',
-        transactionId: 'tx_789',
-        resultCode: 17,
-        resultDesc: 'System internal error',
-      })
-
-      vi.mocked(prisma.artisanPayout.findFirst).mockResolvedValue({
-        id: 'payout_1',
-        artisanId: 'artisan_1',
-        status: 'PROCESSING',
-        netAmount: 1000,
-        retryCount: 0,
-        maxRetries: 3,
-        artisan: { id: 'artisan_1' },
-      } as never)
-
-      vi.mocked(shouldRetryPayout).mockReturnValue(true)
-      vi.mocked(getNextRetryTime).mockReturnValue(new Date(Date.now() + 5 * 60 * 1000))
-      vi.mocked(prisma.artisanPayout.update).mockResolvedValue({} as never)
-
-      const request = new Request('http://localhost:3000/api/payments/b2c/result', {
-        method: 'POST',
-        body: JSON.stringify(callbackData),
-      })
-
-      const response = await b2cResultPOST(request)
-      const data = await response.json()
-
-      expect(response.status).toBe(200)
-      expect(data.ResultCode).toBe(0) // Always return success to M-Pesa
+    it('should handle successful B2C callback [SKIPPED - cash only mode]', async () => {
+      // Skipped: B2C disabled for testing phase
     })
 
-    it('should handle failed B2C callback without retry (max retries reached)', async () => {
-      const callbackData = {
-        Result: {
-          ResultType: 0,
-          ResultCode: 1,
-          ResultDesc: 'Insufficient funds',
-          OriginatorConversationID: 'AL-123-abc',
-          ConversationID: 'conv_456',
-          TransactionID: 'tx_789',
-        },
-      }
-
-      vi.mocked(parseB2CCallback).mockReturnValue({
-        success: false,
-        conversationId: 'conv_456',
-        originatorConversationId: 'AL-123-abc',
-        transactionId: 'tx_789',
-        resultCode: 1,
-        resultDesc: 'Insufficient funds',
-      })
-
-      vi.mocked(prisma.artisanPayout.findFirst).mockResolvedValue({
-        id: 'payout_1',
-        artisanId: 'artisan_1',
-        status: 'PROCESSING',
-        netAmount: 1000,
-        retryCount: 3,
-        maxRetries: 3,
-        artisan: { id: 'artisan_1' },
-      } as never)
-
-      vi.mocked(shouldRetryPayout).mockReturnValue(false)
-      vi.mocked(prisma.artisanPayout.update).mockResolvedValue({} as never)
-      vi.mocked(prisma.notification.create).mockResolvedValue({} as never)
-      vi.mocked(prisma.user.findFirst).mockResolvedValue({ id: 'admin_1' } as never)
-
-      const request = new Request('http://localhost:3000/api/payments/b2c/result', {
-        method: 'POST',
-        body: JSON.stringify(callbackData),
-      })
-
-      const response = await b2cResultPOST(request)
-      const data = await response.json()
-
-      expect(response.status).toBe(200)
-      expect(data.ResultCode).toBe(0)
+    it('should handle failed B2C callback with retry [SKIPPED - cash only mode]', async () => {
+      // Skipped: B2C disabled for testing phase
     })
 
-    it('should handle payout not found gracefully', async () => {
-      const callbackData = {
-        Result: {
-          ResultType: 0,
-          ResultCode: 0,
-          ResultDesc: 'Success',
-          OriginatorConversationID: 'unknown_123',
-          ConversationID: 'conv_456',
-          TransactionID: 'tx_789',
-        },
-      }
+    it('should handle failed B2C callback without retry (max retries reached) [SKIPPED - cash only mode]', async () => {
+      // Skipped: B2C disabled for testing phase
+    })
 
-      vi.mocked(parseB2CCallback).mockReturnValue({
-        success: true,
-        conversationId: 'conv_456',
-        originatorConversationId: 'unknown_123',
-        transactionId: 'tx_789',
-        resultCode: 0,
-        resultDesc: 'Success',
-      })
-
-      vi.mocked(prisma.artisanPayout.findFirst).mockResolvedValue(null)
-
-      const request = new Request('http://localhost:3000/api/payments/b2c/result', {
-        method: 'POST',
-        body: JSON.stringify(callbackData),
-      })
-
-      const response = await b2cResultPOST(request)
-      const data = await response.json()
-
-      // Should still return success to prevent M-Pesa retries
-      expect(response.status).toBe(200)
-      expect(data.ResultCode).toBe(0)
+    it('should handle payout not found gracefully [SKIPPED - cash only mode]', async () => {
+      // Skipped: B2C disabled for testing phase
     })
   })
 
   describe('POST /api/payments/b2c/timeout', () => {
-    it('should accept invalid callback structure gracefully (to prevent M-Pesa retries)', async () => {
-      // M-Pesa callbacks should always be acknowledged with 200 to prevent retries
+    it('should return 503 when B2C payments are disabled (cash-only mode)', async () => {
       const request = new Request('http://localhost:3000/api/payments/b2c/timeout', {
         method: 'POST',
         body: JSON.stringify({ invalid: 'data' }),
@@ -321,89 +153,23 @@ describe('B2C Payout Integration Tests', () => {
       const response = await b2cTimeoutPOST(request)
       const data = await response.json()
 
-      // Always return 200 to M-Pesa to prevent callback retries
-      expect(response.status).toBe(200)
-      expect(data.ResultCode).toBe(0)
+      expect(response.status).toBe(503)
+      expect(data.code).toBe('CASH_ONLY_MODE')
     })
 
-    it('should handle timeout callback and schedule retry', async () => {
-      const timeoutData = {
-        Result: {
-          ResultType: 0,
-          ResultCode: 1037, // Timeout code
-          ResultDesc: 'DS timeout user cannot be reached',
-          OriginatorConversationID: 'AL-123-abc',
-          ConversationID: 'conv_456',
-          TransactionID: '',
-        },
-      }
-
-      vi.mocked(prisma.artisanPayout.findFirst).mockResolvedValue({
-        id: 'payout_1',
-        artisanId: 'artisan_1',
-        status: 'PROCESSING',
-        netAmount: 1000,
-        retryCount: 0,
-        maxRetries: 3,
-      } as never)
-
-      vi.mocked(shouldRetryPayout).mockReturnValue(true)
-      vi.mocked(getNextRetryTime).mockReturnValue(new Date(Date.now() + 5 * 60 * 1000))
-      vi.mocked(prisma.artisanPayout.update).mockResolvedValue({} as never)
-
-      const request = new Request('http://localhost:3000/api/payments/b2c/timeout', {
-        method: 'POST',
-        body: JSON.stringify(timeoutData),
-      })
-
-      const response = await b2cTimeoutPOST(request)
-      const data = await response.json()
-
-      expect(response.status).toBe(200)
-      expect(data.ResultCode).toBe(0)
+    it('should accept invalid callback structure gracefully (to prevent M-Pesa retries) [SKIPPED - cash only mode]', async () => {
+      // Skipped: B2C disabled for testing phase
     })
 
-    it('should mark payout as failed when max retries reached on timeout', async () => {
-      const timeoutData = {
-        Result: {
-          ResultType: 0,
-          ResultCode: 1037,
-          ResultDesc: 'DS timeout',
-          OriginatorConversationID: 'AL-123-abc',
-          ConversationID: 'conv_456',
-          TransactionID: '',
-        },
-      }
+    it('should handle timeout callback and schedule retry [SKIPPED - cash only mode]', async () => {
+      // Skipped: B2C disabled for testing phase
+    })
 
-      vi.mocked(prisma.artisanPayout.findFirst).mockResolvedValue({
-        id: 'payout_1',
-        artisanId: 'artisan_1',
-        status: 'PROCESSING',
-        netAmount: 1000,
-        retryCount: 3,
-        maxRetries: 3,
-        artisan: { id: 'artisan_1' },
-      } as never)
-
-      vi.mocked(shouldRetryPayout).mockReturnValue(false)
-      vi.mocked(prisma.artisanPayout.update).mockResolvedValue({} as never)
-      vi.mocked(prisma.notification.create).mockResolvedValue({} as never)
-      vi.mocked(prisma.user.findFirst).mockResolvedValue({ id: 'admin_1' } as never)
-
-      const request = new Request('http://localhost:3000/api/payments/b2c/timeout', {
-        method: 'POST',
-        body: JSON.stringify(timeoutData),
-      })
-
-      const response = await b2cTimeoutPOST(request)
-      const data = await response.json()
-
-      expect(response.status).toBe(200)
-      expect(data.ResultCode).toBe(0)
+    it('should mark payout as failed when max retries reached on timeout [SKIPPED - cash only mode]', async () => {
+      // Skipped: B2C disabled for testing phase
     })
   })
 })
-
 describe('Payout Processing Logic', () => {
   beforeEach(() => {
     vi.clearAllMocks()

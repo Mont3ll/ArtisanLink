@@ -28,10 +28,10 @@ export default function SignInPage() {
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                       <Hammer className="w-6 h-6 text-emerald-700" />
-                      Welcome back to ArtisanLink
+                      Welcome back to ChapaWorks
                     </CardTitle>
                     <CardDescription>
-                      Sign in to your ArtisanLink account
+                      Sign in to your ChapaWorks account
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="grid gap-y-4">

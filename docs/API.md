@@ -1,6 +1,6 @@
-# ArtisanLink API Documentation
+# ChapaWorks API Documentation
 
-This document provides comprehensive documentation for all ArtisanLink API endpoints.
+This document provides comprehensive documentation for all ChapaWorks API endpoints.
 
 ## Base URL
 
@@ -9,7 +9,7 @@ This document provides comprehensive documentation for all ArtisanLink API endpo
 
 ## Authentication
 
-ArtisanLink uses [Clerk](https://clerk.com) for authentication. Most endpoints require authentication via a valid Clerk session.
+ChapaWorks uses [Clerk](https://clerk.com) for authentication. Most endpoints require authentication via a valid Clerk session.
 
 ### Authentication Headers
 
@@ -1274,7 +1274,7 @@ Cached endpoints include:
 
 ## Webhooks
 
-ArtisanLink supports webhooks for:
+ChapaWorks supports webhooks for:
 - M-Pesa payment callbacks
 - Clerk user events (via Clerk dashboard)
 

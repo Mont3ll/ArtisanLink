@@ -1,6 +1,6 @@
-# ArtisanLink - System Architecture
+# ChapaWorks - System Architecture
 
-This document describes the technical architecture of the ArtisanLink platform using Mermaid diagrams.
+This document describes the technical architecture of the ChapaWorks platform using Mermaid diagrams.
 
 ## Table of Contents
 

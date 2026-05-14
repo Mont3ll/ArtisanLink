@@ -17,7 +17,7 @@ const items = [
   {
     name: "Peter Otieno",
     role: "Startup Founder",
-    quote: "ArtisanLink made it easy to verify and hire a contractor for our office fit-out. The M-Pesa integration was seamless and professional.",
+    quote: "ChapaWorks made it easy to verify and hire a contractor for our office fit-out. The M-Pesa integration was seamless and professional.",
     avatar: "/file.svg",
     rating: 5,
     location: "Mombasa"
@@ -47,7 +47,7 @@ export default function Testimonials() {
           What people <span className="text-gradient-primary">say</span>
         </h2>
         <p className="text-lg text-slate-600 dark:text-slate-400 max-w-2xl mx-auto">
-          Discover how ArtisanLink has helped thousands of clients find and hire the perfect artisans for their projects.
+          Discover how ChapaWorks has helped thousands of clients find and hire the perfect artisans for their projects.
         </p>
       </div>
 

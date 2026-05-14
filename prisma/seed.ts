@@ -1,5 +1,5 @@
 /**
- * ArtisanLink Database Seed Script
+ * ChapaWorks Database Seed Script
  * 
  * This is the main entry point for seeding the database.
  * The seed logic is organized into modular files in the prisma/seed/ directory.

@@ -706,7 +706,7 @@ export default function Home() {
 
   const testimonialHighlight = {
     quote:
-      "I needed a plumber urgently. Browsed ArtisanLink, found James with great reviews in my area, messaged him, and he was at my door in 2 hours. The whole experience was seamless.",
+      "I needed a plumber urgently. Browsed ChapaWorks, found James with great reviews in my area, messaged him, and he was at my door in 2 hours. The whole experience was seamless.",
     author: "David Kimani",
     role: "Homeowner",
     location: "Lavington, Nairobi",
@@ -726,7 +726,7 @@ export default function Home() {
             href="/"
             className="text-2xl font-serif font-bold text-emerald-800"
           >
-            ArtisanLink
+            ChapaWorks
           </Link>
 
           <div className="hidden md:flex items-center gap-8">
@@ -1147,7 +1147,7 @@ export default function Home() {
               Why Choose Us
             </p>
             <h2 className="text-3xl md:text-4xl font-serif font-bold text-stone-800 mb-4">
-              The ArtisanLink advantage
+              The ChapaWorks advantage
             </h2>
             <p className="text-stone-600">
               See how we compare to finding artisans the old way
@@ -1158,7 +1158,7 @@ export default function Home() {
             <div className="comparison-row grid grid-cols-3 bg-stone-50 border-b border-stone-200">
               <div className="p-4 font-medium">Feature</div>
               <div className="p-4 font-medium text-center bg-emerald-50 text-emerald-800">
-                ArtisanLink
+                ChapaWorks
               </div>
               <div className="p-4 font-medium text-center text-stone-500">
                 Word of Mouth
@@ -1363,7 +1363,7 @@ export default function Home() {
                 href="/"
                 className="text-2xl font-serif font-bold text-white mb-4 inline-block"
               >
-                ArtisanLink
+                ChapaWorks
               </Link>
               <p className="text-sm leading-relaxed max-w-sm">
                 Kenya&apos;s trusted marketplace connecting clients with
@@ -1433,7 +1433,7 @@ export default function Home() {
           </div>
           <div className="pt-8 border-t border-stone-800 flex flex-col md:flex-row items-center justify-between gap-4">
             <p className="text-sm">
-              &copy; 2025 ArtisanLink. All rights reserved.
+              &copy; 2025 ChapaWorks. All rights reserved.
             </p>
             <div className="flex items-center gap-6 text-sm">
               <a href="#" className="hover:text-white transition-colors">

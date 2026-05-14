@@ -129,7 +129,7 @@ export async function GET(request: Request) {
 
     // Generate filename
     const timestamp = new Date().toISOString().split('T')[0]
-    const filename = `artisanlink-payments-${timestamp}.csv`
+    const filename = `chapaworks-payments-${timestamp}.csv`
 
     logger.info('Payment export generated', {
       userId: user.id,

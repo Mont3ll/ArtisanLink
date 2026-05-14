@@ -1,4 +1,4 @@
-# ArtisanLink Development Audit & Task Tracker
+# ChapaWorks Development Audit & Task Tracker
 
 > **Last Updated**: January 23, 2026
 > **Status**: Active Development (Phase 11 Complete)

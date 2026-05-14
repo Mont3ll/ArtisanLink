@@ -65,6 +65,7 @@ enum PaymentMethod {
   MPESA
   CARD
   BANK_TRANSFER
+  CASH // Cash payment (used during testing phase)
 }
 
 // Core User Model
@@ -931,4 +932,41 @@ model VerificationHistory {
   @@index([profileId])
   @@index([status])
   @@map("verification_history")
+}
+
+// Artisan Invite Model (admin sends invites to join as artisans)
+model ArtisanInvite {
+  id        String @id @default(cuid())
+  token     String @unique @default(cuid())
+
+  // Recipient info
+  email     String
+  name      String?
+  phone     String?
+
+  // Invite metadata
+  message   String? // Personal note from admin
+  invitedBy String  // Admin user ID
+  
+  // Status tracking
+  status    InviteStatus @default(PENDING)
+  usedAt    DateTime?
+  usedByUserId String? // User ID if invite was accepted
+
+  // Timestamps
+  createdAt DateTime @default(now())
+  expiresAt DateTime // Invite link expires
+
+  @@index([email])
+  @@index([token])
+  @@index([status])
+  @@index([invitedBy])
+  @@map("artisan_invites")
+}
+
+enum InviteStatus {
+  PENDING  // Invite sent, not used
+  ACCEPTED // Invite was used to sign up
+  EXPIRED  // Invite link expired
+  REVOKED  // Admin revoked the invite
 }

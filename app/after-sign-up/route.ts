@@ -3,8 +3,8 @@ import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
-const ROLE_COOKIE_NAME = "artisanlink_signup_role";
-const VERIFIED_ROLE_COOKIE = "artisanlink_verified_role";
+const ROLE_COOKIE_NAME = "chapaworks_signup_role";
+const VERIFIED_ROLE_COOKIE = "chapaworks_verified_role";
 const ALLOWED_ROLES = ["client", "artisan"] as const;
 type AllowedRole = (typeof ALLOWED_ROLES)[number];
 

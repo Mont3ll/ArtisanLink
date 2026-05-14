@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 
 /**
- * Homepage E2E Tests for ArtisanLink
+ * Homepage E2E Tests for ChapaWorks
  * Tests the landing page core functionality and content
  */
 
@@ -11,8 +11,8 @@ test.describe('Homepage', () => {
   });
 
   test.describe('Header', () => {
-    test('displays the ArtisanLink brand logo', async ({ page }) => {
-      const logo = page.getByRole('link', { name: /artisanlink/i });
+    test('displays the ChapaWorks brand logo', async ({ page }) => {
+      const logo = page.getByRole('link', { name: /chapaworks/i });
       await expect(logo).toBeVisible();
     });
 
@@ -127,7 +127,7 @@ test.describe('Homepage', () => {
   });
 
   test.describe('Footer', () => {
-    test('footer contains ArtisanLink branding', async ({ page }) => {
+    test('footer contains ChapaWorks branding', async ({ page }) => {
       const footer = page.locator('footer');
       await expect(footer).toBeVisible();
     });
@@ -196,7 +196,7 @@ test.describe('Navigation', () => {
     await page.waitForTimeout(500);
 
     // Click logo to return to top
-    await page.getByRole('link', { name: /artisanlink/i }).click();
+    await page.getByRole('link', { name: /chapaworks/i }).click();
     
     // Should be at the top of the page
     await expect(page).toHaveURL('/');

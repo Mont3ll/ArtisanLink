@@ -51,7 +51,7 @@ interface CompletionItem {
   weight: number // For percentage calculation
 }
 
-const STORAGE_KEY = 'artisanlink_profile_completion_dismissed'
+const STORAGE_KEY = 'chapaworks_profile_completion_dismissed'
 
 export function ProfileCompletion({ profile }: ProfileCompletionProps) {
   const [isDismissed, setIsDismissed] = useState(false)

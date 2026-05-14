@@ -1,4 +1,4 @@
-# ArtisanLink
+# ChapaWorks
 
 A digital marketplace connecting clients with skilled artisans in Kenya.
 
@@ -26,8 +26,8 @@ A digital marketplace connecting clients with skilled artisans in Kenya.
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/Mont3ll/ArtisanLink.git
-   cd ArtisanLink
+   git clone https://github.com/Mont3ll/ChapaWorks.git
+   cd ChapaWorks
    git checkout updated-version
    ```
 

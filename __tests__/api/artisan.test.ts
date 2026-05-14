@@ -16,6 +16,7 @@
  * - DELETE /api/artisan/specializations/[id] - Delete specialization
  */
 import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { NextRequest } from 'next/server'
 
 // Mock Clerk auth
 vi.mock('@clerk/nextjs/server', () => ({
@@ -52,6 +53,10 @@ vi.mock('@/lib/prisma', () => ({
       update: vi.fn(),
       delete: vi.fn(),
     },
+    review: {
+      count: vi.fn(),
+      findMany: vi.fn(),
+    },
   },
 }))
 
@@ -79,7 +84,8 @@ describe('Artisan Stats API', () => {
     it('should return 401 when not authenticated', async () => {
       vi.mocked(auth).mockResolvedValue({ userId: null } as never)
 
-      const response = await artisanStatsGET()
+      const request = new NextRequest('http://localhost/api/artisan/stats')
+      const response = await artisanStatsGET(request)
       const data = await response.json()
 
       expect(response.status).toBe(401)
@@ -95,7 +101,8 @@ describe('Artisan Stats API', () => {
         artisanConversations: [],
       } as never)
 
-      const response = await artisanStatsGET()
+      const request = new NextRequest('http://localhost/api/artisan/stats')
+      const response = await artisanStatsGET(request)
       const data = await response.json()
 
       expect(response.status).toBe(403)
@@ -143,14 +150,17 @@ describe('Artisan Stats API', () => {
       vi.mocked(prisma.conversation.count)
         .mockResolvedValueOnce(5) // total conversations
         .mockResolvedValueOnce(2) // new this month
+      vi.mocked(prisma.review.count).mockResolvedValue(5)
+      vi.mocked(prisma.review.findMany).mockResolvedValue([] as never)
 
-      const response = await artisanStatsGET()
+      const request = new NextRequest('http://localhost/api/artisan/stats')
+      const response = await artisanStatsGET(request)
       const data = await response.json()
 
       expect(response.status).toBe(200)
       expect(data.stats).toBeDefined()
       expect(data.stats.isVerified).toBe(true)
-      expect(data.stats.totalReviews).toBe(10)
+      expect(data.stats.totalReviews).toBe(5) // range-filtered review count from prisma.review.count mock
       expect(data.stats.averageRating).toBe(4.5)
       expect(data.stats.unreadMessages).toBe(3)
       expect(data.recentActivity).toBeDefined()

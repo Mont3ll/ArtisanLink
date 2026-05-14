@@ -1,6 +1,6 @@
-# ArtisanLink Deployment Guide
+# ChapaWorks Deployment Guide
 
-This guide covers deploying ArtisanLink to production environments.
+This guide covers deploying ChapaWorks to production environments.
 
 ## Prerequisites
 

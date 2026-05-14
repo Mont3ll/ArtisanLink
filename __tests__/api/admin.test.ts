@@ -53,6 +53,13 @@ vi.mock('@/lib/prisma', () => ({
       create: vi.fn(),
       findMany: vi.fn(),
     },
+    platformEarning: {
+      findMany: vi.fn(),
+    },
+    job: {
+      count: vi.fn(),
+      aggregate: vi.fn(),
+    },
     $transaction: vi.fn(),
   },
 }))
@@ -81,7 +88,7 @@ describe('Admin API Routes', () => {
   const mockAdmin = {
     id: 'admin-1',
     clerkId: 'clerk-admin-1',
-    email: 'admin@artisanlink.ke',
+    email: 'admin@chapaworks.ke',
     firstName: 'Admin',
     lastName: 'User',
     role: 'ADMIN',
@@ -276,7 +283,7 @@ describe('Admin API Routes', () => {
         body: JSON.stringify({
           category: 'general',
           settings: {
-            siteName: 'ArtisanLink',
+            siteName: 'ChapaWorks',
             siteDescription: 'Test description',
             maintenanceMode: false,
             registrationEnabled: true,
@@ -880,6 +887,10 @@ describe('Admin API Routes', () => {
       vi.mocked(prisma.user.count).mockResolvedValue(100)
       vi.mocked(prisma.portfolioItem.count).mockResolvedValue(200)
       vi.mocked(prisma.subscription.count).mockResolvedValue(30)
+      // Additional mocks required by analytics/overview route
+      vi.mocked(prisma.platformEarning.findMany).mockResolvedValue([] as never)
+      vi.mocked(prisma.job.count).mockResolvedValueOnce(10).mockResolvedValueOnce(7)
+      vi.mocked(prisma.job.aggregate).mockResolvedValue({ _avg: { agreedPrice: 5000 } } as never)
 
       const response = await getAnalyticsOverview()
       const data = await response.json()

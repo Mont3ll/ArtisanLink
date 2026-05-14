@@ -2,7 +2,7 @@ import { auth, clerkClient } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
-const VERIFIED_ROLE_COOKIE = "artisanlink_verified_role";
+const VERIFIED_ROLE_COOKIE = "chapaworks_verified_role";
 
 /**
  * After Sign-In route handler

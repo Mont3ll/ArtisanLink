@@ -29,8 +29,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Card,
   CardContent,
@@ -58,7 +57,6 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
@@ -68,7 +66,6 @@ import {
   useDeclineQuote,
   useCancelJob,
   useCurrentUser,
-  useJobPaymentFlow,
   type ClientJobDetails,
 } from "@/lib/hooks";
 import {
@@ -95,170 +92,6 @@ const statusConfig: Record<string, { label: string; variant: "default" | "second
   DISPUTED: { label: "Disputed", variant: "destructive", icon: <AlertCircle className="h-4 w-4" />, color: "text-red-500" },
 };
 
-// Payment Dialog Component
-function PaymentDialog({
-  open,
-  onOpenChange,
-  paymentType,
-  amount,
-  jobId,
-  defaultPhone,
-}: {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  paymentType: "DEPOSIT" | "FINAL";
-  amount: number;
-  jobId: string;
-  defaultPhone: string | null;
-}) {
-  const [phoneNumber, setPhoneNumber] = useState(defaultPhone || "");
-  const {
-    initiatePayment,
-    isInitiating,
-    paymentStatus,
-    isPolling,
-    isComplete,
-    isFailed,
-    reset,
-  } = useJobPaymentFlow();
-
-  // Reset state when dialog opens
-  useEffect(() => {
-    if (open) {
-      setPhoneNumber(defaultPhone || "");
-      reset();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open, defaultPhone]);
-
-  // Handle successful payment
-  useEffect(() => {
-    if (isComplete) {
-      toast.success("Payment Successful", {
-        description: `Your ${paymentType.toLowerCase()} payment has been received.`,
-      });
-      onOpenChange(false);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isComplete]);
-
-  // Handle failed payment
-  useEffect(() => {
-    if (isFailed) {
-      toast.error("Payment Failed", {
-        description: paymentStatus?.error || "The payment could not be completed. Please try again.",
-      });
-    }
-  }, [isFailed, paymentStatus?.error]);
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!phoneNumber.trim()) {
-      toast.error("Phone number required", {
-        description: "Please enter your M-Pesa phone number.",
-      });
-      return;
-    }
-
-    try {
-      await initiatePayment({
-        jobId,
-        paymentType,
-        phoneNumber: phoneNumber.trim(),
-      });
-      toast.info("Payment Initiated", {
-        description: "Please check your phone for the M-Pesa prompt.",
-      });
-    } catch (err) {
-      toast.error("Payment Error", {
-        description: err instanceof Error ? err.message : "Failed to initiate payment",
-      });
-    }
-  };
-
-  const formatCurrency = (amt: number) => `KES ${amt.toLocaleString()}`;
-
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <CreditCard className="h-5 w-5" />
-            {paymentType === "DEPOSIT" ? "Pay Deposit" : "Final Payment"}
-          </DialogTitle>
-          <DialogDescription>
-            Pay via M-Pesa. You will receive a prompt on your phone.
-          </DialogDescription>
-        </DialogHeader>
-
-        {isPolling ? (
-          <div className="py-8 text-center">
-            <Loader2 className="h-12 w-12 animate-spin mx-auto text-primary mb-4" />
-            <p className="font-medium">Waiting for M-Pesa confirmation...</p>
-            <p className="text-sm text-muted-foreground mt-2">
-              Please complete the payment on your phone
-            </p>
-            {paymentStatus?.status && (
-              <Badge variant="secondary" className="mt-4">
-                Status: {paymentStatus.status}
-              </Badge>
-            )}
-          </div>
-        ) : (
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="p-4 bg-muted rounded-lg">
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">Amount to pay</span>
-                <span className="text-2xl font-bold">{formatCurrency(amount)}</span>
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="phone">M-Pesa Phone Number</Label>
-              <Input
-                id="phone"
-                type="tel"
-                placeholder="e.g., 0712345678"
-                value={phoneNumber}
-                onChange={(e) => setPhoneNumber(e.target.value)}
-                disabled={isInitiating}
-              />
-              <p className="text-xs text-muted-foreground">
-                Enter the phone number registered with M-Pesa
-              </p>
-            </div>
-
-            <DialogFooter className="gap-2 sm:gap-0">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => onOpenChange(false)}
-                disabled={isInitiating}
-              >
-                Cancel
-              </Button>
-              <Button type="submit" disabled={isInitiating || !phoneNumber.trim()}>
-                {isInitiating ? (
-                  <>
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    Initiating...
-                  </>
-                ) : (
-                  <>
-                    <CreditCard className="h-4 w-4 mr-2" />
-                    Pay {formatCurrency(amount)}
-                  </>
-                )}
-              </Button>
-            </DialogFooter>
-          </form>
-        )}
-      </DialogContent>
-    </Dialog>
-  );
-}
-
 export default function ClientJobDetailsPage() {
   const params = useParams();
   const router = useRouter();
@@ -273,8 +106,6 @@ export default function ClientJobDetailsPage() {
   const [declineNotes, setDeclineNotes] = useState("");
   const [cancelReason, setCancelReason] = useState("");
   const [isDeclineDialogOpen, setIsDeclineDialogOpen] = useState(false);
-  const [isDepositDialogOpen, setIsDepositDialogOpen] = useState(false);
-  const [isFinalPaymentDialogOpen, setIsFinalPaymentDialogOpen] = useState(false);
   const [expandedQuotes, setExpandedQuotes] = useState<Set<string>>(new Set());
 
   const job = data?.job;
@@ -389,27 +220,7 @@ export default function ClientJobDetailsPage() {
 
   return (
     <div className="px-4 lg:px-6 space-y-6">
-      {/* Payment Dialogs */}
-      {job.depositAmount && (
-        <PaymentDialog
-          open={isDepositDialogOpen}
-          onOpenChange={setIsDepositDialogOpen}
-          paymentType="DEPOSIT"
-          amount={job.depositAmount}
-          jobId={jobId}
-          defaultPhone={userPhone}
-        />
-      )}
-      {job.agreedPrice && job.depositAmount && (
-        <PaymentDialog
-          open={isFinalPaymentDialogOpen}
-          onOpenChange={setIsFinalPaymentDialogOpen}
-          paymentType="FINAL"
-          amount={job.agreedPrice - job.depositAmount}
-          jobId={jobId}
-          defaultPhone={userPhone}
-        />
-      )}
+      {/* Cash-only mode: Payment dialogs removed */}
 
       {/* Header */}
       <div className="flex items-start justify-between">
@@ -785,15 +596,15 @@ export default function ClientJobDetailsPage() {
             </Card>
           )}
 
-          {/* Payment Actions */}
+          {/* Payment Info - Cash Only Mode */}
           {job.status === "ACCEPTED" && !job.depositPaid && job.depositAmount && (
-            <Card className="border-primary">
+            <Card className="border-amber-200 bg-amber-50 dark:bg-amber-950/20 dark:border-amber-800">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
+                <CardTitle className="flex items-center gap-2 text-amber-800 dark:text-amber-200">
                   <DollarSign className="h-5 w-5" />
-                  Pay Deposit
+                  Deposit Required
                 </CardTitle>
-                <CardDescription>
+                <CardDescription className="text-amber-700 dark:text-amber-300">
                   Pay the deposit to start the job
                 </CardDescription>
               </CardHeader>
@@ -802,26 +613,31 @@ export default function ClientJobDetailsPage() {
                   <span>Deposit Amount ({job.depositPercent}%)</span>
                   <span className="text-xl font-bold">{formatCurrency(job.depositAmount)}</span>
                 </div>
-                <Button 
-                  className="w-full" 
-                  size="lg"
-                  onClick={() => setIsDepositDialogOpen(true)}
-                >
-                  <CreditCard className="h-4 w-4 mr-2" />
-                  Pay with M-Pesa
-                </Button>
+                <div className="rounded-lg bg-amber-100 dark:bg-amber-900/40 p-4 border border-amber-200 dark:border-amber-700">
+                  <div className="flex items-start gap-3">
+                    <Info className="h-5 w-5 text-amber-600 dark:text-amber-400 mt-0.5 flex-shrink-0" />
+                    <div>
+                      <p className="font-semibold text-amber-800 dark:text-amber-200 text-sm">Cash Payment Only</p>
+                      <p className="text-amber-700 dark:text-amber-300 text-sm mt-1">
+                        During this testing phase, all payments are made directly in cash to the artisan. 
+                        Please coordinate with your artisan to arrange payment of{" "}
+                        <strong>{formatCurrency(job.depositAmount)}</strong> before work begins.
+                      </p>
+                    </div>
+                  </div>
+                </div>
               </CardContent>
             </Card>
           )}
 
           {job.status === "COMPLETED" && !job.finalPaid && job.agreedPrice && job.depositAmount && (
-            <Card className="border-primary">
+            <Card className="border-amber-200 bg-amber-50 dark:bg-amber-950/20 dark:border-amber-800">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
+                <CardTitle className="flex items-center gap-2 text-amber-800 dark:text-amber-200">
                   <DollarSign className="h-5 w-5" />
                   Final Payment
                 </CardTitle>
-                <CardDescription>
+                <CardDescription className="text-amber-700 dark:text-amber-300">
                   Complete the final payment for this job
                 </CardDescription>
               </CardHeader>
@@ -830,14 +646,18 @@ export default function ClientJobDetailsPage() {
                   <span>Remaining Amount</span>
                   <span className="text-xl font-bold">{formatCurrency(job.agreedPrice - job.depositAmount)}</span>
                 </div>
-                <Button 
-                  className="w-full" 
-                  size="lg"
-                  onClick={() => setIsFinalPaymentDialogOpen(true)}
-                >
-                  <CreditCard className="h-4 w-4 mr-2" />
-                  Pay with M-Pesa
-                </Button>
+                <div className="rounded-lg bg-amber-100 dark:bg-amber-900/40 p-4 border border-amber-200 dark:border-amber-700">
+                  <div className="flex items-start gap-3">
+                    <Info className="h-5 w-5 text-amber-600 dark:text-amber-400 mt-0.5 flex-shrink-0" />
+                    <div>
+                      <p className="font-semibold text-amber-800 dark:text-amber-200 text-sm">Cash Payment Only</p>
+                      <p className="text-amber-700 dark:text-amber-300 text-sm mt-1">
+                        During this testing phase, all payments are made directly in cash to the artisan.
+                        Please pay the remaining <strong>{formatCurrency(job.agreedPrice - job.depositAmount)}</strong> directly to your artisan to complete this job.
+                      </p>
+                    </div>
+                  </div>
+                </div>
               </CardContent>
             </Card>
           )}

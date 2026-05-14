@@ -18,8 +18,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "ArtisanLink - Connect with Verified Local Artisans",
-  description: "Discover skilled local artisans in Kenya. View portfolios, hire with confidence, and support local craftsmanship through our verified platform.",
+  title: "ChapaWorks - Connect with Verified Local Artisans",
+  description: "Discover skilled local artisans in Kenya. View portfolios, hire with confidence, and support local craftsmanship through our verified platform. ChapaWorks.",
 };
 
 export default function RootLayout({

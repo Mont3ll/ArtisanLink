@@ -90,7 +90,7 @@ const faqCategories = [
       {
         question: "How do subscriptions work?",
         answer:
-          "ArtisanLink offers subscription plans that give you enhanced visibility, priority support, and other benefits. Visit the Subscription page to view available plans and their features. Payments are processed securely via M-Pesa.",
+          "ChapaWorks offers subscription plans that give you enhanced visibility, priority support, and other benefits. Visit the Subscription page to view available plans and their features. Payments are processed securely via M-Pesa.",
       },
       {
         question: "How do I receive payments from clients?",
@@ -292,7 +292,7 @@ export default function ArtisanHelpPage() {
               <div>
                 <h3 className="font-semibold">Documentation</h3>
                 <p className="text-sm text-muted-foreground">
-                  Learn how to use ArtisanLink
+                  Learn how to use ChapaWorks
                 </p>
               </div>
             </div>
@@ -435,10 +435,10 @@ export default function ArtisanHelpPage() {
                 <div>
                   <p className="text-sm font-medium">Email</p>
                   <a
-                    href="mailto:support@artisanlink.co.ke"
+                    href="mailto:support@chapaworks.co.ke"
                     className="text-sm text-primary hover:underline"
                   >
-                    support@artisanlink.co.ke
+                    support@chapaworks.co.ke
                   </a>
                 </div>
               </div>

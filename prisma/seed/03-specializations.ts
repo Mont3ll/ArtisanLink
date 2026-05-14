@@ -144,9 +144,9 @@ export async function seedPortfolioItems(
             'A challenging project that turned out beautifully.',
             'One of our favorite projects to date.',
           ])}`,
-          imageUrl: `https://images.artisanlink.co.ke/portfolio/${data.profileId}/${data.itemIndex + 1}.jpg`,
+          imageUrl: `https://images.chapaworks.co.ke/portfolio/${data.profileId}/${data.itemIndex + 1}.jpg`,
           imageUrls: Array.from({ length: randomInt(1, 4) }, (_, j) => 
-            `https://images.artisanlink.co.ke/portfolio/${data.profileId}/${data.itemIndex + 1}_${j + 1}.jpg`
+            `https://images.chapaworks.co.ke/portfolio/${data.profileId}/${data.itemIndex + 1}_${j + 1}.jpg`
           ),
           category,
           tags: [data.profession.name.toLowerCase(), category.toLowerCase(), data.city.toLowerCase(), 'kenya'].filter(Boolean),

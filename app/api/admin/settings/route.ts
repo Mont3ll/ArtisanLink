@@ -73,7 +73,7 @@ export async function GET() {
     // Get platform settings (simulated for now)
     const settings = {
       general: {
-        siteName: 'ArtisanLink',
+        siteName: 'ChapaWorks',
         siteDescription: 'Connect with skilled artisans for your projects',
         maintenanceMode: false,
         registrationEnabled: true

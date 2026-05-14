@@ -1,6 +1,6 @@
-# ArtisanLink System Workflows
+# ChapaWorks System Workflows
 
-This document describes the key workflows and processes in the ArtisanLink platform.
+This document describes the key workflows and processes in the ChapaWorks platform.
 
 ## Table of Contents
 
@@ -283,7 +283,7 @@ REQUESTED → QUOTED → ACCEPTED → DEPOSIT_PAID → IN_PROGRESS → PENDING_F
 
 ### Overview
 
-ArtisanLink uses M-Pesa STK Push for payments. Clients pay the platform, and artisans receive automatic payouts via M-Pesa B2C.
+ChapaWorks uses M-Pesa STK Push for payments. Clients pay the platform, and artisans receive automatic payouts via M-Pesa B2C.
 
 ### Deposit Payment Flow
 

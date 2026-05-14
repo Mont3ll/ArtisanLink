@@ -1,6 +1,6 @@
-# ArtisanLink - System Flowcharts
+# ChapaWorks - System Flowcharts
 
-This document contains detailed flowcharts for key processes in the ArtisanLink platform.
+This document contains detailed flowcharts for key processes in the ChapaWorks platform.
 
 ## Table of Contents
 

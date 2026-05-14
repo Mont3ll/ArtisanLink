@@ -310,7 +310,7 @@ export default function HelpPage() {
                   <Mail className="h-6 w-6 text-emerald-600" />
                   <div>
                     <h4 className="font-medium">Email Support</h4>
-                    <p className="text-sm text-muted-foreground">admin-support@artisanlink.ke</p>
+                    <p className="text-sm text-muted-foreground">admin-support@chapaworks.ke</p>
                     <p className="text-xs text-muted-foreground">Response within 24 hours</p>
                   </div>
                 </div>

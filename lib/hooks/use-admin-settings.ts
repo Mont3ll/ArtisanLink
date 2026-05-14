@@ -100,7 +100,7 @@ export function useSaveAdminSettings() {
 // Default settings for initial state
 export const DEFAULT_SETTINGS: AdminSettings = {
   general: {
-    siteName: 'ArtisanLink',
+    siteName: 'ChapaWorks',
     siteDescription: 'Connecting clients with skilled artisans in Kenya',
     maintenanceMode: false,
     registrationEnabled: true,

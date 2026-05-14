@@ -113,9 +113,9 @@ export async function GET(request: Request, { params }: RouteParams) {
       
       // Company details
       company: {
-        name: 'ArtisanLink Kenya',
+        name: 'ChapaWorks Kenya',
         address: 'Nairobi, Kenya',
-        email: 'support@artisanlink.ke',
+        email: 'support@chapaworks.ke',
         phone: '+254 700 000 000',
       },
       

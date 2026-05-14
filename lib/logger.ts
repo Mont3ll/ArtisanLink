@@ -1,5 +1,5 @@
 /**
- * Structured Logger for ArtisanLink API Routes
+ * Structured Logger for ChapaWorks API Routes
  * 
  * Provides consistent, structured logging across all API routes.
  * In production, this can be extended to send logs to external services

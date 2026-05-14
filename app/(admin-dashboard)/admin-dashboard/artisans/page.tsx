@@ -21,6 +21,7 @@ import {
   AlertCircle,
 } from 'lucide-react'
 import { useAdminArtisans, type AdminArtisan } from '@/lib/hooks'
+import InviteArtisans from '@/components/dashboard/admin/invite-artisans'
 
 export default function ArtisansPage() {
   const [page, setPage] = useState(1)
@@ -223,6 +224,7 @@ export default function ArtisansPage() {
           <TabsTrigger value="verified">Verified ({stats?.verifiedCount ?? 0})</TabsTrigger>
           <TabsTrigger value="pending">Pending ({stats?.pendingCount ?? 0})</TabsTrigger>
           <TabsTrigger value="subscribed">Subscribed ({stats?.activeSubscriptions ?? 0})</TabsTrigger>
+          <TabsTrigger value="invites">Invites</TabsTrigger>
         </TabsList>
 
         <TabsContent value="all" className="space-y-6">
@@ -323,6 +325,10 @@ export default function ArtisansPage() {
               )}
             </CardContent>
           </Card>
+        </TabsContent>
+
+        <TabsContent value="invites" className="space-y-6">
+          <InviteArtisans />
         </TabsContent>
       </Tabs>
 

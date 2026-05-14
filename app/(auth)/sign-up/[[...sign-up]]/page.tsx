@@ -1,7 +1,8 @@
 'use client';
 import * as Clerk from '@clerk/elements/common';
 import * as SignUp from '@clerk/elements/sign-up';
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -14,17 +15,43 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
-import { Loader2, Hammer, Users } from 'lucide-react';
+import { Loader2, Hammer, Users, Mail } from 'lucide-react';
 import { SiGoogle } from 'react-icons/si';
 
-const ROLE_COOKIE_NAME = 'artisanlink_signup_role';
+const ROLE_COOKIE_NAME = 'chapaworks_signup_role';
 
 export default function SignUpPage() {
-  const [role, setRole] = useState('client');
+  const searchParams = useSearchParams();
+  const inviteToken = searchParams.get('invite');
+  const inviteRole = searchParams.get('role'); // pre-set role from invite link
+  const [role, setRole] = useState(inviteRole === 'artisan' ? 'artisan' : 'client');
+  const [inviteInfo, setInviteInfo] = useState<{ email?: string; name?: string; message?: string } | null>(null);
 
   const setRoleCookie = useCallback((selectedRole: string) => {
     document.cookie = `${ROLE_COOKIE_NAME}=${selectedRole}; path=/; max-age=3600; SameSite=Lax`;
   }, []);
+
+  // Set role cookie on mount
+  useEffect(() => {
+    setRoleCookie(role);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Validate invite token on mount
+  useEffect(() => {
+    if (!inviteToken) return;
+    fetch(`/api/admin/invites/${inviteToken}`)
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.valid && data.invite) {
+          setInviteInfo(data.invite);
+          setRole('artisan');
+          setRoleCookie('artisan');
+        }
+      })
+      .catch(() => { /* ignore */ });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [inviteToken]);
 
   const handleRoleSelect = (selectedRole: string) => {
     setRole(selectedRole);
@@ -42,13 +69,29 @@ export default function SignUpPage() {
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                       <Hammer className="w-6 h-6 text-emerald-700" />
-                      Join ArtisanLink
+                      Join ChapaWorks
                     </CardTitle>
                     <CardDescription>
                       Connect with skilled artisans across Kenya
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="grid gap-y-4">
+                    {/* Invite Banner */}
+                    {inviteInfo && (
+                      <div className="rounded-lg bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800 p-3">
+                        <div className="flex items-start gap-2">
+                          <Mail className="h-4 w-4 text-emerald-600 mt-0.5 flex-shrink-0" />
+                          <div>
+                            <p className="text-sm font-medium text-emerald-800 dark:text-emerald-200">
+                              You&apos;ve been invited to join as an Artisan!
+                            </p>
+                            {inviteInfo.message && (
+                              <p className="text-xs text-emerald-700 dark:text-emerald-300 mt-1 italic">&ldquo;{inviteInfo.message}&rdquo;</p>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    )}
                     {/* Role Selection */}
                     <div className="space-y-3">
                       <Label>I want to join as:</Label>

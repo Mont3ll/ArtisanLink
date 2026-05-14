@@ -151,7 +151,7 @@ export default function Faq() {
             Still have questions?
           </h3>
           <p className="text-slate-600 dark:text-slate-400 mb-6">
-            Our support team is here to help you get the most out of ArtisanLink.
+            Our support team is here to help you get the most out of ChapaWorks.
           </p>
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center">

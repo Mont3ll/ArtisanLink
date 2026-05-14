@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 
 /**
- * Authentication Flow E2E Tests for ArtisanLink
+ * Authentication Flow E2E Tests for ChapaWorks
  * Tests sign-in and sign-up page accessibility and navigation
  */
 
@@ -229,7 +229,7 @@ test.describe('Browser Compatibility', () => {
     await expect(header).toBeVisible();
 
     // Links should be clickable
-    const homeLink = page.getByRole('link', { name: /artisanlink/i });
+    const homeLink = page.getByRole('link', { name: /chapaworks/i });
     await expect(homeLink).toBeEnabled();
   });
 

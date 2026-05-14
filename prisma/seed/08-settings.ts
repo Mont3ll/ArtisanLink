@@ -96,7 +96,7 @@ export async function seedSettings(): Promise<SeedResult> {
     },
     {
       key: 'support_email',
-      value: 'support@artisanlink.co.ke',
+      value: 'support@chapaworks.co.ke',
       type: 'string',
       description: 'Support email address',
       isPublic: true,

@@ -59,8 +59,8 @@ const EMAIL_CONFIG = {
   },
 }
 
-const FROM_ADDRESS = process.env.EMAIL_FROM || 'ArtisanLink <noreply@artisanlink.co.ke>'
-const APP_NAME = 'ArtisanLink'
+const FROM_ADDRESS = process.env.EMAIL_FROM || 'ChapaWorks <noreply@chapaworks.co.ke>'
+const APP_NAME = 'ChapaWorks'
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
 
 // ============================================================================
@@ -542,4 +542,69 @@ export async function verifyEmailConnection(): Promise<boolean> {
     logger.error('Email transporter verification failed:', error)
     return false
   }
+}
+
+// ============================================================================
+// Artisan Invite Email
+// ============================================================================
+
+export interface SendInviteEmailParams {
+  to: string
+  name: string
+  inviteUrl: string
+  message?: string
+  expiresAt: Date
+}
+
+/**
+ * Send an artisan invite email from admin
+ */
+export async function sendInviteEmail(params: SendInviteEmailParams): Promise<EmailResult> {
+  const { to, name, inviteUrl, message, expiresAt } = params
+
+  const expiryStr = expiresAt.toLocaleDateString('en-KE', {
+    weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+  })
+
+  const html = `
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+      <h1 style="color: #1e293b; font-size: 28px; margin-bottom: 8px;">You're Invited to Join ChapaWorks!</h1>
+      <p style="color: #64748b; font-size: 16px; margin-bottom: 24px;">
+        Hello ${name}, you've been invited to join <strong>ChapaWorks</strong> as a verified artisan.
+      </p>
+      ${message ? `
+      <div style="background: #f8fafc; border-left: 4px solid #3b82f6; padding: 16px; border-radius: 4px; margin-bottom: 24px;">
+        <p style="color: #374151; margin: 0; font-style: italic;">"${message}"</p>
+      </div>
+      ` : ''}
+      <p style="color: #374151; font-size: 15px; margin-bottom: 24px;">
+        ChapaWorks connects skilled artisans with clients across Kenya. As a verified artisan, you can:
+      </p>
+      <ul style="color: #374151; font-size: 15px; margin-bottom: 24px; padding-left: 20px;">
+        <li>Showcase your portfolio and attract more clients</li>
+        <li>Receive job requests directly from clients in your area</li>
+        <li>Build your reputation with verified reviews</li>
+      </ul>
+      <div style="text-align: center; margin: 32px 0;">
+        <a href="${inviteUrl}" style="background: #1e293b; color: white; padding: 16px 32px; border-radius: 8px; text-decoration: none; font-size: 16px; font-weight: bold; display: inline-block;">
+          Accept Invitation & Sign Up
+        </a>
+      </div>
+      <p style="color: #94a3b8; font-size: 13px; text-align: center;">
+        This invitation expires on <strong>${expiryStr}</strong>.<br/>
+        If you did not expect this email, you can safely ignore it.
+      </p>
+      <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 24px 0;" />
+      <p style="color: #94a3b8; font-size: 12px; text-align: center;">
+        ChapaWorks &mdash; Connecting Clients with Skilled Artisans in Kenya
+      </p>
+    </div>
+  `
+
+  return sendEmail({
+    to,
+    subject: `You're invited to join ChapaWorks as an artisan!`,
+    html,
+    text: stripHtml(html),
+  })
 }
