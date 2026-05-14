@@ -50,7 +50,7 @@ export interface InitiatePaymentResponse {
 export const SUBSCRIPTION_PLANS = {
   MONTHLY: {
     name: 'Monthly',
-    price: 500,
+    price: 150,
     durationDays: 30,
     features: [
       'Priority listing in search results',
@@ -62,11 +62,11 @@ export const SUBSCRIPTION_PLANS = {
   },
   ANNUAL: {
     name: 'Annual',
-    price: 5000,
+    price: 1500,
     durationDays: 365,
     features: [
       'All Monthly features',
-      'Save KES 1,000 per year',
+      'Save KES 300 per year',
       'Featured on homepage',
       'Analytics dashboard',
       'Priority support',

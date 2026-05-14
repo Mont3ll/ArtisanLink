@@ -35,6 +35,23 @@ if (typeof window !== "undefined") {
   gsap.registerPlugin(ScrollTrigger);
 }
 
+// Types for live artisan data from the API
+interface LiveArtisan {
+  id: string;
+  name: string;
+  profession: string | null;
+  bio: string | null;
+  profileImage: string | null;
+  location: { city: string | null; county: string | null };
+  hourlyRate: number | null;
+  isAvailable: boolean;
+  isVerified: boolean;
+  isPremium: boolean;
+  rating: { average: number; total: number };
+  specializations: Array<{ name: string }>;
+  distance?: number | null;
+}
+
 // Landing Page: Editorial Data-Driven with Correct Workflow + GSAP Animations + Lenis
 // Browse artisans → View portfolio → Start conversation → Request job
 // Design: Cream/warm whites with forest green accents, serif headings, editorial feel
@@ -42,6 +59,8 @@ if (typeof window !== "undefined") {
 export default function Home() {
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   const [activeCategory, setActiveCategory] = useState("all");
+  const [liveArtisans, setLiveArtisans] = useState<LiveArtisan[]>([]);
+  const [artisansLoading, setArtisansLoading] = useState(true);
 
   // Refs for animations
   const containerRef = useRef<HTMLDivElement>(null);
@@ -56,6 +75,17 @@ export default function Home() {
   const faqRef = useRef<HTMLDivElement>(null);
   const ctaRef = useRef<HTMLDivElement>(null);
   const faqContentRefs = useRef<(HTMLDivElement | null)[]>([]);
+
+  // Fetch live artisans from the API
+  useEffect(() => {
+    fetch("/api/search/artisans?limit=3&sortBy=rating")
+      .then((r) => r.ok ? r.json() : Promise.reject())
+      .then((data) => {
+        setLiveArtisans(data.artisans?.slice(0, 3) || []);
+      })
+      .catch(() => setLiveArtisans([]))
+      .finally(() => setArtisansLoading(false));
+  }, []);
 
   // Lenis smooth scroll + GSAP animations
   useEffect(() => {
@@ -567,51 +597,6 @@ export default function Home() {
     { id: "welding", name: "Welding", count: 1180 },
   ];
 
-  const featuredArtisans = [
-    {
-      name: "John Kamau",
-      profession: "Master Carpenter",
-      location: "Westlands, Nairobi",
-      rating: 4.9,
-      reviews: 147,
-      hourlyRate: 1200,
-      completedJobs: 234,
-      verified: true,
-      available: true,
-      image:
-        "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&q=80",
-      portfolio: ["Custom furniture", "Kitchen cabinets", "Wooden doors"],
-    },
-    {
-      name: "Grace Wanjiku",
-      profession: "Interior Painter",
-      location: "Karen, Nairobi",
-      rating: 4.8,
-      reviews: 89,
-      hourlyRate: 800,
-      completedJobs: 156,
-      verified: true,
-      available: true,
-      image:
-        "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200&q=80",
-      portfolio: ["Wall textures", "Color consulting", "Commercial painting"],
-    },
-    {
-      name: "Peter Ochieng",
-      profession: "Licensed Electrician",
-      location: "Kilimani, Nairobi",
-      rating: 5.0,
-      reviews: 203,
-      hourlyRate: 1500,
-      completedJobs: 312,
-      verified: true,
-      available: false,
-      image:
-        "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=200&q=80",
-      portfolio: ["Home wiring", "Solar installation", "Commercial electrical"],
-    },
-  ];
-
   const howItWorks = [
     {
       step: "01",
@@ -924,7 +909,7 @@ export default function Home() {
               </h2>
             </div>
             <Link
-              href="/sign-up"
+              href="/artisans"
               className="inline-flex items-center gap-2 text-emerald-700 font-medium hover:text-emerald-800 transition-colors"
             >
               View all artisans
@@ -954,108 +939,137 @@ export default function Home() {
             ))}
           </div>
 
-          {/* Artisan Cards */}
+          {/* Artisan Cards — Live from API */}
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {featuredArtisans.map((artisan, i) => (
-              <div
-                key={i}
-                className="artisan-card bg-white rounded-xl border border-stone-200 overflow-hidden hover:shadow-xl transition-all duration-300 group"
-              >
-                <div className="p-6">
-                  <div className="flex items-start gap-4 mb-4">
-                    <div className="relative">
-                      <img
-                        src={artisan.image}
-                        alt={artisan.name}
-                        className="w-16 h-16 rounded-full object-cover group-hover:scale-110 transition-transform duration-300"
-                      />
-                      {artisan.verified && (
-                        <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-emerald-500 rounded-full flex items-center justify-center">
-                          <BadgeCheck className="w-4 h-4 text-white" />
+            {artisansLoading
+              ? Array.from({ length: 3 }).map((_, i) => (
+                  <div key={i} className="artisan-card bg-white rounded-xl border border-stone-200 overflow-hidden animate-pulse">
+                    <div className="p-6">
+                      <div className="flex items-start gap-4 mb-4">
+                        <div className="w-16 h-16 rounded-full bg-stone-200" />
+                        <div className="flex-1 space-y-2">
+                          <div className="h-4 bg-stone-200 rounded w-3/4" />
+                          <div className="h-3 bg-stone-200 rounded w-1/2" />
                         </div>
-                      )}
-                    </div>
-                    <div className="flex-1">
-                      <h3 className="font-semibold text-lg">{artisan.name}</h3>
-                      <p className="text-emerald-700 text-sm font-medium">
-                        {artisan.profession}
-                      </p>
-                      <div className="flex items-center gap-1 text-sm text-stone-500 mt-1">
-                        <MapPin className="w-3 h-3" />
-                        {artisan.location}
                       </div>
-                    </div>
-                    <button className="p-2 text-stone-400 hover:text-rose-500 transition-colors hover:scale-110">
-                      <Heart className="w-5 h-5" />
-                    </button>
-                  </div>
-
-                  <div className="flex items-center gap-4 mb-4 text-sm">
-                    <div className="flex items-center gap-1">
-                      <Star className="w-4 h-4 text-amber-400 fill-amber-400" />
-                      <span className="font-medium">{artisan.rating}</span>
-                      <span className="text-stone-400">
-                        ({artisan.reviews})
-                      </span>
-                    </div>
-                    <span className="text-stone-300">|</span>
-                    <span className="text-stone-500">
-                      {artisan.completedJobs} jobs done
-                    </span>
-                  </div>
-
-                  <div className="flex flex-wrap gap-2 mb-4">
-                    {artisan.portfolio.map((item, j) => (
-                      <span
-                        key={j}
-                        className="px-2 py-1 bg-stone-100 text-stone-600 rounded text-xs"
-                      >
-                        {item}
-                      </span>
-                    ))}
-                  </div>
-
-                  <div className="flex items-center justify-between pt-4 border-t border-stone-100">
-                    <div>
-                      <span className="text-lg font-bold">
-                        KES {artisan.hourlyRate.toLocaleString()}
-                      </span>
-                      <span className="text-stone-500 text-sm">/hour</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span
-                        className={`px-2 py-1 rounded-full text-xs font-medium ${
-                          artisan.available
-                            ? "bg-green-100 text-green-700"
-                            : "bg-stone-100 text-stone-500"
-                        }`}
-                      >
-                        {artisan.available ? "Available" : "Busy"}
-                      </span>
+                      <div className="h-3 bg-stone-200 rounded w-full mb-2" />
+                      <div className="h-3 bg-stone-200 rounded w-2/3" />
                     </div>
                   </div>
-                </div>
+                ))
+              : liveArtisans.length > 0
+              ? liveArtisans.map((artisan, i) => {
+                  const initials = artisan.name.split(" ").map((n) => n[0]).join("").slice(0, 2).toUpperCase();
+                  const locationStr = [artisan.location.city, artisan.location.county].filter(Boolean).join(", ") || "Kenya";
+                  return (
+                    <Link
+                      key={artisan.id || i}
+                      href={`/artisans/${artisan.id}`}
+                      className="artisan-card bg-white rounded-xl border border-stone-200 overflow-hidden hover:shadow-xl transition-all duration-300 group block"
+                    >
+                      <div className="p-6">
+                        <div className="flex items-start gap-4 mb-4">
+                          <div className="relative flex-shrink-0">
+                            {artisan.profileImage ? (
+                              <img
+                                src={artisan.profileImage}
+                                alt={artisan.name}
+                                className="w-16 h-16 rounded-full object-cover group-hover:scale-110 transition-transform duration-300"
+                              />
+                            ) : (
+                              <div className="w-16 h-16 rounded-full bg-emerald-100 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                                <span className="text-emerald-700 font-bold text-lg">{initials}</span>
+                              </div>
+                            )}
+                            {artisan.isVerified && (
+                              <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-emerald-500 rounded-full flex items-center justify-center">
+                                <BadgeCheck className="w-4 h-4 text-white" />
+                              </div>
+                            )}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <h3 className="font-semibold text-lg text-stone-900 group-hover:text-emerald-700 transition-colors truncate">{artisan.name}</h3>
+                            <p className="text-emerald-700 text-sm font-medium truncate">{artisan.profession}</p>
+                            <div className="flex items-center gap-1 text-sm text-stone-500 mt-1">
+                              <MapPin className="w-3 h-3 flex-shrink-0" />
+                              <span className="truncate">{locationStr}</span>
+                            </div>
+                          </div>
+                          {artisan.isPremium && (
+                            <span className="text-xs bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full font-medium flex-shrink-0">⭐</span>
+                          )}
+                        </div>
 
-                <div className="px-6 py-4 bg-stone-50 border-t border-stone-100 flex gap-3">
-                  <button className="flex-1 py-2.5 border border-stone-300 rounded-lg text-sm font-medium hover:bg-stone-100 transition-colors flex items-center justify-center gap-2 hover:border-emerald-600 hover:text-emerald-700">
-                    <Eye className="w-4 h-4" />
-                    View Portfolio
-                  </button>
-                  <button className="magnetic-btn flex-1 py-2.5 bg-emerald-700 text-white rounded-lg text-sm font-medium hover:bg-emerald-800 transition-colors flex items-center justify-center gap-2">
-                    <MessageCircle className="w-4 h-4" />
-                    Message
-                  </button>
-                </div>
-              </div>
-            ))}
+                        <div className="flex items-center gap-4 mb-4 text-sm">
+                          <div className="flex items-center gap-1">
+                            <Star className="w-4 h-4 text-amber-400 fill-amber-400" />
+                            <span className="font-medium">{artisan.rating.average.toFixed(1)}</span>
+                            <span className="text-stone-400">({artisan.rating.total})</span>
+                          </div>
+                          {artisan.specializations.length > 0 && (
+                            <>
+                              <span className="text-stone-300">|</span>
+                              <span className="text-stone-500 truncate">{artisan.specializations[0]?.name}</span>
+                            </>
+                          )}
+                        </div>
+
+                        {artisan.specializations.length > 0 && (
+                          <div className="flex flex-wrap gap-2 mb-4">
+                            {artisan.specializations.slice(0, 3).map((s, j) => (
+                              <span key={j} className="px-2 py-1 bg-stone-100 text-stone-600 rounded text-xs">{s.name}</span>
+                            ))}
+                          </div>
+                        )}
+
+                        <div className="flex items-center justify-between pt-4 border-t border-stone-100">
+                          <div>
+                            {artisan.hourlyRate ? (
+                              <>
+                                <span className="text-lg font-bold text-stone-900">KES {artisan.hourlyRate.toLocaleString()}</span>
+                                <span className="text-stone-500 text-sm">/hour</span>
+                              </>
+                            ) : (
+                              <span className="text-stone-400 text-sm">Rate on request</span>
+                            )}
+                          </div>
+                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                            artisan.isAvailable ? "bg-green-100 text-green-700" : "bg-stone-100 text-stone-500"
+                          }`}>
+                            {artisan.isAvailable ? "Available" : "Busy"}
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="px-6 py-4 bg-stone-50 border-t border-stone-100 flex gap-3">
+                        <span className="flex-1 py-2.5 border border-stone-300 rounded-lg text-sm font-medium group-hover:border-emerald-600 group-hover:text-emerald-700 transition-colors flex items-center justify-center gap-2">
+                          <Eye className="w-4 h-4" />
+                          View Profile
+                        </span>
+                        <span className="magnetic-btn flex-1 py-2.5 bg-emerald-700 text-white rounded-lg text-sm font-medium hover:bg-emerald-800 transition-colors flex items-center justify-center gap-2">
+                          <MessageCircle className="w-4 h-4" />
+                          Message
+                        </span>
+                      </div>
+                    </Link>
+                  );
+                })
+              : (
+                  // Fallback if no artisans loaded yet (empty DB / network error)
+                  <div className="col-span-3 text-center py-12 text-stone-500">
+                    <BadgeCheck className="w-10 h-10 mx-auto mb-3 text-stone-300" />
+                    <p>Artisans will appear here once they join the platform.</p>
+                    <Link href="/sign-up?role=artisan" className="text-emerald-700 font-medium hover:underline mt-2 inline-block">Be the first artisan →</Link>
+                  </div>
+                )}
           </div>
 
           <div className="text-center mt-10">
             <Link
-              href="/sign-up"
+              href="/artisans"
               className="magnetic-btn inline-flex items-center gap-2 bg-white border border-stone-300 px-8 py-3 rounded-lg font-medium hover:bg-stone-100 hover:border-emerald-600 transition-all"
             >
-              Browse all {categories[0].count.toLocaleString()} artisans
+              Browse all artisans
               <ArrowRight className="w-4 h-4" />
             </Link>
           </div>
@@ -1206,71 +1220,103 @@ export default function Home() {
             </p>
           </div>
 
-          <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-            {/* Client Pricing */}
-            <div className="pricing-card bg-white rounded-xl shadow-sm border border-stone-200 p-8 hover:shadow-xl transition-shadow duration-300">
-              <div className="inline-flex items-center gap-2 bg-emerald-100 text-emerald-700 px-3 py-1 rounded-full text-sm font-medium mb-6">
+          <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+            {/* Client — Free */}
+            <div className="pricing-card bg-white rounded-xl shadow-sm border border-stone-200 p-8 hover:shadow-xl transition-shadow duration-300 flex flex-col">
+              <div className="inline-flex items-center gap-2 bg-emerald-100 text-emerald-700 px-3 py-1 rounded-full text-sm font-medium mb-6 w-fit">
                 <HomeIcon className="w-4 h-4" />
                 For Clients
               </div>
-              <div className="text-4xl font-bold mb-2">Free</div>
-              <p className="text-stone-500 mb-8">No fees, no hidden costs</p>
-              <ul className="space-y-4 mb-8">
+              <div className="text-4xl font-bold mb-1">Free</div>
+              <p className="text-stone-500 mb-6 text-sm">No fees, no hidden costs</p>
+              <ul className="space-y-3 mb-8 flex-1">
                 {[
                   "Browse unlimited artisan profiles",
                   "View portfolios & reviews",
                   "Message artisans directly",
                   "Request jobs through chat",
-                  "Secure M-Pesa payments",
                   "Satisfaction guarantee",
                 ].map((item, i) => (
-                  <li key={i} className="flex items-center gap-3">
-                    <Check className="w-5 h-5 text-emerald-600 flex-shrink-0" />
+                  <li key={i} className="flex items-center gap-3 text-sm">
+                    <Check className="w-4 h-4 text-emerald-600 flex-shrink-0" />
                     <span>{item}</span>
                   </li>
                 ))}
               </ul>
               <Link
                 href="/sign-up"
-                className="magnetic-btn block w-full bg-emerald-700 text-white text-center py-3 rounded-lg font-medium hover:bg-emerald-800 transition-colors"
+                className="magnetic-btn block w-full bg-emerald-700 text-white text-center py-3 rounded-lg font-medium hover:bg-emerald-800 transition-colors text-sm"
               >
                 Start Browsing Free
               </Link>
             </div>
 
-            {/* Artisan Pricing */}
-            <div className="pricing-card bg-white rounded-xl shadow-sm border border-stone-200 p-8 hover:shadow-xl transition-shadow duration-300">
-              <div className="inline-flex items-center gap-2 bg-amber-100 text-amber-700 px-3 py-1 rounded-full text-sm font-medium mb-6">
+            {/* Artisan — Monthly */}
+            <div className="pricing-card bg-white rounded-xl shadow-sm border border-stone-200 p-8 hover:shadow-xl transition-shadow duration-300 flex flex-col">
+              <div className="inline-flex items-center gap-2 bg-amber-100 text-amber-700 px-3 py-1 rounded-full text-sm font-medium mb-6 w-fit">
                 <Sparkles className="w-4 h-4" />
-                For Artisans
+                Monthly
               </div>
-              <div className="text-4xl font-bold mb-2">
-                5%{" "}
-                <span className="text-lg font-normal text-stone-500">
-                  commission
-                </span>
+              <div className="mb-1">
+                <span className="text-4xl font-bold">KES 150</span>
+                <span className="text-stone-500 text-sm ml-1">/month</span>
               </div>
-              <p className="text-stone-500 mb-8">Only when you get paid</p>
-              <ul className="space-y-4 mb-8">
+              <p className="text-stone-500 mb-6 text-sm">Artisan subscription</p>
+              <ul className="space-y-3 mb-8 flex-1">
                 {[
                   "Professional profile & portfolio",
+                  "Priority listing in search",
                   "Receive messages from clients",
                   "Manage job requests easily",
-                  "M-Pesa payouts within 24hrs",
-                  "Verification badge",
-                  "Business analytics dashboard",
+                  "Premium badge",
                 ].map((item, i) => (
-                  <li key={i} className="flex items-center gap-3">
-                    <Check className="w-5 h-5 text-emerald-600 flex-shrink-0" />
+                  <li key={i} className="flex items-center gap-3 text-sm">
+                    <Check className="w-4 h-4 text-emerald-600 flex-shrink-0" />
                     <span>{item}</span>
                   </li>
                 ))}
               </ul>
               <Link
                 href="/sign-up?role=artisan"
-                className="magnetic-btn block w-full border border-emerald-700 text-emerald-700 text-center py-3 rounded-lg font-medium hover:bg-emerald-50 transition-colors"
+                className="magnetic-btn block w-full border border-emerald-700 text-emerald-700 text-center py-3 rounded-lg font-medium hover:bg-emerald-50 transition-colors text-sm"
               >
                 Join as Artisan
+              </Link>
+            </div>
+
+            {/* Artisan — Annual */}
+            <div className="pricing-card relative bg-emerald-800 text-white rounded-xl shadow-sm border border-emerald-700 p-8 hover:shadow-xl transition-shadow duration-300 flex flex-col">
+              <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+                <span className="bg-amber-400 text-amber-900 text-xs font-bold px-3 py-1 rounded-full">BEST VALUE</span>
+              </div>
+              <div className="inline-flex items-center gap-2 bg-emerald-700 text-emerald-200 px-3 py-1 rounded-full text-sm font-medium mb-6 w-fit">
+                <Sparkles className="w-4 h-4" />
+                Annual
+              </div>
+              <div className="mb-1">
+                <span className="text-4xl font-bold">KES 1,500</span>
+                <span className="text-emerald-300 text-sm ml-1">/year</span>
+              </div>
+              <p className="text-emerald-300 mb-6 text-sm">Save KES 300 vs monthly</p>
+              <ul className="space-y-3 mb-8 flex-1">
+                {[
+                  "All Monthly features",
+                  "Featured on homepage",
+                  "Analytics dashboard",
+                  "Priority support",
+                  "Verified artisan badge",
+                ].map((item, i) => (
+                  <li key={i} className="flex items-center gap-3 text-sm">
+                    <Check className="w-4 h-4 text-emerald-300 flex-shrink-0" />
+                    <span className="text-emerald-100">{item}</span>
+                  </li>
+                ))}
+              </ul>
+              <Link
+                href="/sign-up?role=artisan"
+                className="magnetic-btn block w-full bg-amber-400 text-amber-900 text-center py-3 rounded-lg font-bold hover:bg-amber-300 transition-colors text-sm"
+              >
+                Get Annual Plan
               </Link>
             </div>
           </div>

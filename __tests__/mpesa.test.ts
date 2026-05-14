@@ -372,7 +372,7 @@ describe('SUBSCRIPTION_PLANS', () => {
   it('should have correct MONTHLY plan properties', () => {
     const monthly = SUBSCRIPTION_PLANS.MONTHLY
     expect(monthly.name).toBe('Monthly')
-    expect(monthly.price).toBe(500)
+    expect(monthly.price).toBe(150)
     expect(monthly.durationDays).toBe(30)
     expect(monthly.features).toBeInstanceOf(Array)
     expect(monthly.features.length).toBeGreaterThan(0)
@@ -381,7 +381,7 @@ describe('SUBSCRIPTION_PLANS', () => {
   it('should have correct ANNUAL plan properties', () => {
     const annual = SUBSCRIPTION_PLANS.ANNUAL
     expect(annual.name).toBe('Annual')
-    expect(annual.price).toBe(5000)
+    expect(annual.price).toBe(1500)
     expect(annual.durationDays).toBe(365)
     expect(annual.features).toBeInstanceOf(Array)
     expect(annual.features.length).toBeGreaterThan(0)

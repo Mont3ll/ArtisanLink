@@ -380,7 +380,7 @@ export function getResultCodeDescription(code: number): string {
 export const SUBSCRIPTION_PLANS = {
   MONTHLY: {
     name: 'Monthly',
-    price: 500, // KES
+    price: 150, // KES
     durationDays: 30,
     features: [
       'Unlimited profile visibility',
@@ -392,11 +392,11 @@ export const SUBSCRIPTION_PLANS = {
   },
   ANNUAL: {
     name: 'Annual',
-    price: 5000, // KES (save KES 1000)
+    price: 1500, // KES (save KES 300)
     durationDays: 365,
     features: [
       'All Monthly features',
-      'Save KES 1,000 per year',
+      'Save KES 300 per year',
       'Verified badge',
       'Featured in homepage',
       'Analytics dashboard',

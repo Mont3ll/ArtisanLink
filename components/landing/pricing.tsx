@@ -26,7 +26,7 @@ const plans = [
   },
   { 
     name: "Pro Artisan", 
-    price: "499", 
+    price: "150", 
     period: "per month",
     description: "Ideal for professional artisans",
     perks: [

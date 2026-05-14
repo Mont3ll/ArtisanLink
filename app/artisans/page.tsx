@@ -2,46 +2,26 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import {
   Search,
   MapPin,
   Star,
-  Filter,
-  ChevronDown,
   BadgeCheck,
-  Clock,
-  ArrowLeft,
-  X,
+  ArrowRight,
+  Eye,
+  MessageCircle,
   SlidersHorizontal,
+  X,
+  ChevronDown,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent } from "@/components/ui/card";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Skeleton } from "@/components/ui/skeleton";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 
 interface Artisan {
   id: string;
-  profileId: string;
   name: string;
   profession: string | null;
   bio: string | null;
   profileImage: string | null;
-  location: {
-    city: string | null;
-    county: string | null;
-    latitude: number | null;
-    longitude: number | null;
-  };
+  location: { city: string | null; county: string | null };
   experience: number | null;
   hourlyRate: number | null;
   isAvailable: boolean;
@@ -53,52 +33,46 @@ interface Artisan {
   distance: number | null;
 }
 
-interface SearchFacets {
+interface Facets {
   professions: Array<{ name: string | null; count: number }>;
   counties: Array<{ name: string | null; count: number }>;
-  specializations: Array<{ name: string; count: number }>;
 }
 
 export default function BrowseArtisansPage() {
-  const router = useRouter();
   const [artisans, setArtisans] = useState<Artisan[]>([]);
-  const [facets, setFacets] = useState<SearchFacets | null>(null);
+  const [facets, setFacets] = useState<Facets | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [showFilters, setShowFilters] = useState(false);
 
-  // Filters
-  const [query, setQuery] = useState("");
   const [searchInput, setSearchInput] = useState("");
+  const [query, setQuery] = useState("");
   const [profession, setProfession] = useState("");
   const [county, setCounty] = useState("");
   const [sortBy, setSortBy] = useState("rating");
-  const [showFilters, setShowFilters] = useState(false);
 
-  const fetchArtisans = async () => {
+  const fetchArtisans = () => {
     setIsLoading(true);
-    try {
-      const params = new URLSearchParams();
-      if (query) params.set("q", query);
-      if (profession) params.set("profession", profession);
-      if (county) params.set("county", county);
-      params.set("sortBy", sortBy);
-      params.set("page", page.toString());
-      params.set("limit", "20");
+    const params = new URLSearchParams();
+    if (query) params.set("q", query);
+    if (profession) params.set("profession", profession);
+    if (county) params.set("county", county);
+    params.set("sortBy", sortBy);
+    params.set("page", String(page));
+    params.set("limit", "12");
 
-      const res = await fetch(`/api/search/artisans?${params.toString()}`);
-      if (!res.ok) throw new Error("Failed to fetch");
-      const data = await res.json();
-      setArtisans(data.artisans || []);
-      setFacets(data.facets || null);
-      setTotal(data.pagination?.total || 0);
-      setTotalPages(data.pagination?.totalPages || 1);
-    } catch {
-      setArtisans([]);
-    } finally {
-      setIsLoading(false);
-    }
+    fetch(`/api/search/artisans?${params}`)
+      .then((r) => r.ok ? r.json() : Promise.reject())
+      .then((data) => {
+        setArtisans(data.artisans || []);
+        setFacets(data.facets || null);
+        setTotal(data.pagination?.total || 0);
+        setTotalPages(data.pagination?.totalPages || 1);
+      })
+      .catch(() => setArtisans([]))
+      .finally(() => setIsLoading(false));
   };
 
   useEffect(() => {
@@ -121,313 +95,343 @@ export default function BrowseArtisansPage() {
     setPage(1);
   };
 
-  const hasActiveFilters = query || profession || county;
+  const hasFilters = query || profession || county;
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950">
-      {/* Header / Nav */}
-      <header className="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 sticky top-0 z-40">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
+    <div className="bg-stone-50 text-stone-900 min-h-screen">
+      {/* Nav */}
+      <nav className="sticky top-0 z-50 bg-stone-50/95 backdrop-blur-sm border-b border-stone-200">
+        <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
+          <Link href="/" className="text-2xl font-serif font-bold text-emerald-800">
+            ChapaWorks
+          </Link>
+          <div className="hidden md:flex items-center gap-8">
+            <Link href="/#features" className="text-sm text-stone-600 hover:text-emerald-700 transition-colors">Features</Link>
+            <Link href="/artisans" className="text-sm text-emerald-700 font-semibold border-b border-emerald-700 pb-0.5">Browse Artisans</Link>
+            <Link href="/#pricing" className="text-sm text-stone-600 hover:text-emerald-700 transition-colors">Pricing</Link>
+          </div>
           <div className="flex items-center gap-4">
-            <Button variant="ghost" size="icon" asChild>
-              <Link href="/" aria-label="Back to home">
-                <ArrowLeft className="h-5 w-5" />
-              </Link>
-            </Button>
-            <Link href="/" className="font-bold text-xl text-slate-900 dark:text-slate-100">
-              ChapaWorks
+            <Link href="/sign-in" className="text-sm font-medium text-stone-600 hover:text-stone-900 transition-colors">Sign In</Link>
+            <Link href="/sign-up" className="bg-emerald-700 text-white px-5 py-2.5 rounded-md text-sm font-medium hover:bg-emerald-800 transition-colors">
+              Get Started
             </Link>
           </div>
-          <div className="flex items-center gap-3">
-            <Button variant="outline" asChild>
-              <Link href="/sign-in">Sign In</Link>
-            </Button>
-            <Button asChild>
-              <Link href="/sign-up">Get Started</Link>
-            </Button>
-          </div>
         </div>
-      </header>
+      </nav>
 
-      {/* Hero Search Bar */}
-      <div className="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 py-8">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h1 className="text-3xl font-bold text-slate-900 dark:text-slate-100 mb-2">
-            Browse Skilled Artisans
+      {/* Hero Search */}
+      <div className="py-14 px-6 border-b border-stone-200 bg-white">
+        <div className="max-w-3xl mx-auto text-center mb-8">
+          <p className="text-emerald-700 font-medium mb-2 tracking-wide text-sm uppercase">Browse Artisans</p>
+          <h1 className="text-3xl md:text-4xl font-serif font-bold text-stone-800 mb-3">
+            Discover skilled professionals
           </h1>
-          <p className="text-slate-600 dark:text-slate-400 mb-6">
-            Discover verified local professionals across Kenya
+          <p className="text-stone-500">
+            All verified, rated by real clients across Kenya
           </p>
-          <form onSubmit={handleSearch} className="flex gap-3">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-              <Input
+        </div>
+
+        <div className="max-w-3xl mx-auto">
+          <form onSubmit={handleSearch} className="bg-white rounded-xl shadow-lg border border-stone-200 p-2 flex flex-col sm:flex-row gap-2 mb-4">
+            <div className="flex-1 flex items-center gap-3 px-4 py-3">
+              <Search className="w-5 h-5 text-stone-400 flex-shrink-0" />
+              <input
                 value={searchInput}
                 onChange={(e) => setSearchInput(e.target.value)}
-                placeholder="Search by profession, name, or skill..."
-                className="pl-10 h-11"
+                placeholder="Search by profession, name, or skill…"
+                className="w-full outline-none text-stone-800 placeholder:text-stone-400 bg-transparent"
               />
             </div>
-            <Button type="submit" size="lg">
-              Search
-            </Button>
-            <Button
-              type="button"
-              variant="outline"
-              size="lg"
-              onClick={() => setShowFilters(!showFilters)}
-              className="gap-2"
+            <button
+              type="submit"
+              className="bg-emerald-700 text-white px-8 py-3 rounded-lg font-medium hover:bg-emerald-800 transition-colors flex items-center justify-center gap-2"
             >
-              <SlidersHorizontal className="h-4 w-4" />
-              Filters
-              {hasActiveFilters && (
-                <Badge variant="secondary" className="ml-1 h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs">
-                  !
-                </Badge>
-              )}
-            </Button>
+              <Search className="w-4 h-4" />
+              Search
+            </button>
           </form>
 
-          {/* Filters */}
+          {/* Filter toggle */}
+          <div className="flex items-center gap-3 flex-wrap">
+            <button
+              onClick={() => setShowFilters(!showFilters)}
+              className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium border transition-colors ${showFilters ? "bg-emerald-700 text-white border-emerald-700" : "bg-white text-stone-600 border-stone-300 hover:border-emerald-600 hover:text-emerald-700"}`}
+            >
+              <SlidersHorizontal className="w-4 h-4" />
+              Filters
+              {hasFilters && <span className="bg-white text-emerald-700 rounded-full h-4 w-4 text-xs flex items-center justify-center font-bold">!</span>}
+            </button>
+
+            {/* Active filter pills */}
+            {profession && (
+              <button onClick={() => { setProfession(""); setPage(1); }} className="flex items-center gap-1 px-3 py-1.5 bg-emerald-100 text-emerald-700 rounded-full text-sm font-medium">
+                {profession} <X className="w-3 h-3" />
+              </button>
+            )}
+            {county && (
+              <button onClick={() => { setCounty(""); setPage(1); }} className="flex items-center gap-1 px-3 py-1.5 bg-emerald-100 text-emerald-700 rounded-full text-sm font-medium">
+                {county} <X className="w-3 h-3" />
+              </button>
+            )}
+            {hasFilters && (
+              <button onClick={clearFilters} className="text-sm text-stone-500 hover:text-stone-700 underline">Clear all</button>
+            )}
+          </div>
+
+          {/* Expanded filters */}
           {showFilters && (
-            <div className="mt-4 flex flex-wrap gap-3 items-center">
-              <Select value={profession} onValueChange={(v) => { setProfession(v === "_all" ? "" : v); setPage(1); }}>
-                <SelectTrigger className="w-48">
-                  <SelectValue placeholder="All Professions" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="_all">All Professions</SelectItem>
-                  {facets?.professions?.filter(p => p.name).map((p) => (
-                    <SelectItem key={p.name!} value={p.name!}>
-                      {p.name} ({p.count})
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+            <div className="mt-4 bg-white rounded-xl border border-stone-200 p-5 grid sm:grid-cols-3 gap-4">
+              <div>
+                <label className="block text-xs font-semibold text-stone-500 uppercase tracking-wide mb-2">Profession</label>
+                <div className="relative">
+                  <select
+                    value={profession}
+                    onChange={(e) => { setProfession(e.target.value); setPage(1); }}
+                    className="w-full appearance-none bg-stone-50 border border-stone-200 rounded-lg px-3 py-2 text-sm text-stone-800 outline-none focus:border-emerald-600 pr-8"
+                  >
+                    <option value="">All Professions</option>
+                    {facets?.professions?.filter(p => p.name).map((p) => (
+                      <option key={p.name!} value={p.name!}>{p.name} ({p.count})</option>
+                    ))}
+                  </select>
+                  <ChevronDown className="absolute right-3 top-2.5 w-4 h-4 text-stone-400 pointer-events-none" />
+                </div>
+              </div>
 
-              <Select value={county} onValueChange={(v) => { setCounty(v === "_all" ? "" : v); setPage(1); }}>
-                <SelectTrigger className="w-48">
-                  <SelectValue placeholder="All Counties" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="_all">All Counties</SelectItem>
-                  {facets?.counties?.filter(c => c.name).map((c) => (
-                    <SelectItem key={c.name!} value={c.name!}>
-                      {c.name} ({c.count})
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <div>
+                <label className="block text-xs font-semibold text-stone-500 uppercase tracking-wide mb-2">County</label>
+                <div className="relative">
+                  <select
+                    value={county}
+                    onChange={(e) => { setCounty(e.target.value); setPage(1); }}
+                    className="w-full appearance-none bg-stone-50 border border-stone-200 rounded-lg px-3 py-2 text-sm text-stone-800 outline-none focus:border-emerald-600 pr-8"
+                  >
+                    <option value="">All Counties</option>
+                    {facets?.counties?.filter(c => c.name).map((c) => (
+                      <option key={c.name!} value={c.name!}>{c.name} ({c.count})</option>
+                    ))}
+                  </select>
+                  <ChevronDown className="absolute right-3 top-2.5 w-4 h-4 text-stone-400 pointer-events-none" />
+                </div>
+              </div>
 
-              <Select value={sortBy} onValueChange={(v) => { setSortBy(v); setPage(1); }}>
-                <SelectTrigger className="w-44">
-                  <SelectValue placeholder="Sort by" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="rating">Highest Rated</SelectItem>
-                  <SelectItem value="reviews">Most Reviews</SelectItem>
-                  <SelectItem value="rate">Hourly Rate</SelectItem>
-                  <SelectItem value="recent">Newest</SelectItem>
-                </SelectContent>
-              </Select>
-
-              {hasActiveFilters && (
-                <Button variant="ghost" size="sm" onClick={clearFilters} className="gap-1 text-slate-500">
-                  <X className="h-3.5 w-3.5" /> Clear filters
-                </Button>
-              )}
+              <div>
+                <label className="block text-xs font-semibold text-stone-500 uppercase tracking-wide mb-2">Sort By</label>
+                <div className="relative">
+                  <select
+                    value={sortBy}
+                    onChange={(e) => { setSortBy(e.target.value); setPage(1); }}
+                    className="w-full appearance-none bg-stone-50 border border-stone-200 rounded-lg px-3 py-2 text-sm text-stone-800 outline-none focus:border-emerald-600 pr-8"
+                  >
+                    <option value="rating">Highest Rated</option>
+                    <option value="reviews">Most Reviews</option>
+                    <option value="rate">Hourly Rate</option>
+                    <option value="recent">Newest</option>
+                  </select>
+                  <ChevronDown className="absolute right-3 top-2.5 w-4 h-4 text-stone-400 pointer-events-none" />
+                </div>
+              </div>
             </div>
           )}
         </div>
       </div>
 
       {/* Results */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Results count */}
-        <div className="flex items-center justify-between mb-6">
-          <p className="text-slate-600 dark:text-slate-400 text-sm">
-            {isLoading ? (
-              <Skeleton className="h-4 w-32 inline-block" />
-            ) : (
-              <>
-                Showing <strong>{artisans.length}</strong> of <strong>{total}</strong> artisans
-                {query && <> for &ldquo;<em>{query}</em>&rdquo;</>}
-              </>
-            )}
-          </p>
-          <p className="text-xs text-slate-400 dark:text-slate-500">
-            <Link href="/sign-in" className="text-primary hover:underline">Sign in</Link> to message artisans, save favourites & request jobs
-          </p>
-        </div>
+      <section className="py-12 px-6">
+        <div className="max-w-6xl mx-auto">
+          {/* Count */}
+          <div className="flex items-center justify-between mb-8">
+            <p className="text-stone-500 text-sm">
+              {isLoading ? (
+                <span className="inline-block w-32 h-4 bg-stone-200 rounded animate-pulse" />
+              ) : (
+                <>Showing <strong className="text-stone-800">{artisans.length}</strong> of <strong className="text-stone-800">{total}</strong> artisans{query && <> for "<em>{query}</em>"</>}</>
+              )}
+            </p>
+            <p className="text-xs text-stone-400 hidden sm:block">
+              <Link href="/sign-in" className="text-emerald-700 hover:underline">Sign in</Link> to message & save favourites
+            </p>
+          </div>
 
-        {/* Grid */}
-        {isLoading ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {Array.from({ length: 8 }).map((_, i) => (
-              <Card key={i} className="overflow-hidden">
-                <CardContent className="p-0">
-                  <Skeleton className="h-32 w-full" />
-                  <div className="p-4 space-y-2">
-                    <Skeleton className="h-4 w-3/4" />
-                    <Skeleton className="h-3 w-1/2" />
-                    <Skeleton className="h-3 w-2/3" />
+          {/* Grid */}
+          {isLoading ? (
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <div key={i} className="bg-white rounded-xl border border-stone-200 overflow-hidden animate-pulse">
+                  <div className="p-6">
+                    <div className="flex items-start gap-4 mb-4">
+                      <div className="w-16 h-16 rounded-full bg-stone-200 flex-shrink-0" />
+                      <div className="flex-1 space-y-2">
+                        <div className="h-4 bg-stone-200 rounded w-3/4" />
+                        <div className="h-3 bg-stone-200 rounded w-1/2" />
+                        <div className="h-3 bg-stone-200 rounded w-2/3" />
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <div className="h-3 bg-stone-200 rounded w-full" />
+                      <div className="h-3 bg-stone-200 rounded w-2/3" />
+                    </div>
                   </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        ) : artisans.length === 0 ? (
-          <div className="text-center py-16">
-            <Search className="h-12 w-12 text-slate-300 mx-auto mb-4" />
-            <h2 className="text-xl font-semibold text-slate-700 dark:text-slate-300 mb-2">No artisans found</h2>
-            <p className="text-slate-500 mb-6">Try adjusting your search or filters</p>
-            <Button variant="outline" onClick={clearFilters}>Clear all filters</Button>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {artisans.map((artisan) => (
-              <ArtisanCard key={artisan.id} artisan={artisan} />
-            ))}
-          </div>
-        )}
+                </div>
+              ))}
+            </div>
+          ) : artisans.length === 0 ? (
+            <div className="text-center py-20">
+              <Search className="w-12 h-12 text-stone-300 mx-auto mb-4" />
+              <h2 className="text-xl font-serif font-bold text-stone-700 mb-2">No artisans found</h2>
+              <p className="text-stone-500 mb-6">Try adjusting your search or clearing filters</p>
+              <button onClick={clearFilters} className="bg-emerald-700 text-white px-6 py-3 rounded-lg font-medium hover:bg-emerald-800 transition-colors">
+                Clear all filters
+              </button>
+            </div>
+          ) : (
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {artisans.map((artisan, i) => (
+                <ArtisanCard key={artisan.id || i} artisan={artisan} />
+              ))}
+            </div>
+          )}
 
-        {/* Pagination */}
-        {!isLoading && totalPages > 1 && (
-          <div className="flex items-center justify-center gap-2 mt-10">
-            <Button
-              variant="outline"
-              size="sm"
-              disabled={page <= 1}
-              onClick={() => setPage(p => Math.max(1, p - 1))}
-            >
-              Previous
-            </Button>
-            <span className="text-sm text-slate-600 dark:text-slate-400">
-              Page {page} of {totalPages}
-            </span>
-            <Button
-              variant="outline"
-              size="sm"
-              disabled={page >= totalPages}
-              onClick={() => setPage(p => Math.min(totalPages, p + 1))}
-            >
-              Next
-            </Button>
-          </div>
-        )}
+          {/* Pagination */}
+          {!isLoading && totalPages > 1 && (
+            <div className="flex items-center justify-center gap-3 mt-12">
+              <button
+                disabled={page <= 1}
+                onClick={() => setPage(p => p - 1)}
+                className="px-5 py-2.5 border border-stone-300 rounded-lg text-sm font-medium hover:bg-stone-100 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                Previous
+              </button>
+              <span className="text-sm text-stone-500">Page {page} of {totalPages}</span>
+              <button
+                disabled={page >= totalPages}
+                onClick={() => setPage(p => p + 1)}
+                className="px-5 py-2.5 border border-stone-300 rounded-lg text-sm font-medium hover:bg-stone-100 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                Next
+              </button>
+            </div>
+          )}
 
-        {/* CTA for non-logged-in users */}
-        <div className="mt-16 bg-white dark:bg-slate-900 rounded-2xl p-8 text-center border border-slate-200 dark:border-slate-800">
-          <h2 className="text-2xl font-bold text-slate-900 dark:text-slate-100 mb-3">
-            Ready to hire a skilled artisan?
-          </h2>
-          <p className="text-slate-600 dark:text-slate-400 mb-6 max-w-md mx-auto">
-            Create a free account to message artisans, save your favourites, and request job quotes.
-          </p>
-          <div className="flex gap-3 justify-center">
-            <Button size="lg" asChild>
-              <Link href="/sign-up">Create Free Account</Link>
-            </Button>
-            <Button size="lg" variant="outline" asChild>
-              <Link href="/sign-in">Sign In</Link>
-            </Button>
+          {/* Sign-up CTA */}
+          <div className="mt-16 bg-emerald-800 text-white rounded-2xl p-10 text-center">
+            <h2 className="text-2xl md:text-3xl font-serif font-bold mb-3">
+              Ready to hire a skilled artisan?
+            </h2>
+            <p className="text-emerald-200 mb-8 max-w-md mx-auto">
+              Create a free account to message artisans, save favourites, and request job quotes.
+            </p>
+            <div className="flex gap-4 justify-center flex-wrap">
+              <Link href="/sign-up" className="bg-amber-400 text-amber-900 px-8 py-3 rounded-lg font-bold hover:bg-amber-300 transition-colors">
+                Create Free Account
+              </Link>
+              <Link href="/sign-in" className="border border-emerald-600 text-white px-8 py-3 rounded-lg font-medium hover:bg-emerald-700 transition-colors">
+                Sign In
+              </Link>
+            </div>
           </div>
         </div>
-      </div>
+      </section>
     </div>
   );
 }
 
 function ArtisanCard({ artisan }: { artisan: Artisan }) {
-  const initials = artisan.name
-    .split(" ")
-    .map((n) => n[0])
-    .join("")
-    .toUpperCase()
-    .slice(0, 2);
+  const initials = artisan.name.split(" ").map((n) => n[0]).join("").slice(0, 2).toUpperCase();
+  const locationStr = [artisan.location.city, artisan.location.county].filter(Boolean).join(", ") || "Kenya";
 
   return (
-    <Link href={`/artisans/${artisan.id}`}>
-      <Card className="overflow-hidden hover:shadow-lg transition-shadow cursor-pointer group">
-        <CardContent className="p-0">
-          <div className="relative bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-800 dark:to-slate-700 h-32 flex items-center justify-center">
-            <Avatar className="h-20 w-20 border-4 border-white dark:border-slate-900 shadow-md">
-              <AvatarImage src={artisan.profileImage || undefined} alt={artisan.name} />
-              <AvatarFallback className="bg-primary/10 text-primary text-xl font-bold">
-                {initials}
-              </AvatarFallback>
-            </Avatar>
-            {artisan.isPremium && (
-              <Badge className="absolute top-2 right-2 bg-amber-400 text-amber-900 text-xs">
-                ⭐ Premium
-              </Badge>
+    <Link
+      href={`/artisans/${artisan.id}`}
+      className="group bg-white rounded-xl border border-stone-200 overflow-hidden hover:shadow-xl transition-all duration-300 block"
+    >
+      <div className="p-6">
+        <div className="flex items-start gap-4 mb-4">
+          <div className="relative flex-shrink-0">
+            {artisan.profileImage ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={artisan.profileImage}
+                alt={artisan.name}
+                className="w-16 h-16 rounded-full object-cover group-hover:scale-110 transition-transform duration-300"
+              />
+            ) : (
+              <div className="w-16 h-16 rounded-full bg-emerald-100 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                <span className="text-emerald-700 font-bold text-lg">{initials}</span>
+              </div>
             )}
-            {artisan.isAvailable && (
-              <div className="absolute top-2 left-2 flex items-center gap-1 bg-green-500 text-white text-xs px-2 py-0.5 rounded-full">
-                <div className="h-1.5 w-1.5 rounded-full bg-white" />
-                Available
+            {artisan.isVerified && (
+              <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-emerald-500 rounded-full flex items-center justify-center">
+                <BadgeCheck className="w-4 h-4 text-white" />
               </div>
             )}
           </div>
 
-          <div className="p-4">
-            <div className="flex items-start justify-between mb-1">
-              <h3 className="font-semibold text-slate-900 dark:text-slate-100 group-hover:text-primary transition-colors line-clamp-1">
-                {artisan.name}
-              </h3>
-              {artisan.isVerified && (
-                <BadgeCheck className="h-4 w-4 text-blue-500 flex-shrink-0 mt-0.5" />
-              )}
+          <div className="flex-1 min-w-0">
+            <h3 className="font-semibold text-lg text-stone-900 group-hover:text-emerald-700 transition-colors truncate">
+              {artisan.name}
+            </h3>
+            <p className="text-emerald-700 text-sm font-medium truncate">{artisan.profession}</p>
+            <div className="flex items-center gap-1 text-sm text-stone-500 mt-1">
+              <MapPin className="w-3 h-3 flex-shrink-0" />
+              <span className="truncate">{locationStr}</span>
             </div>
+          </div>
 
-            {artisan.profession && (
-              <p className="text-sm text-slate-600 dark:text-slate-400 mb-2 line-clamp-1">
-                {artisan.profession}
-              </p>
-            )}
+          {artisan.isPremium && (
+            <span className="text-xs bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full font-medium flex-shrink-0">⭐</span>
+          )}
+        </div>
 
-            <div className="flex items-center gap-3 text-sm text-slate-500 dark:text-slate-400">
-              <div className="flex items-center gap-1">
-                <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
-                <span className="font-medium text-slate-700 dark:text-slate-300">
-                  {artisan.rating.average.toFixed(1)}
-                </span>
-                <span className="text-xs">({artisan.rating.total})</span>
-              </div>
+        <div className="flex items-center gap-4 mb-4 text-sm">
+          <div className="flex items-center gap-1">
+            <Star className="w-4 h-4 text-amber-400 fill-amber-400" />
+            <span className="font-medium">{artisan.rating.average.toFixed(1)}</span>
+            <span className="text-stone-400">({artisan.rating.total})</span>
+          </div>
+          {artisan.specializations.length > 0 && (
+            <>
+              <span className="text-stone-300">|</span>
+              <span className="text-stone-500 truncate">{artisan.specializations[0]?.name}</span>
+            </>
+          )}
+        </div>
 
-              {(artisan.location.city || artisan.location.county) && (
-                <div className="flex items-center gap-1 line-clamp-1">
-                  <MapPin className="h-3 w-3 flex-shrink-0" />
-                  <span className="text-xs line-clamp-1">
-                    {artisan.location.city || artisan.location.county}
-                  </span>
-                </div>
-              )}
-            </div>
+        {artisan.specializations.length > 0 && (
+          <div className="flex flex-wrap gap-2 mb-4">
+            {artisan.specializations.slice(0, 3).map((s, j) => (
+              <span key={j} className="px-2 py-1 bg-stone-100 text-stone-600 rounded text-xs">{s.name}</span>
+            ))}
+          </div>
+        )}
 
-            {artisan.hourlyRate && (
-              <p className="text-sm font-semibold text-slate-900 dark:text-slate-100 mt-2">
-                KES {artisan.hourlyRate.toLocaleString()}/hr
-              </p>
-            )}
-
-            {artisan.specializations.length > 0 && (
-              <div className="flex flex-wrap gap-1 mt-3">
-                {artisan.specializations.slice(0, 2).map((s) => (
-                  <Badge key={s.name} variant="secondary" className="text-xs px-2 py-0">
-                    {s.name}
-                  </Badge>
-                ))}
-                {artisan.specializations.length > 2 && (
-                  <Badge variant="outline" className="text-xs px-2 py-0">
-                    +{artisan.specializations.length - 2}
-                  </Badge>
-                )}
-              </div>
+        <div className="flex items-center justify-between pt-4 border-t border-stone-100">
+          <div>
+            {artisan.hourlyRate ? (
+              <>
+                <span className="text-lg font-bold text-stone-900">KES {artisan.hourlyRate.toLocaleString()}</span>
+                <span className="text-stone-500 text-sm">/hour</span>
+              </>
+            ) : (
+              <span className="text-stone-400 text-sm">Rate on request</span>
             )}
           </div>
-        </CardContent>
-      </Card>
+          <span className={`px-2 py-1 rounded-full text-xs font-medium ${artisan.isAvailable ? "bg-green-100 text-green-700" : "bg-stone-100 text-stone-500"}`}>
+            {artisan.isAvailable ? "Available" : "Busy"}
+          </span>
+        </div>
+      </div>
+
+      <div className="px-6 py-4 bg-stone-50 border-t border-stone-100 flex gap-3">
+        <span className="flex-1 py-2.5 border border-stone-300 rounded-lg text-sm font-medium group-hover:border-emerald-600 group-hover:text-emerald-700 transition-colors flex items-center justify-center gap-2">
+          <Eye className="w-4 h-4" />
+          View Profile
+        </span>
+        <span className="flex-1 py-2.5 bg-emerald-700 text-white rounded-lg text-sm font-medium hover:bg-emerald-800 transition-colors flex items-center justify-center gap-2">
+          <MessageCircle className="w-4 h-4" />
+          Message
+        </span>
+      </div>
     </Link>
   );
 }
