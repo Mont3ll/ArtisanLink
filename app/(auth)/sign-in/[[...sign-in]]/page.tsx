@@ -4,7 +4,7 @@ import * as SignIn from '@clerk/elements/sign-in';
 import { Loader2, Mail } from 'lucide-react';
 import { SiGoogle } from 'react-icons/si';
 import Link from 'next/link';
-import TesseractLogo from '@/components/common/TesseractLogo';
+import ChapaWorksLogo from '@/components/common/ChapaWorksLogo';
 
 export default function SignInPage() {
   return (
@@ -12,7 +12,7 @@ export default function SignInPage() {
       {/* Minimal nav */}
       <nav className="px-6 py-4 border-b border-stone-200 bg-white flex items-center justify-between">
         <Link href="/" className="inline-flex items-center gap-2.5 group">
-          <span className="text-emerald-700"><TesseractLogo size={20} strokeWidth={1.75} /></span>
+          <ChapaWorksLogo size={22} />
           <span className="text-lg font-serif font-bold text-emerald-800">ChapaWorks</span>
         </Link>
         <span className="text-sm text-stone-500">

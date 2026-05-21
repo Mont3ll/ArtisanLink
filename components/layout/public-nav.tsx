@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { Menu, X } from "lucide-react";
-import TesseractLogo from "@/components/common/TesseractLogo";
+import ChapaWorksLogo from "@/components/common/ChapaWorksLogo";
 import { useAuth } from "@clerk/nextjs";
 
 const navLinks = [
@@ -32,9 +32,7 @@ export default function PublicNav() {
           className="flex items-center gap-2.5 group"
           aria-label="ChapaWorks Home"
         >
-          <span className="text-emerald-700 group-hover:text-emerald-600 transition-colors">
-            <TesseractLogo size={22} strokeWidth={1.75} />
-          </span>
+          <ChapaWorksLogo size={24} />
           <span className="text-xl font-serif font-bold text-emerald-800 group-hover:text-emerald-700 transition-colors">
             ChapaWorks
           </span>

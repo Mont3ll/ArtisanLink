@@ -21,7 +21,7 @@ import {
   IconReportMoney,
 } from "@tabler/icons-react"
 import { useUser } from "@clerk/nextjs"
-import TesseractLogo from "@/components/common/TesseractLogo";
+import ChapaWorksLogo from "@/components/common/ChapaWorksLogo";
 
 import { NavDocuments } from "@/components/shared/nav-documents"
 import { NavMain } from "@/components/shared/nav-main"
@@ -150,7 +150,7 @@ export function AdminSidebar({ ...props }: React.ComponentProps<typeof Sidebar>)
               className="data-[slot=sidebar-menu-button]:!p-1.5"
             >
               <a href="/admin-dashboard">
-                <TesseractLogo size={20} strokeWidth={1.75} className="!size-5" />
+                <ChapaWorksLogo size={24} className="!size-6 dark:invert" />
                 <span className="text-base font-semibold">ChapaWorks Admin</span>
               </a>
             </SidebarMenuButton>

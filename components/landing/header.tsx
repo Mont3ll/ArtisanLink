@@ -5,7 +5,7 @@ import { useState, useRef, useEffect } from "react";
 import { Menu, X } from "lucide-react";
 import { useAuth } from "@clerk/nextjs";
 import gsap from "gsap";
-import TesseractLogo from "../common/TesseractLogo";
+import ChapaWorksLogo from "../common/ChapaWorksLogo";
 import RoundedButton from "../common/RoundedButton";
 import Magnetic from "../common/Magnetic";
 import Curve from "../common/Curve";
@@ -76,12 +76,10 @@ export default function Header() {
     <header className="border-b bg-white/80 dark:bg-slate-900/80 backdrop-blur-md sticky top-0 z-40">
       <div className="max-w-7xl mx-auto">
         <div className="flex items-center justify-between h-16">
-          {/* Logo — far left with tesseract */}
+          {/* Logo */}
           <Magnetic>
             <Link href="/" className="flex items-center gap-2.5 group" aria-label="Home">
-              <span className="text-slate-900 dark:text-slate-100 group-hover:text-emerald-700 transition-colors">
-                <TesseractLogo size={20} strokeWidth={1.75} />
-              </span>
+              <ChapaWorksLogo size={22} className="dark:invert" />
               <span className="font-serif font-bold text-lg text-slate-900 dark:text-slate-100">
                 ChapaWorks
               </span>

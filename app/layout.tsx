@@ -20,6 +20,20 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "ChapaWorks - Connect with Verified Local Artisans",
   description: "Discover skilled local artisans in Kenya. View portfolios, hire with confidence, and support local craftsmanship through our verified platform. ChapaWorks.",
+  icons: {
+    icon: [
+      { url: "/favicon-16x16.png", sizes: "16x16", type: "image/png" },
+      { url: "/favicon-32x32.png", sizes: "32x32", type: "image/png" },
+      { url: "/favicon.ico", sizes: "any" },
+    ],
+    apple: [
+      { url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" },
+    ],
+    other: [
+      { rel: "mask-icon", url: "/logo.svg" },
+    ],
+  },
+  manifest: "/site.webmanifest",
 };
 
 export default function RootLayout({

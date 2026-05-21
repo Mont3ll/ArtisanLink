@@ -13,7 +13,7 @@ import {
   ChevronRight,
 } from "lucide-react";
 import PublicNav from "@/components/layout/public-nav";
-import TesseractLogo from "@/components/common/TesseractLogo";
+import ChapaWorksLogo from "@/components/common/ChapaWorksLogo";
 import { ArtisanCard, ArtisanCardSkeleton, type ArtisanCardData } from "@/components/artisan";
 
 interface LiveArtisan extends ArtisanCardData {
@@ -223,7 +223,7 @@ export default function Home() {
       <footer className="border-t border-[#ddd] py-6 px-4">
         <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
           <Link href="/" className="flex items-center gap-2 text-emerald-700">
-            <TesseractLogo size={18} strokeWidth={1.75} />
+            <ChapaWorksLogo size={20} />
             <span className="font-serif font-bold text-[#222] text-sm">ChapaWorks</span>
           </Link>
           <nav className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2">

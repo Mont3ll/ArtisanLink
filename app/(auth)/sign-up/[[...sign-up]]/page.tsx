@@ -6,7 +6,7 @@ import { useSearchParams } from 'next/navigation';
 import { Loader2 } from 'lucide-react';
 import { SiGoogle } from 'react-icons/si';
 import Link from 'next/link';
-import TesseractLogo from '@/components/common/TesseractLogo';
+import ChapaWorksLogo from '@/components/common/ChapaWorksLogo';
 import { Mail } from 'lucide-react';
 
 const ROLE_COOKIE_NAME = 'chapaworks_signup_role';
@@ -74,7 +74,7 @@ function SignUpForm() {
                 <div className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium mb-4 ${
                   isArtisan ? 'bg-amber-100 text-amber-700' : 'bg-emerald-100 text-emerald-700'
                 }`}>
-                  {isArtisan ? <TesseractLogo size={14} strokeWidth={2} /> : null}
+                  
                   Signing up as {roleLabel}
                 </div>
                 <h1 className="text-2xl md:text-3xl font-serif font-bold text-stone-900 mb-2">{headline}</h1>
@@ -230,7 +230,7 @@ export default function SignUpPage() {
       {/* Minimal nav */}
       <nav className="px-6 py-4 border-b border-stone-200 bg-white flex items-center justify-between">
         <Link href="/" className="inline-flex items-center gap-2.5 group">
-          <span className="text-emerald-700"><TesseractLogo size={20} strokeWidth={1.75} /></span>
+          <ChapaWorksLogo size={22} />
           <span className="text-lg font-serif font-bold text-emerald-800">ChapaWorks</span>
         </Link>
         <span className="text-sm text-stone-500">
