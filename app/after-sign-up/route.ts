@@ -8,12 +8,13 @@ const VERIFIED_ROLE_COOKIE = "chapaworks_verified_role";
 const ALLOWED_ROLES = ["client", "artisan"] as const;
 type AllowedRole = (typeof ALLOWED_ROLES)[number];
 
-// Admin bootstrap: emails in this list auto-get ADMIN role on first sign-up.
-// Useful for the first admin to create their account without any special tooling.
-const ADMIN_BOOTSTRAP_EMAILS = (process.env.ADMIN_BOOTSTRAP_EMAILS || "")
-  .split(",")
-  .map((e) => e.trim().toLowerCase())
-  .filter(Boolean);
+// Admin bootstrap: read dynamically at runtime so tests can set process.env
+function getAdminBootstrapEmails(): string[] {
+  return (process.env.ADMIN_BOOTSTRAP_EMAILS || "")
+    .split(",")
+    .map((e) => e.trim().toLowerCase())
+    .filter(Boolean);
+}
 
 function isAllowedRole(value: string | undefined): value is AllowedRole {
   return ALLOWED_ROLES.includes(value as AllowedRole);
@@ -34,25 +35,40 @@ function isAllowedRole(value: string | undefined): value is AllowedRole {
 export async function GET(req: Request) {
   const { userId } = await auth();
   const baseUrl = new URL(req.url).origin;
+  const url = new URL(req.url);
 
   if (!userId) {
     return NextResponse.redirect(new URL("/sign-up", baseUrl));
   }
 
-  // --- Resolve role ---
+  // --- Resolve role (in priority order) ---
 
-  // Source 1: signup cookie (most reliable during initial sign-up)
+  // URL params are NOT available from Clerk Elements redirect (afterSignUpUrl not supported)
+  // Keeping URL param reading as future-proofing but primary mechanism is cookies.
+  const urlRoleParam = url.searchParams.get("role");
+  const urlInviteToken = url.searchParams.get("invite");
+
+  // Read cookies — all role/invite signals are stored here by the sign-up page
   const cookieStore = await cookies();
-  const cookieRole = cookieStore.get(ROLE_COOKIE_NAME)?.value;
+  const cookieInviteToken = cookieStore.get("chapaworks_invite_token")?.value;
+  const inviteToken = urlInviteToken || cookieInviteToken;
 
   let role: AllowedRole | undefined;
 
-  if (isAllowedRole(cookieRole)) {
-    role = cookieRole;
+  // Source 1: URL role param (future-proofing)
+  if (isAllowedRole(urlRoleParam ?? undefined)) {
+    role = urlRoleParam as AllowedRole;
   }
 
-  // Source 2: Clerk publicMetadata (handles repeat visits / redirects
-  // where the cookie may have expired but metadata was already set)
+  // Source 2: Role cookie (set by sign-up page, fixed by Suspense boundary)
+  if (!role) {
+    const cookieRole = cookieStore.get(ROLE_COOKIE_NAME)?.value;
+    if (isAllowedRole(cookieRole)) {
+      role = cookieRole;
+    }
+  }
+
+  // Source 3: Clerk publicMetadata (handles repeat visits)
   let clerkUserData;
   if (!role) {
     try {
@@ -67,6 +83,23 @@ export async function GET(req: Request) {
     }
   }
 
+  // Source 4: Invite token validation — if invite token in URL is valid, force artisan
+  // This is the authoritative override for invite-based sign-ups.
+  if (inviteToken && role !== 'artisan') {
+    try {
+      const invite = await prisma.artisanInvite.findUnique({
+        where: { token: inviteToken },
+        select: { status: true, expiresAt: true },
+      });
+      if (invite && invite.status === 'PENDING' && invite.expiresAt > new Date()) {
+        role = 'artisan';
+        console.log(`[INVITE] Valid invite token — forcing artisan role for ${userId}`);
+      }
+    } catch (err) {
+      console.error("Error validating invite token in after-sign-up:", err);
+    }
+  }
+
   // Source 3: Admin bootstrap — if the email is in ADMIN_BOOTSTRAP_EMAILS,
   // auto-assign admin role regardless of cookie/metadata.
   // This enables the first admin to sign up without any special tooling.
@@ -77,7 +110,7 @@ export async function GET(req: Request) {
       clerkUserData = await client.users.getUser(userId);
     }
     const signupEmail = clerkUserData?.emailAddresses?.[0]?.emailAddress?.toLowerCase() ?? "";
-    if (signupEmail && ADMIN_BOOTSTRAP_EMAILS.includes(signupEmail)) {
+    if (signupEmail && getAdminBootstrapEmails().includes(signupEmail)) {
       isAdminBootstrap = true;
       // Override role — admin emails always become admin
       await client.users.updateUserMetadata(userId, { publicMetadata: { role: "admin" } });
@@ -170,6 +203,19 @@ export async function GET(req: Request) {
   } catch (error) {
     console.error("Error syncing user to DB:", error);
     // Non-fatal: UserSyncProvider will retry on the dashboard
+  }
+
+  // Mark invite as accepted if a valid invite token was used
+  if (inviteToken && role === 'artisan') {
+    try {
+      await prisma.artisanInvite.updateMany({
+        where: { token: inviteToken, status: 'PENDING' },
+        data: { status: 'ACCEPTED', usedAt: new Date() },
+      });
+      console.log(`[INVITE] Marked invite ${urlInviteToken} as ACCEPTED`);
+    } catch (err) {
+      console.error("Error marking invite as accepted:", err);
+    }
   }
 
   // 3. Redirect to /after-sign-in which resolves the role from
