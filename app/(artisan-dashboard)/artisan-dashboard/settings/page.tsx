@@ -1,6 +1,7 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, Suspense } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -68,6 +69,16 @@ import {
 } from '@/lib/hooks'
 
 export default function SettingsPage() {
+  return (
+    <Suspense fallback={<div className="p-6"><div className="h-8 w-32 bg-muted rounded animate-pulse" /></div>}>
+      <SettingsPageContent />
+    </Suspense>
+  )
+}
+
+function SettingsPageContent() {
+  const searchParams = useSearchParams()
+  const defaultTab = searchParams.get('tab') || 'profile'
   // React Query hooks
   const { data: profileData, isLoading: profileLoading, error: profileError, refetch: refetchProfile } = useArtisanSettingsProfile()
   const { data: specData, isLoading: specLoading, error: specError, refetch: refetchSpec } = useArtisanSpecializations()
@@ -84,6 +95,18 @@ export default function SettingsPage() {
   const [deleteId, setDeleteId] = useState<string | null>(null)
   const [successMessage, setSuccessMessage] = useState<string | null>(null)
   const [certificateUrl, setCertificateUrl] = useState('')
+  
+  // Professional info state (bio, profession, hourlyRate, experience)
+  const [profInfo, setProfInfo] = useState({
+    bio: '',
+    profession: '',
+    hourlyRate: '',
+    experience: '',
+  })
+  const [profInfoInitialized, setProfInfoInitialized] = useState(false)
+  const [profInfoSaving, setProfInfoSaving] = useState(false)
+  const [profInfoSuccess, setProfInfoSuccess] = useState<string | null>(null)
+  const [profInfoError, setProfInfoError] = useState<string | null>(null)
   
   // Profile image state
   const [profileImage, setProfileImage] = useState('')
@@ -132,11 +155,55 @@ export default function SettingsPage() {
     setIdDocumentUrl(profile.idDocumentUrl || '')
     setIdDocumentType(profile.idDocumentType || '')
     setLocationInitialized(true)
+    if (!profInfoInitialized) {
+      setProfInfo({
+        bio: profile.bio || '',
+        profession: profile.profession || '',
+        hourlyRate: profile.hourlyRate?.toString() || '',
+        experience: profile.experience?.toString() || '',
+      })
+      setProfInfoInitialized(true)
+    }
   }
 
   const showSuccess = (message: string) => {
     setSuccessMessage(message)
     setTimeout(() => setSuccessMessage(null), 3000)
+  }
+
+  const handleSaveProfInfo = async () => {
+    setProfInfoError(null)
+    setProfInfoSuccess(null)
+    if (!profInfo.profession.trim()) {
+      setProfInfoError('Profession is required')
+      return
+    }
+    if (profInfo.bio && profInfo.bio.trim().length > 0 && profInfo.bio.trim().length < 50) {
+      setProfInfoError('Bio must be at least 50 characters (or leave empty)')
+      return
+    }
+    setProfInfoSaving(true)
+    try {
+      updateProfile.mutate({
+        bio: profInfo.bio.trim() || null,
+        profession: profInfo.profession.trim(),
+        hourlyRate: profInfo.hourlyRate ? parseFloat(profInfo.hourlyRate) : null,
+        experience: profInfo.experience ? parseInt(profInfo.experience, 10) : null,
+      }, {
+        onSuccess: () => {
+          setProfInfoSuccess('Professional info saved!')
+          setTimeout(() => setProfInfoSuccess(null), 4000)
+          refetchProfile()
+        },
+        onError: (err: unknown) => {
+          setProfInfoError(err instanceof Error ? err.message : 'Failed to save. Please try again.')
+        },
+        onSettled: () => setProfInfoSaving(false),
+      })
+    } catch {
+      setProfInfoError('Failed to save. Please try again.')
+      setProfInfoSaving(false)
+    }
   }
 
   const handleToggleAvailability = async () => {
@@ -372,7 +439,7 @@ export default function SettingsPage() {
       )}
 
       {/* Tabs */}
-      <Tabs defaultValue="profile" className="space-y-6">
+      <Tabs defaultValue={defaultTab} className="space-y-6">
         <TabsList>
           <TabsTrigger value="profile" className="gap-2">
             <Settings className="h-4 w-4" />
@@ -400,6 +467,110 @@ export default function SettingsPage() {
         <TabsContent value="profile" className="space-y-6">
           {/* Personal Information Card */}
           <PersonalInfoCard />
+
+          {/* Professional Info Card — bio, profession, hourlyRate, experience */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Briefcase className="h-5 w-5" />
+                Professional Information
+              </CardTitle>
+              <CardDescription>
+                Your profession, bio, and rate. This is what clients see on your profile.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {profileLoading ? (
+                <div className="space-y-4">
+                  <Skeleton className="h-10 w-full" />
+                  <Skeleton className="h-28 w-full" />
+                  <div className="grid grid-cols-2 gap-4">
+                    <Skeleton className="h-10 w-full" />
+                    <Skeleton className="h-10 w-full" />
+                  </div>
+                  <Skeleton className="h-10 w-32" />
+                </div>
+              ) : (
+                <>
+                  {profInfoSuccess && (
+                    <div className="flex items-center gap-2 rounded-lg border border-green-200 bg-green-50 p-3 text-sm text-green-800">
+                      <CheckCircle2 className="h-4 w-4 shrink-0" />
+                      {profInfoSuccess}
+                    </div>
+                  )}
+                  {profInfoError && (
+                    <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-800">
+                      {profInfoError}
+                    </div>
+                  )}
+                  <div className="space-y-2">
+                    <Label htmlFor="profProfession">Profession / Trade *</Label>
+                    <Input
+                      id="profProfession"
+                      value={profInfo.profession}
+                      onChange={(e) => setProfInfo(p => ({ ...p, profession: e.target.value }))}
+                      placeholder="e.g. Carpenter, Electrician, Plumber"
+                      maxLength={100}
+                    />
+                    <p className="text-xs text-muted-foreground">Your main trade or profession as it will appear in search results</p>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="profBio">Bio / About Me</Label>
+                    <Textarea
+                      id="profBio"
+                      value={profInfo.bio}
+                      onChange={(e) => setProfInfo(p => ({ ...p, bio: e.target.value }))}
+                      placeholder="Describe your experience, skills, and what makes you stand out. Minimum 50 characters."
+                      rows={4}
+                      maxLength={2000}
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      {profInfo.bio.length}/2000 characters
+                      {profInfo.bio.length > 0 && profInfo.bio.length < 50 && (
+                        <span className="text-amber-600 ml-2">({50 - profInfo.bio.length} more needed)</span>
+                      )}
+                    </p>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="profHourlyRate">Hourly Rate (KES)</Label>
+                      <Input
+                        id="profHourlyRate"
+                        type="number"
+                        value={profInfo.hourlyRate}
+                        onChange={(e) => setProfInfo(p => ({ ...p, hourlyRate: e.target.value }))}
+                        placeholder="e.g. 1200"
+                        min="0"
+                        max="50000"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="profExperience">Years of Experience</Label>
+                      <Input
+                        id="profExperience"
+                        type="number"
+                        value={profInfo.experience}
+                        onChange={(e) => setProfInfo(p => ({ ...p, experience: e.target.value }))}
+                        placeholder="e.g. 5"
+                        min="0"
+                        max="60"
+                      />
+                    </div>
+                  </div>
+                  <Button
+                    onClick={handleSaveProfInfo}
+                    disabled={profInfoSaving || updateProfile.isPending || !profInfo.profession.trim()}
+                  >
+                    {profInfoSaving || updateProfile.isPending ? (
+                      <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Saving...</>
+                    ) : (
+                      <><Save className="h-4 w-4 mr-2" /> Save Professional Info</>
+                    )}
+                  </Button>
+                </>
+              )}
+            </CardContent>
+          </Card>
 
           {/* Availability Card */}
           <Card>
