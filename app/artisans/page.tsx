@@ -3,7 +3,8 @@
 import { useState, useEffect, Suspense } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import ArtisansBrowseHeader from "@/components/layout/artisans-browse-header";
+import PublicNav from "@/components/layout/public-nav";
+import StickySearchPill from "@/components/layout/sticky-search-pill";
 import { ArtisanCard, ArtisanCardSkeleton, type ArtisanCardData } from "@/components/artisan";
 import {
   Search,
@@ -96,17 +97,62 @@ function BrowseArtisansContent() {
 
   return (
     <div className="bg-white text-[#222] min-h-screen">
-      {/* Morphing two-row header with scroll-responsive search pill */}
-      <ArtisansBrowseHeader
-        searchInput={searchInput}
-        onSearchChange={(v) => setSearchInput(v)}
-        onSearchSubmit={handleSearch}
-        activeCategory={profession || 'all'}
-        onCategoryChange={(id) => { setProfession(id === 'all' ? '' : id); setPage(1); }}
-        showFilters={showFilters}
-        onToggleFilters={() => setShowFilters(!showFilters)}
-        hasFilters={!!hasFilters}
-      />
+      {/* Same PublicNav as every other public page */}
+      <PublicNav />
+
+      {/* Page hero — headline + the morphing search pill */}
+      <div className="pt-10 pb-4 px-6 border-b border-[#ddd] bg-white">
+        <div className="max-w-2xl mx-auto text-center mb-6">
+          <p className="text-emerald-700 font-medium mb-2 tracking-wide text-xs uppercase">Browse Artisans</p>
+          <h1 className="text-2xl md:text-3xl font-serif font-semibold text-[#222] mb-1">
+            Discover skilled professionals
+          </h1>
+          <p className="text-[#6a6a6a] text-sm">All verified, rated by real clients across Kenya</p>
+        </div>
+
+        {/* Sticky morphing search pill — starts large, shrinks into nav on scroll */}
+        <div className="max-w-2xl mx-auto">
+          <StickySearchPill
+            searchInput={searchInput}
+            onSearchChange={(v) => setSearchInput(v)}
+            onSearchSubmit={handleSearch}
+            showFilters={showFilters}
+            onToggleFilters={() => setShowFilters(!showFilters)}
+            hasFilters={!!hasFilters}
+          />
+        </div>
+      </div>
+
+      {/* Category strip — profession quick-filters */}
+      <div className="border-b border-[#ddd] overflow-x-auto">
+        <div className="max-w-6xl mx-auto px-6">
+          <div className="flex items-center gap-0">
+            {[
+              { id: 'all', label: 'All' },
+              { id: 'Carpenter', label: 'Carpenter' },
+              { id: 'Electrician', label: 'Electrician' },
+              { id: 'Plumber', label: 'Plumber' },
+              { id: 'Painter', label: 'Painter' },
+              { id: 'Mason', label: 'Mason' },
+              { id: 'Tailor', label: 'Tailor' },
+              { id: 'Welder', label: 'Welder' },
+              { id: 'Mechanic', label: 'Mechanic' },
+              { id: 'Photographer', label: 'Photographer' },
+            ].map((cat) => {
+              const isActive = (cat.id === 'all' && !profession) || profession === cat.id;
+              return (
+                <button
+                  key={cat.id}
+                  onClick={() => { setProfession(cat.id === 'all' ? '' : cat.id); setPage(1); }}
+                  className={`flex-shrink-0 px-4 py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${isActive ? 'border-[#222] text-[#222]' : 'border-transparent text-[#6a6a6a] hover:text-[#222] hover:border-[#ddd]'}`}
+                >
+                  {cat.label}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      </div>
 
       {/* Active filter pills (below header) */}
       {(hasFilters || showFilters) && (
