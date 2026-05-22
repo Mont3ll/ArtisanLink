@@ -50,7 +50,7 @@ export async function GET(request: Request) {
       include: { profile: true }
     })
 
-    if (!user || user.role !== 'ARTISAN' || !user.profile) {
+    if (!user || user.role !== 'ARTISAN') {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
@@ -94,7 +94,7 @@ export async function POST(request: Request) {
       include: { profile: true }
     })
 
-    if (!user || user.role !== 'ARTISAN' || !user.profile) {
+    if (!user || user.role !== 'ARTISAN') {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 

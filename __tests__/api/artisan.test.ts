@@ -31,6 +31,8 @@ vi.mock('@/lib/prisma', () => ({
     },
     profile: {
       update: vi.fn(),
+      create: vi.fn(),
+      findUnique: vi.fn(),
     },
     conversation: {
       count: vi.fn(),
@@ -203,19 +205,26 @@ describe('Artisan Profile API', () => {
       expect(data.error).toBe('Forbidden')
     })
 
-    it('should return 404 when profile not found', async () => {
+    it('auto-creates profile when missing (self-healing)', async () => {
       vi.mocked(auth).mockResolvedValue({ userId: 'clerk_123' } as never)
-      vi.mocked(prisma.user.findUnique).mockResolvedValue({
-        id: 'artisan_1',
-        role: 'ARTISAN',
-        profile: null,
-      } as never)
+      vi.mocked(prisma.user.findUnique)
+        .mockResolvedValueOnce({ id: 'artisan_1', role: 'ARTISAN', profile: null } as never) // first call: no profile
+        .mockResolvedValueOnce({ // second call after profile creation
+          id: 'artisan_1', role: 'ARTISAN',
+          profile: { id: 'prof_1', artisanStatus: 'PENDING', specializations: [], verificationHistory: [] },
+        } as never)
+      vi.mocked(prisma.profile.create).mockResolvedValue({ id: 'prof_1' } as never)
 
       const response = await artisanProfileGET()
       const data = await response.json()
 
-      expect(response.status).toBe(404)
-      expect(data.error).toBe('Profile not found')
+      // Should auto-create profile and return 200
+      expect(prisma.profile.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({ userId: 'artisan_1', artisanStatus: 'PENDING' })
+        })
+      )
+      expect(response.status).toBe(200)
     })
 
     it('should return artisan profile with counties', async () => {

@@ -67,7 +67,7 @@ export async function GET() {
     }
 
     // Get user and profile
-    const user = await prisma.user.findUnique({
+    let user = await prisma.user.findUnique({
       where: { clerkId: userId },
       include: { 
         profile: {
@@ -75,7 +75,7 @@ export async function GET() {
             specializations: true,
             verificationHistory: {
               orderBy: { submittedAt: 'desc' },
-              take: 5, // Last 5 verification attempts
+              take: 5,
             },
           }
         }
@@ -86,8 +86,35 @@ export async function GET() {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
+    // Auto-create profile if missing (self-healing for partially-created accounts)
     if (!user.profile) {
-      return NextResponse.json({ error: 'Profile not found' }, { status: 404 })
+      logger.warn('Artisan has no profile — auto-creating', { userId: user.id })
+      await prisma.profile.create({
+        data: {
+          userId: user.id,
+          country: 'Kenya',
+          artisanStatus: 'PENDING',
+          isAvailable: false,
+        },
+      })
+      // Re-fetch with profile
+      user = await prisma.user.findUnique({
+        where: { clerkId: userId },
+        include: {
+          profile: {
+            include: {
+              specializations: true,
+              verificationHistory: {
+                orderBy: { submittedAt: 'desc' },
+                take: 5,
+              },
+            }
+          }
+        }
+      })
+      if (!user?.profile) {
+        return NextResponse.json({ error: 'Failed to create profile' }, { status: 500 })
+      }
     }
 
     return NextResponse.json({

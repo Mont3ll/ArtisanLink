@@ -160,6 +160,7 @@ export async function GET(req: Request) {
 
       if (existingByEmail) {
         // Link the real Clerk ID to the seeded user record
+        const linkedRole = existingByEmail.role === "ADMIN" || dbRole === "ADMIN" ? "ADMIN" : dbRole;
         await prisma.user.update({
           where: { id: existingByEmail.id },
           data: {
@@ -169,10 +170,22 @@ export async function GET(req: Request) {
             phone: phone ?? existingByEmail.phone,
             status: "ACTIVE",
             emailVerifiedAt: new Date(),
-            // Preserve ADMIN role if seeded as admin
-            role: existingByEmail.role === "ADMIN" || dbRole === "ADMIN" ? "ADMIN" : dbRole,
+            role: linkedRole,
           },
         });
+        // Ensure profile exists for artisan accounts (seeded user might lack one)
+        const existingProfile = await prisma.profile.findUnique({ where: { userId: existingByEmail.id } });
+        if (!existingProfile && linkedRole === "ARTISAN") {
+          await prisma.profile.create({
+            data: {
+              userId: existingByEmail.id,
+              country: "Kenya",
+              artisanStatus: "PENDING",
+              isAvailable: false,
+            },
+          });
+          console.log(`[SYNC] Created missing profile for linked artisan ${existingByEmail.id}`);
+        }
         console.log(`[SYNC] Linked Clerk user ${userId} to existing DB user ${existingByEmail.id} (${email})`);
       } else {
         // Create new user

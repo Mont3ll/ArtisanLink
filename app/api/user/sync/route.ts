@@ -98,21 +98,48 @@ export async function POST() {
       }
       
       // Also update basic user info if it changed in Clerk
-      const needsUpdate = 
-        user.firstName !== (clerkUser.firstName || '') ||
-        user.lastName !== (clerkUser.lastName || '') ||
-        user.email !== (clerkUser.emailAddresses[0]?.emailAddress || '')
-      
+      // Guard: only compare if values are actually different to avoid needless DB writes
+      const clerkEmail = clerkUser.emailAddresses[0]?.emailAddress || ''
+      const clerkFirst = clerkUser.firstName || ''
+      const clerkLast = clerkUser.lastName || ''
+      const needsUpdate =
+        (clerkFirst && user.firstName !== clerkFirst) ||
+        (clerkLast && user.lastName !== clerkLast) ||
+        (clerkEmail && user.email !== clerkEmail)
+
       if (needsUpdate) {
-        user = await prisma.user.update({
-          where: { clerkId: userId },
-          data: {
-            firstName: clerkUser.firstName || user.firstName,
-            lastName: clerkUser.lastName || user.lastName,
-            email: clerkUser.emailAddresses[0]?.emailAddress || user.email,
-          },
-          include: { profile: true }
-        })
+        try {
+          user = await prisma.user.update({
+            where: { clerkId: userId },
+            data: {
+              ...(clerkFirst && { firstName: clerkFirst }),
+              ...(clerkLast && { lastName: clerkLast }),
+              ...(clerkEmail && { email: clerkEmail }),
+            },
+            include: { profile: true }
+          })
+        } catch (updateError) {
+          // Non-fatal: log and continue — don't fail sync over a name/email update
+          console.warn('[UserSync] Non-fatal update error (possible email conflict):', 
+            updateError instanceof Error ? updateError.message : updateError)
+        }
+      }
+
+      // Auto-create profile for ARTISAN users who somehow have none (self-healing)
+      if (user.role === 'ARTISAN' && !user.profile) {
+        console.warn('[UserSync] ARTISAN user has no profile, auto-creating:', user.id)
+        try {
+          await prisma.profile.create({
+            data: {
+              userId: user.id,
+              country: 'Kenya',
+              artisanStatus: 'PENDING',
+              isAvailable: false,
+            },
+          })
+        } catch (profileError) {
+          console.error('[UserSync] Failed to auto-create profile:', profileError)
+        }
       }
     }
 
