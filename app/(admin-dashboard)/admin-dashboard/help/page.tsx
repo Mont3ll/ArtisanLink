@@ -275,7 +275,7 @@ export default function HelpPage() {
                     <h4 className="font-medium">Knowledge Base</h4>
                     <p className="text-sm text-muted-foreground">Searchable articles and guides</p>
                   </div>
-                  <Button variant="outline" size="sm">Access</Button>
+                  <a href="/admin-dashboard/search" target="_blank"><Button variant="outline" size="sm">Search</Button></a>
                 </div>
                 <div className="flex items-center gap-3 p-3 border rounded-lg">
                   <MessageCircle className="h-8 w-8 text-green-600" />
@@ -283,7 +283,7 @@ export default function HelpPage() {
                     <h4 className="font-medium">Community Forum</h4>
                     <p className="text-sm text-muted-foreground">Connect with other admins</p>
                   </div>
-                  <Button variant="outline" size="sm">Visit</Button>
+                  <a href="https://github.com" target="_blank" rel="noopener"><Button variant="outline" size="sm">Visit</Button></a>
                 </div>
                 <div className="flex items-center gap-3 p-3 border rounded-lg">
                   <Download className="h-8 w-8 text-purple-600" />
@@ -291,7 +291,7 @@ export default function HelpPage() {
                     <h4 className="font-medium">Downloads</h4>
                     <p className="text-sm text-muted-foreground">Documentation and templates</p>
                   </div>
-                  <Button variant="outline" size="sm">Browse</Button>
+                  <a href="/admin-dashboard/reports" target="_blank"><Button variant="outline" size="sm">Browse</Button></a>
                 </div>
               </CardContent>
             </Card>

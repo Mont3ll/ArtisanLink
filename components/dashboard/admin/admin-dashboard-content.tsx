@@ -11,6 +11,7 @@ import {
   useSystemTasks, 
   useRecentUsers,
 } from "@/lib/hooks"
+import { useAdminMonitoring } from "@/lib/hooks/use-admin-monitoring"
 import { 
   Users, 
   Hammer, 
@@ -150,6 +151,7 @@ export function AdminDashboardContent() {
   const { data: stats, isLoading: statsLoading, error: statsError } = useAdminStats()
   const { data: systemTasks, isLoading: tasksLoading } = useSystemTasks()
   const { data: recentUsers, isLoading: usersLoading } = useRecentUsers()
+  const { data: monitoring, isLoading: monitoringLoading } = useAdminMonitoring()
 
   // Show error state if stats failed (critical data)
   if (statsError) {
@@ -308,18 +310,18 @@ export function AdminDashboardContent() {
             />
             <HealthRow
               label="Average Response Time"
-              value="245ms"
-              isLoading={statsLoading}
+              value={monitoring ? `${monitoring.systemHealth.api.responseTime}ms` : '-'}
+              isLoading={monitoringLoading}
             />
             <HealthRow
               label="Error Rate"
-              value="0.02%"
-              isLoading={statsLoading}
+              value={monitoring ? `${(monitoring.systemHealth.server.cpuUsage ?? 0).toFixed(1)}% CPU` : '-'}
+              isLoading={monitoringLoading}
             />
             <HealthRow
-              label="Active Connections"
-              value="1,847"
-              isLoading={statsLoading}
+              label="Server Memory"
+              value={monitoring ? `${monitoring.systemHealth.server.memoryUsage}%` : '-'}
+              isLoading={monitoringLoading}
             />
           </CardContent>
         </Card>
@@ -354,13 +356,13 @@ export function AdminDashboardContent() {
                 <Shield className="w-3.5 h-3.5 text-amber-600" />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium leading-tight">
+                <span className="block text-sm font-medium leading-tight">
                   {statsLoading ? (
                     <Skeleton className="h-3.5 w-32 inline-block" />
                   ) : (
                     <>{stats?.pendingVerifications ?? 0} pending verifications</>
                   )}
-                </p>
+                </span>
                 <p className="text-xs text-muted-foreground">Awaiting your review</p>
               </div>
               <Badge variant="outline" className="text-xs bg-amber-50 text-amber-700 border-amber-200 flex-shrink-0">verify</Badge>

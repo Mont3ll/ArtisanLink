@@ -131,6 +131,8 @@ export default function VerificationPage() {
   const [adminNotes, setAdminNotes] = useState("")
   const [searchTerm, setSearchTerm] = useState("")
   const [dialogOpen, setDialogOpen] = useState(false)
+  const [rejectDialogOpen, setRejectDialogOpen] = useState(false)
+  const [artisanToReject, setArtisanToReject] = useState<string | null>(null)
 
   // React Query hooks
   const { pendingArtisans, stats, isLoading, error, refetch } = useAdminVerification()
@@ -146,24 +148,57 @@ export default function VerificationPage() {
     )
   }, [pendingArtisans, searchTerm])
 
-  // Handle verification action
-  const handleVerification = async (artisanId: string, action: 'APPROVE' | 'REJECT') => {
+  // Handle APPROVE directly
+  const handleApprove = (artisanId: string) => {
     processVerification.mutate(
-      { 
-        artisanId, 
-        action, 
-        reason: action === 'REJECT' ? rejectionReason : undefined,
-        adminNotes: adminNotes || undefined,
-      },
+      { artisanId, action: 'APPROVE', adminNotes: adminNotes || undefined },
       {
         onSuccess: () => {
           setSelectedArtisan(null)
-          setRejectionReason("")
           setAdminNotes("")
           setDialogOpen(false)
         },
       }
     )
+  }
+
+  // Open reject modal
+  const initiateReject = (artisanId: string) => {
+    setArtisanToReject(artisanId)
+    setRejectionReason("")
+    setRejectDialogOpen(true)
+  }
+
+  // Confirm rejection from the rejection sub-modal
+  const handleConfirmReject = () => {
+    if (!artisanToReject) return
+    if (!rejectionReason.trim()) {
+      return // validation handled in UI
+    }
+    processVerification.mutate(
+      {
+        artisanId: artisanToReject,
+        action: 'REJECT',
+        reason: rejectionReason,
+        adminNotes: adminNotes || undefined,
+      },
+      {
+        onSuccess: () => {
+          setArtisanToReject(null)
+          setRejectionReason("")
+          setAdminNotes("")
+          setRejectDialogOpen(false)
+          setSelectedArtisan(null)
+          setDialogOpen(false)
+        },
+      }
+    )
+  }
+
+  // Legacy handler kept for compatibility
+  const handleVerification = async (artisanId: string, action: 'APPROVE' | 'REJECT') => {
+    if (action === 'REJECT') { initiateReject(artisanId); return }
+    handleApprove(artisanId)
   }
 
   // Error state
@@ -464,18 +499,9 @@ export default function VerificationPage() {
                                   </div>
                                 )}
 
-                                {/* Rejection Reason */}
-                                <div className="space-y-1.5">
-                                  <label className="text-sm font-medium">Rejection Reason <span className="text-muted-foreground">(shown to artisan)</span>:</label>
-                                  <Textarea
-                                    placeholder="Explain why the application is being rejected (required for rejection)..."
-                                    value={rejectionReason}
-                                    onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setRejectionReason(e.target.value)}
-                                    rows={3}
-                                  />
-                                </div>
+                                {/* Rejection Reason moved to its own modal — see rejectDialogOpen below */}
 
-                                {/* Admin Notes */}
+                                {/* Admin Notes (internal, stays in review modal) */}
                                 <div className="space-y-1.5">
                                   <label className="text-sm font-medium">Admin Notes <span className="text-muted-foreground">(internal only)</span>:</label>
                                   <Textarea
@@ -525,6 +551,50 @@ export default function VerificationPage() {
           </div>
         </CardContent>
       </Card>
+
+      {/* ─── Rejection confirmation sub-modal ─── */}
+      <Dialog open={rejectDialogOpen} onOpenChange={(open) => { setRejectDialogOpen(open); if (!open) { setArtisanToReject(null); setRejectionReason(''); } }}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-destructive">
+              <XCircle className="h-5 w-5" />
+              Reject Verification
+            </DialogTitle>
+            <DialogDescription>
+              You are about to reject this artisan&apos;s verification. Please provide a reason — it will be sent to the artisan.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            <div className="space-y-1.5">
+              <label className="text-sm font-medium">Rejection Reason <span className="text-destructive">*</span></label>
+              <Textarea
+                placeholder="E.g. Certificate is not clearly readable. Please re-upload a higher quality scan..."
+                value={rejectionReason}
+                onChange={(e) => setRejectionReason(e.target.value)}
+                rows={4}
+                className="resize-none"
+              />
+              {rejectionReason.trim().length < 10 && rejectionReason.length > 0 && (
+                <p className="text-xs text-destructive">Please provide a more detailed reason (min 10 characters)</p>
+              )}
+            </div>
+          </div>
+          <div className="flex justify-end gap-3">
+            <Button variant="outline" onClick={() => setRejectDialogOpen(false)}>Cancel</Button>
+            <Button
+              variant="destructive"
+              onClick={handleConfirmReject}
+              disabled={!rejectionReason.trim() || rejectionReason.trim().length < 10 || processVerification.isPending}
+            >
+              {processVerification.isPending ? (
+                <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Rejecting...</>
+              ) : (
+                <><XCircle className="h-4 w-4 mr-2" /> Confirm Rejection</>
+              )}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

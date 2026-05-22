@@ -1,7 +1,8 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, Suspense } from 'react'
 import Link from 'next/link'
+import { useSearchParams } from 'next/navigation'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -25,6 +26,16 @@ import { useAdminArtisans, type AdminArtisan } from '@/lib/hooks'
 import InviteArtisans from '@/components/dashboard/admin/invite-artisans'
 
 export default function ArtisansPage() {
+  return (
+    <Suspense fallback={<div className="p-6"><div className="h-8 w-32 bg-muted rounded animate-pulse" /></div>}>
+      <ArtisansPageContent />
+    </Suspense>
+  )
+}
+
+function ArtisansPageContent() {
+  const searchParams = useSearchParams()
+  const defaultTab = searchParams.get('tab') || 'all'
   const [page, setPage] = useState(1)
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState<'PENDING' | 'VERIFIED' | 'REJECTED' | undefined>()
@@ -219,7 +230,7 @@ export default function ArtisansPage() {
       </Card>
 
       {/* Artisans Tabs */}
-      <Tabs defaultValue="all" className="space-y-6">
+      <Tabs defaultValue={defaultTab} className="space-y-6">
         <TabsList>
           <TabsTrigger value="all">All Artisans ({stats?.totalArtisans ?? 0})</TabsTrigger>
           <TabsTrigger value="verified">Verified ({stats?.verifiedCount ?? 0})</TabsTrigger>
@@ -420,12 +431,11 @@ function ArtisanTable({
             </TableCell>
             <TableCell>
               <div className="flex items-center gap-2">
-                <Button variant="ghost" size="sm">
-                  <Eye className="h-4 w-4" />
-                </Button>
-                <Button variant="ghost" size="sm">
-                  <MoreVertical className="h-4 w-4" />
-                </Button>
+                <Link href={`/artisans/${artisan.id}`}>
+                  <Button variant="ghost" size="sm" title="View public profile">
+                    <Eye className="h-4 w-4" />
+                  </Button>
+                </Link>
               </div>
             </TableCell>
           </TableRow>
@@ -468,13 +478,12 @@ function ArtisanCard({
         </div>
       </div>
       <div className="mt-3 flex gap-2">
-        <Button variant="outline" size="sm" className="flex-1">
-          <Eye className="h-3 w-3 mr-1" />
-          View
-        </Button>
-        <Button variant="outline" size="sm">
-          <MoreVertical className="h-3 w-3" />
-        </Button>
+        <Link href={`/artisans/${artisan.id}`} className="flex-1">
+          <Button variant="outline" size="sm" className="w-full">
+            <Eye className="h-3 w-3 mr-1" />
+            View Profile
+          </Button>
+        </Link>
       </div>
     </div>
   )

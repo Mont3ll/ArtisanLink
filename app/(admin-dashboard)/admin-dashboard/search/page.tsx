@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import Link from 'next/link'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -391,7 +392,7 @@ export default function SearchPage() {
                       <div className="flex items-center gap-3">
                         <Badge variant="outline">{user.role}</Badge>
                         {getStatusBadge(user.status)}
-                        <Button variant="outline" size="sm">View</Button>
+                        <Link href={`/admin-dashboard/users`}><Button variant="outline" size="sm">View</Button></Link>
                       </div>
                     </div>
                   ))
@@ -449,7 +450,7 @@ export default function SearchPage() {
                         </div>
                       </div>
                       <div className="mt-3">
-                        <Button variant="outline" size="sm">View Profile</Button>
+                        <Link href={`/artisans/${artisan.id}`}><Button variant="outline" size="sm">View Profile</Button></Link>
                       </div>
                     </div>
                   ))
