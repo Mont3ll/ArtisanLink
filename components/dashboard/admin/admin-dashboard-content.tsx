@@ -21,6 +21,7 @@ import {
   Settings,
   Shield,
   MapPin,
+  Star,
 } from "lucide-react"
 
 // Stat card with skeleton support
@@ -328,41 +329,72 @@ export function AdminDashboardContent() {
             <CardTitle>Recent Activity</CardTitle>
             <CardDescription>Latest platform events and user actions</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex items-start gap-3 p-4 border rounded-lg">
-              <div className="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center">
-                <Users className="w-4 h-4 text-emerald-600" />
+          <CardContent className="divide-y">
+            {/* New artisans — link to artisans page */}
+            <Link
+              href="/admin-dashboard/artisans"
+              className="flex items-center gap-3 py-3 hover:bg-muted/50 rounded-lg px-2 -mx-2 transition-colors group"
+            >
+              <div className="w-7 h-7 rounded-full bg-emerald-100 flex items-center justify-center flex-shrink-0">
+                <Users className="w-3.5 h-3.5 text-emerald-600" />
               </div>
-              <div className="flex-1 space-y-1">
-                <p className="text-sm font-medium">New artisan registration</p>
-                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                    <span>Recent registrations</span>
-                    <Badge variant="outline" className="text-xs">artisan</Badge>
-                    <div className="flex items-center gap-1">
-                      <MapPin className="w-3 h-3" />
-                      Kenya
-                    </div>
-                  </div>
-                  <p className="text-xs text-muted-foreground">Today</p>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium leading-tight">New artisan registrations</p>
+                <p className="text-xs text-muted-foreground">Review and manage new joiners</p>
               </div>
-            </div>
-            <div className="flex items-start gap-3 p-4 border rounded-lg">
-              <div className="w-8 h-8 rounded-full bg-amber-100 flex items-center justify-center">
-                <Shield className="w-4 h-4 text-amber-600" />
+              <Badge variant="outline" className="text-xs flex-shrink-0">artisans</Badge>
+            </Link>
+
+            {/* Pending verifications — link to verification page */}
+            <Link
+              href="/admin-dashboard/artisans?tab=pending"
+              className="flex items-center gap-3 py-3 hover:bg-muted/50 rounded-lg px-2 -mx-2 transition-colors group"
+            >
+              <div className="w-7 h-7 rounded-full bg-amber-100 flex items-center justify-center flex-shrink-0">
+                <Shield className="w-3.5 h-3.5 text-amber-600" />
               </div>
-              <div className="flex-1 space-y-1">
-                <p className="text-sm font-medium">Pending verifications</p>
-                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                    {statsLoading ? (
-                      <Skeleton className="h-3 w-20" />
-                    ) : (
-                      <span>{stats?.pendingVerifications ?? 0} pending</span>
-                    )}
-                    <Badge variant="outline" className="text-xs">verification</Badge>
-                  </div>
-                  <p className="text-xs text-muted-foreground">Awaiting review</p>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium leading-tight">
+                  {statsLoading ? (
+                    <Skeleton className="h-3.5 w-32 inline-block" />
+                  ) : (
+                    <>{stats?.pendingVerifications ?? 0} pending verifications</>
+                  )}
+                </p>
+                <p className="text-xs text-muted-foreground">Awaiting your review</p>
               </div>
-            </div>
+              <Badge variant="outline" className="text-xs bg-amber-50 text-amber-700 border-amber-200 flex-shrink-0">verify</Badge>
+            </Link>
+
+            {/* Subscriptions — link to subscriptions page */}
+            <Link
+              href="/admin-dashboard/subscriptions"
+              className="flex items-center gap-3 py-3 hover:bg-muted/50 rounded-lg px-2 -mx-2 transition-colors group"
+            >
+              <div className="w-7 h-7 rounded-full bg-purple-100 flex items-center justify-center flex-shrink-0">
+                <Star className="w-3.5 h-3.5 text-purple-600" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium leading-tight">Subscription activity</p>
+                <p className="text-xs text-muted-foreground">Active plans and renewals</p>
+              </div>
+              <Badge variant="outline" className="text-xs flex-shrink-0">subscriptions</Badge>
+            </Link>
+
+            {/* Users — link to users page */}
+            <Link
+              href="/admin-dashboard/users"
+              className="flex items-center gap-3 py-3 hover:bg-muted/50 rounded-lg px-2 -mx-2 transition-colors group"
+            >
+              <div className="w-7 h-7 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
+                <Users className="w-3.5 h-3.5 text-blue-600" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium leading-tight">Platform users</p>
+                <p className="text-xs text-muted-foreground">Clients, artisans, and admins</p>
+              </div>
+              <Badge variant="outline" className="text-xs flex-shrink-0">users</Badge>
+            </Link>
           </CardContent>
         </Card>
       </div>

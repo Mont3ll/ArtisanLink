@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import Link from 'next/link'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -287,7 +288,7 @@ export default function ArtisansPage() {
               ) : pendingArtisans.length === 0 ? (
                 <EmptyState message="No pending verifications" />
               ) : (
-                <div className="space-y-4">
+                <div className="divide-y">
                   {pendingArtisans.map((artisan) => (
                     <PendingArtisanRow 
                       key={artisan.id} 
@@ -313,7 +314,7 @@ export default function ArtisansPage() {
               ) : subscribedArtisans.length === 0 ? (
                 <EmptyState message="No subscribed artisans found" />
               ) : (
-                <div className="space-y-4">
+                <div className="divide-y">
                   {subscribedArtisans.map((artisan) => (
                     <SubscribedArtisanRow 
                       key={artisan.id} 
@@ -487,21 +488,29 @@ function PendingArtisanRow({
   getStatusBadge: (status: string) => React.ReactNode
 }) {
   return (
-    <div className="flex items-center justify-between p-4 border rounded-lg">
-      <div className="flex items-center gap-4">
-        <div className="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center">
-          <Hammer className="h-6 w-6 text-orange-600" />
-        </div>
-        <div>
-          <div className="font-medium">{artisan.name}</div>
-          <div className="text-sm text-muted-foreground">{artisan.profession || 'Not specified'}</div>
-          <div className="text-sm text-muted-foreground">{artisan.location || 'Not specified'}</div>
-        </div>
+    <div className="flex items-center gap-3 py-2.5 border-b last:border-0">
+      {/* Avatar */}
+      <div className="w-8 h-8 bg-orange-100 rounded-full flex items-center justify-center flex-shrink-0">
+        <Hammer className="h-4 w-4 text-orange-600" />
       </div>
-      <div className="flex items-center gap-3">
-        {getStatusBadge(artisan.status)}
-        <Button variant="outline" size="sm">Review</Button>
+      {/* Info */}
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-2 flex-wrap">
+          <span className="text-sm font-medium truncate">{artisan.name}</span>
+          {getStatusBadge(artisan.status)}
+        </div>
+        <p className="text-xs text-muted-foreground truncate">
+          {artisan.profession || 'No profession'}
+          {artisan.location ? ` · ${artisan.location}` : ''}
+        </p>
       </div>
+      {/* Action — navigates to verification page */}
+      <Link href="/admin-dashboard/artisans?tab=verification">
+        <Button variant="outline" size="sm" className="text-xs h-7 px-2.5">
+          <Eye className="h-3 w-3 mr-1" />
+          Review
+        </Button>
+      </Link>
     </div>
   )
 }
@@ -514,25 +523,28 @@ function SubscribedArtisanRow({
   getSubscriptionBadge: (status: string) => React.ReactNode
 }) {
   return (
-    <div className="flex items-center justify-between p-4 border rounded-lg">
-      <div className="flex items-center gap-4">
-        <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
-          <Star className="h-6 w-6 text-green-600" />
-        </div>
-        <div>
-          <div className="font-medium">{artisan.name}</div>
-          <div className="text-sm text-muted-foreground">{artisan.profession || 'Not specified'}</div>
-          <div className="text-sm text-muted-foreground">
-            {artisan.rating.toFixed(1)} rating - {artisan.totalReviews} reviews
-          </div>
-        </div>
+    <div className="flex items-center gap-3 py-2.5 border-b last:border-0">
+      {/* Avatar */}
+      <div className="w-8 h-8 bg-emerald-100 rounded-full flex items-center justify-center flex-shrink-0">
+        <Star className="h-4 w-4 text-emerald-600" />
       </div>
-      <div className="flex items-center gap-3">
-        {getSubscriptionBadge(artisan.subscriptionStatus)}
-        <Button variant="outline" size="sm">
-          <Eye className="h-4 w-4" />
+      {/* Info */}
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-2 flex-wrap">
+          <span className="text-sm font-medium truncate">{artisan.name}</span>
+          {getSubscriptionBadge(artisan.subscriptionStatus)}
+        </div>
+        <p className="text-xs text-muted-foreground truncate">
+          {artisan.profession || 'No profession'}
+          {artisan.rating > 0 ? ` · ★ ${artisan.rating.toFixed(1)} (${artisan.totalReviews})` : ''}
+        </p>
+      </div>
+      {/* Action */}
+      <Link href={`/admin-dashboard/artisans?id=${artisan.id}`}>
+        <Button variant="ghost" size="sm" className="text-xs h-7 px-2.5">
+          <Eye className="h-3 w-3" />
         </Button>
-      </div>
+      </Link>
     </div>
   )
 }

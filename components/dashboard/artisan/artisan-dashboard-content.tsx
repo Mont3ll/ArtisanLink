@@ -109,7 +109,7 @@ function VerificationBanner({ status, rejectionReason }: { status: string | null
               : 'Please upload your certificate and ID document to start the verification process. You will not appear in search results until verified.'}
           </p>
           <div className="pt-2">
-            <Link href="/artisan-dashboard/settings">
+            <Link href="/artisan-dashboard/settings?tab=verification">
               <Button size="sm" variant="outline" className="border-amber-300 text-amber-700 hover:bg-amber-100 dark:border-amber-800 dark:text-amber-300 dark:hover:bg-amber-900">
                 <Shield className="mr-2 h-4 w-4" />
                 {status === 'PENDING' ? 'View Verification Status' : 'Start Verification'}

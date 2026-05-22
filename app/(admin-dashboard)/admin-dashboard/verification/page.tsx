@@ -386,8 +386,8 @@ export default function VerificationPage() {
                               Review
                             </Button>
                           </DialogTrigger>
-                          <DialogContent className="max-w-2xl">
-                            <DialogHeader>
+                          <DialogContent className="max-w-2xl w-full max-h-[90vh] flex flex-col">
+                            <DialogHeader className="flex-shrink-0">
                               <DialogTitle>Artisan Verification Review</DialogTitle>
                               <DialogDescription>
                                 Review the artisan&apos;s profile and certificate before making a decision
@@ -395,131 +395,125 @@ export default function VerificationPage() {
                             </DialogHeader>
                             
                             {selectedArtisan && (
-                              <div className="space-y-6">
+                              <div className="overflow-y-auto flex-1 space-y-5 pr-1">
                                 {/* Personal Information */}
-                                <div className="grid grid-cols-2 gap-4">
-                                  <div className="space-y-2">
-                                    <div className="flex items-center space-x-2">
-                                      <User className="h-4 w-4 text-muted-foreground" />
-                                      <span className="font-medium">Name:</span>
+                                <div className="grid grid-cols-2 gap-3">
+                                  <div>
+                                    <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-1">
+                                      <User className="h-3.5 w-3.5" />
+                                      <span>Name</span>
                                     </div>
-                                    <p>{selectedArtisan.firstName} {selectedArtisan.lastName}</p>
+                                    <p className="text-sm font-medium">{selectedArtisan.firstName} {selectedArtisan.lastName}</p>
                                   </div>
-                                  <div className="space-y-2">
-                                    <div className="flex items-center space-x-2">
-                                      <Mail className="h-4 w-4 text-muted-foreground" />
-                                      <span className="font-medium">Email:</span>
+                                  <div>
+                                    <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-1">
+                                      <Mail className="h-3.5 w-3.5" />
+                                      <span>Email</span>
                                     </div>
-                                    <p>{selectedArtisan.email}</p>
+                                    <p className="text-sm">{selectedArtisan.email}</p>
                                   </div>
-                                  <div className="space-y-2">
-                                    <div className="flex items-center space-x-2">
-                                      <Phone className="h-4 w-4 text-muted-foreground" />
-                                      <span className="font-medium">Phone:</span>
+                                  <div>
+                                    <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-1">
+                                      <Phone className="h-3.5 w-3.5" />
+                                      <span>Phone</span>
                                     </div>
-                                    <p>{selectedArtisan.phone || 'Not provided'}</p>
+                                    <p className="text-sm">{selectedArtisan.phone || 'Not provided'}</p>
                                   </div>
-                                  <div className="space-y-2">
-                                    <div className="flex items-center space-x-2">
-                                      <MapPin className="h-4 w-4 text-muted-foreground" />
-                                      <span className="font-medium">Location:</span>
+                                  <div>
+                                    <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-1">
+                                      <MapPin className="h-3.5 w-3.5" />
+                                      <span>Location</span>
                                     </div>
-                                    <p>{selectedArtisan.profile?.city || 'Not specified'}</p>
+                                    <p className="text-sm">{selectedArtisan.profile?.city || 'Not specified'}</p>
                                   </div>
                                 </div>
 
                                 {/* Professional Information */}
-                                <div className="space-y-4">
-                                  <h4 className="font-medium">Professional Information</h4>
-                                  <div className="grid grid-cols-2 gap-4">
+                                <div className="rounded-lg border p-3 space-y-2">
+                                  <h4 className="text-sm font-semibold">Professional Information</h4>
+                                  <div className="grid grid-cols-2 gap-3">
                                     <div>
-                                      <p className="font-medium">Profession:</p>
-                                      <p>{selectedArtisan.profile?.profession || 'Not specified'}</p>
+                                      <p className="text-xs text-muted-foreground">Profession</p>
+                                      <p className="text-sm">{selectedArtisan.profile?.profession || 'Not specified'}</p>
                                     </div>
                                     <div>
-                                      <p className="font-medium">Experience:</p>
-                                      <p>{selectedArtisan.profile?.experience ? `${selectedArtisan.profile.experience} years` : 'Not specified'}</p>
+                                      <p className="text-xs text-muted-foreground">Experience</p>
+                                      <p className="text-sm">{selectedArtisan.profile?.experience ? `${selectedArtisan.profile.experience} years` : 'Not specified'}</p>
                                     </div>
                                   </div>
                                   {selectedArtisan.profile?.bio && (
                                     <div>
-                                      <p className="font-medium">Bio:</p>
-                                      <p className="text-sm text-muted-foreground">{selectedArtisan.profile.bio}</p>
+                                      <p className="text-xs text-muted-foreground">Bio</p>
+                                      <p className="text-sm text-muted-foreground line-clamp-3">{selectedArtisan.profile.bio}</p>
                                     </div>
                                   )}
                                 </div>
 
-                                {/* Certificate */}
+                                {/* Documents */}
                                 {selectedArtisan.profile?.certificateUrl && (
-                                  <DocumentPreview
-                                    url={selectedArtisan.profile.certificateUrl}
-                                    label="Certificate"
-                                  />
+                                  <DocumentPreview url={selectedArtisan.profile.certificateUrl} label="Certificate" />
                                 )}
-
-                                {/* ID Document */}
                                 {selectedArtisan.profile?.idDocumentUrl && (
                                   <div>
-                                    <DocumentPreview
-                                      url={selectedArtisan.profile.idDocumentUrl}
-                                      label="ID Document"
-                                    />
+                                    <DocumentPreview url={selectedArtisan.profile.idDocumentUrl} label="ID Document" />
                                     {selectedArtisan.profile.idDocumentType && (
-                                      <p className="text-sm text-muted-foreground mt-1">
+                                      <p className="text-xs text-muted-foreground mt-1">
                                         Type: {selectedArtisan.profile.idDocumentType.replace(/_/g, ' ')}
                                       </p>
                                     )}
                                   </div>
                                 )}
 
-                                {/* Rejection Reason (user-facing) */}
-                                <div className="space-y-2">
-                                  <label className="font-medium">Rejection Reason (shown to artisan):</label>
+                                {/* Rejection Reason */}
+                                <div className="space-y-1.5">
+                                  <label className="text-sm font-medium">Rejection Reason <span className="text-muted-foreground">(shown to artisan)</span>:</label>
                                   <Textarea
                                     placeholder="Explain why the application is being rejected (required for rejection)..."
                                     value={rejectionReason}
                                     onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setRejectionReason(e.target.value)}
+                                    rows={3}
                                   />
                                 </div>
 
-                                {/* Admin Notes (internal) */}
-                                <div className="space-y-2">
-                                  <label className="font-medium">Admin Notes (internal only):</label>
+                                {/* Admin Notes */}
+                                <div className="space-y-1.5">
+                                  <label className="text-sm font-medium">Admin Notes <span className="text-muted-foreground">(internal only)</span>:</label>
                                   <Textarea
                                     placeholder="Add internal notes about this verification decision..."
                                     value={adminNotes}
                                     onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setAdminNotes(e.target.value)}
+                                    rows={2}
                                   />
-                                </div>
-
-                                {/* Actions */}
-                                <div className="flex justify-end space-x-3">
-                                  <Button
-                                    variant="destructive"
-                                    onClick={() => handleVerification(selectedArtisan.id, 'REJECT')}
-                                    disabled={processVerification.isPending}
-                                  >
-                                    {processVerification.isPending ? (
-                                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                                    ) : (
-                                      <XCircle className="h-4 w-4 mr-2" />
-                                    )}
-                                    Reject
-                                  </Button>
-                                  <Button
-                                    onClick={() => handleVerification(selectedArtisan.id, 'APPROVE')}
-                                    disabled={processVerification.isPending}
-                                  >
-                                    {processVerification.isPending ? (
-                                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                                    ) : (
-                                      <CheckCircle className="h-4 w-4 mr-2" />
-                                    )}
-                                    Approve
-                                  </Button>
                                 </div>
                               </div>
                             )}
+
+                            {/* Sticky action buttons */}
+                            <div className="flex justify-end gap-3 pt-4 border-t flex-shrink-0">
+                              <Button
+                                variant="destructive"
+                                onClick={() => selectedArtisan && handleVerification(selectedArtisan.id, 'REJECT')}
+                                disabled={processVerification.isPending}
+                              >
+                                {processVerification.isPending ? (
+                                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                                ) : (
+                                  <XCircle className="h-4 w-4 mr-2" />
+                                )}
+                                Reject
+                              </Button>
+                              <Button
+                                onClick={() => selectedArtisan && handleVerification(selectedArtisan.id, 'APPROVE')}
+                                disabled={processVerification.isPending}
+                              >
+                                {processVerification.isPending ? (
+                                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                                ) : (
+                                  <CheckCircle className="h-4 w-4 mr-2" />
+                                )}
+                                Approve
+                              </Button>
+                            </div>
                           </DialogContent>
                         </Dialog>
                       </TableCell>
