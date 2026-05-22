@@ -10,7 +10,6 @@ import {
   Search,
   ArrowRight,
   X,
-  ChevronDown,
 } from "lucide-react";
 
 type Artisan = ArtisanCardData & {
@@ -42,7 +41,7 @@ function BrowseArtisansContent() {
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const [showFilters, setShowFilters] = useState(false);
+  // showFilters removed — filters live inside the pill itself
 
   // Initialize from URL search params (passed from landing page search bar)
   const [searchInput, setSearchInput] = useState(() => searchParams.get("q") || "");
@@ -93,7 +92,7 @@ function BrowseArtisansContent() {
     setPage(1);
   };
 
-  const hasFilters = query || profession || county;
+  const hasFilters = !!(query || profession || county || sortBy !== 'rating');
 
   return (
     <div className="bg-white text-[#222] min-h-screen">
@@ -110,15 +109,19 @@ function BrowseArtisansContent() {
           <p className="text-[#6a6a6a] text-sm">All verified, rated by real clients across Kenya</p>
         </div>
 
-        {/* Sticky morphing search pill — starts large, shrinks into nav on scroll */}
+        {/* Single morphing search pill — 3 segments large, 1 compact */}
         <div className="max-w-2xl mx-auto">
           <StickySearchPill
             searchInput={searchInput}
-            onSearchChange={(v) => setSearchInput(v)}
+            onSearchChange={(v) => { setSearchInput(v); }}
             onSearchSubmit={handleSearch}
-            showFilters={showFilters}
-            onToggleFilters={() => setShowFilters(!showFilters)}
-            hasFilters={!!hasFilters}
+            county={county}
+            onCountyChange={(v) => { setCounty(v); setPage(1); }}
+            counties={facets?.counties ?? []}
+            sortBy={sortBy}
+            onSortByChange={(v) => { setSortBy(v); setPage(1); }}
+            hasFilters={hasFilters}
+            onClear={clearFilters}
           />
         </div>
       </div>
@@ -153,83 +156,6 @@ function BrowseArtisansContent() {
           </div>
         </div>
       </div>
-
-      {/* Active filter pills (below header) */}
-      {(hasFilters || showFilters) && (
-        <div className="px-6 md:px-10 py-3 border-b border-[#ebebeb] bg-white">
-          <div className="max-w-6xl mx-auto flex items-center gap-2 flex-wrap">
-            {profession && (
-              <button onClick={() => { setProfession(''); setPage(1); }} className="flex items-center gap-1 px-3 py-1 bg-[#f7f7f7] text-[#222] border border-[#ddd] rounded-full text-sm hover:bg-[#f2f2f2] transition-colors">
-                {profession} <X className="w-3 h-3 ml-0.5 text-[#6a6a6a]" />
-              </button>
-            )}
-            {county && (
-              <button onClick={() => { setCounty(''); setPage(1); }} className="flex items-center gap-1 px-3 py-1 bg-[#f7f7f7] text-[#222] border border-[#ddd] rounded-full text-sm hover:bg-[#f2f2f2] transition-colors">
-                {county} <X className="w-3 h-3 ml-0.5 text-[#6a6a6a]" />
-              </button>
-            )}
-            {query && (
-              <button onClick={() => { setQuery(''); setSearchInput(''); setPage(1); }} className="flex items-center gap-1 px-3 py-1 bg-[#f7f7f7] text-[#6a6a6a] border border-[#ddd] rounded-full text-xs hover:bg-[#f2f2f2] transition-colors">
-                &ldquo;{query}&rdquo; <X className="w-3 h-3" />
-              </button>
-            )}
-            {hasFilters && <button onClick={clearFilters} className="text-sm text-[#6a6a6a] hover:text-[#222] underline underline-offset-2 ml-1">Clear all</button>}
-          </div>
-          {/* Expanded filter dropdowns */}
-          {showFilters && (
-            <div className="mt-3 max-w-6xl mx-auto bg-white rounded-xl border border-[#ddd] p-5 grid sm:grid-cols-3 gap-4 shadow-float">
-              <div>
-                <label className="block text-xs font-semibold text-[#6a6a6a] uppercase tracking-wide mb-2">Profession</label>
-                <div className="relative">
-                  <select
-                    value={profession}
-                    onChange={(e) => { setProfession(e.target.value); setPage(1); }}
-                    className="w-full appearance-none bg-white border border-[#ddd] rounded-lg px-3 py-2 text-sm text-[#222] outline-none focus:border-[#222] pr-8"
-                  >
-                    <option value="">All Professions</option>
-                    {facets?.professions?.filter(p => p.name).map((p) => (
-                      <option key={p.name!} value={p.name!}>{p.name} ({p.count})</option>
-                    ))}
-                  </select>
-                  <ChevronDown className="absolute right-3 top-2.5 w-4 h-4 text-[#929292] pointer-events-none" />
-                </div>
-              </div>
-              <div>
-                <label className="block text-xs font-semibold text-[#6a6a6a] uppercase tracking-wide mb-2">County</label>
-                <div className="relative">
-                  <select
-                    value={county}
-                    onChange={(e) => { setCounty(e.target.value); setPage(1); }}
-                    className="w-full appearance-none bg-white border border-[#ddd] rounded-lg px-3 py-2 text-sm text-[#222] outline-none focus:border-[#222] pr-8"
-                  >
-                    <option value="">All Counties</option>
-                    {facets?.counties?.filter(c => c.name).map((c) => (
-                      <option key={c.name!} value={c.name!}>{c.name} ({c.count})</option>
-                    ))}
-                  </select>
-                  <ChevronDown className="absolute right-3 top-2.5 w-4 h-4 text-[#929292] pointer-events-none" />
-                </div>
-              </div>
-              <div>
-                <label className="block text-xs font-semibold text-[#6a6a6a] uppercase tracking-wide mb-2">Sort By</label>
-                <div className="relative">
-                  <select
-                    value={sortBy}
-                    onChange={(e) => { setSortBy(e.target.value); setPage(1); }}
-                    className="w-full appearance-none bg-white border border-[#ddd] rounded-lg px-3 py-2 text-sm text-[#222] outline-none focus:border-[#222] pr-8"
-                  >
-                    <option value="rating">Highest Rated</option>
-                    <option value="reviews">Most Reviews</option>
-                    <option value="rate">Hourly Rate</option>
-                    <option value="recent">Newest</option>
-                  </select>
-                  <ChevronDown className="absolute right-3 top-2.5 w-4 h-4 text-[#929292] pointer-events-none" />
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
-      )}
 
       {/* Results */}
       <section className="py-8 px-6">

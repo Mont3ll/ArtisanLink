@@ -1,178 +1,263 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
-import { Search, SlidersHorizontal, X } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
+import { Search, X } from "lucide-react";
 
 interface StickySearchPillProps {
+  /* What segment */
   searchInput: string;
   onSearchChange: (v: string) => void;
   onSearchSubmit: (e: React.FormEvent) => void;
-  showFilters: boolean;
-  onToggleFilters: () => void;
+
+  /* Where segment */
+  county: string;
+  onCountyChange: (v: string) => void;
+  counties?: Array<{ name: string | null; count: number }>;
+
+  /* Sort segment */
+  sortBy: string;
+  onSortByChange: (v: string) => void;
+
+  /* State helpers */
+  onClear: () => void;
   hasFilters: boolean;
 }
 
 /**
  * StickySearchPill
  *
- * A SINGLE search component that:
- * 1. Renders large (64 px) as page content below the nav.
- * 2. As you scroll, it becomes `position:sticky; top:10px` and uses CSS
- *    transitions to shrink its height, width, and internal layout so it
- *    appears to translate up into the nav bar row.
- * 3. No duplicate elements — same DOM node, same component, one state flag.
+ * ONE component. In the expanded (unstuck) state it shows three segments
+ * inside a 64 px pill — "Profession", "County", "Sort" — like Airbnb's
+ * Where / Check-in / Check-out / Who pill.
  *
- * The sticky top of 10px keeps the pill centred in the 64px nav bar:
- *   (64px nav − 44px compact pill) / 2 ≈ 10px
+ * As the user scrolls and the pill enters the fixed nav zone (top:10px
+ * via position:sticky), it transitions to a compact 44 px single-input
+ * pill. All via CSS transitions on a single <form> element.
+ *
+ * No external filter panel.
  */
 export default function StickySearchPill({
   searchInput, onSearchChange, onSearchSubmit,
-  showFilters, onToggleFilters, hasFilters,
+  county, onCountyChange, counties = [],
+  sortBy, onSortByChange,
+  onClear, hasFilters,
 }: StickySearchPillProps) {
   const [stuck, setStuck] = useState(false);
+  const [focusedSegment, setFocusedSegment] = useState<"what" | "where" | "sort" | null>(null);
   const sentinelRef = useRef<HTMLDivElement>(null);
 
+  /* Detect when the pill enters the nav zone */
   useEffect(() => {
     const sentinel = sentinelRef.current;
     if (!sentinel) return;
-
-    // When the sentinel (placed just above the pill) scrolls out of the
-    // viewport top, the pill is "stuck" inside the nav zone.
     const observer = new IntersectionObserver(
       ([entry]) => setStuck(!entry.isIntersecting),
-      {
-        threshold: 0,
-        // rootMargin shifts the detection line down by the nav height (64px)
-        // so we trigger as soon as the sentinel reaches the nav bottom.
-        rootMargin: "-64px 0px 0px 0px",
-      }
+      { threshold: 0, rootMargin: "-64px 0px 0px 0px" }
     );
-
     observer.observe(sentinel);
     return () => observer.disconnect();
   }, []);
 
+  const sortOptions = [
+    { value: "rating",  label: "Highest Rated" },
+    { value: "reviews", label: "Most Reviews" },
+    { value: "rate",    label: "Hourly Rate" },
+    { value: "recent",  label: "Newest" },
+  ];
+  const activeSortLabel = sortOptions.find(o => o.value === sortBy)?.label ?? "Highest Rated";
+
+  /* Shadow applied only when stuck (pill is in nav) */
+  const shadow = "rgba(0,0,0,0.02) 0 0 0 1px, rgba(0,0,0,0.04) 0 2px 6px, rgba(0,0,0,0.10) 0 4px 8px";
+
   return (
     <>
-      {/* Zero-height sentinel — just above where the pill starts */}
+      {/* Zero-height sentinel above the pill */}
       <div ref={sentinelRef} aria-hidden />
 
-      {/*
-        The pill itself.
-        position:sticky kicks in once the sentinel leaves the root.
-        CSS transitions handle the smooth morph.
-      */}
-      <div
-        className="z-40"
+      <form
+        onSubmit={onSearchSubmit}
+        className="mx-auto w-full"
         style={{
           position: "sticky",
-          top: stuck ? 10 : undefined, // 10px = centred in 64px nav
-          transition: "top 0.3s cubic-bezier(0.4,0,0.2,1)",
+          top: stuck ? 10 : undefined,
+          zIndex: 40,
+          height: stuck ? 44 : 64,
+          maxWidth: stuck ? 440 : "100%",
+          background: "#fff",
+          borderRadius: 9999,
+          border: "1px solid #dddddd",
+          boxShadow: shadow,
+          display: "flex",
+          alignItems: "stretch",
+          overflow: "hidden",
+          transition: "all 0.35s cubic-bezier(0.4,0,0.2,1)",
         }}
       >
-        <form
-          onSubmit={onSearchSubmit}
-          className="mx-auto transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]"
+
+        {/* ── Segment 1: Profession / What ──────────────────── */}
+        <div
+          className="flex flex-col justify-center min-w-0 transition-all duration-[350ms]"
           style={{
-            // Pill morphs: 64px → 44px tall, max-w-2xl → max-w-sm
-            height: stuck ? 44 : 64,
-            maxWidth: stuck ? 440 : 672,
-            background: "#fff",
-            borderRadius: 9999,
-            border: "1px solid #dddddd",
-            boxShadow:
-              "rgba(0,0,0,0.02) 0 0 0 1px, rgba(0,0,0,0.04) 0 2px 6px, rgba(0,0,0,0.10) 0 4px 8px",
-            display: "flex",
-            alignItems: "stretch",
-            overflow: "hidden",
+            flex: stuck ? "1 1 auto" : "1.4 1 0",
+            padding: stuck ? "0 14px" : "0 20px",
+            cursor: "text",
+            borderRadius: focusedSegment === "what" ? "9999px" : 0,
+            background: focusedSegment === "what" ? "#f7f7f7" : "transparent",
+          }}
+          onClick={() => {
+            const el = document.getElementById("search-what");
+            if (el) el.focus();
           }}
         >
-          {/* ── Skill / What segment ─────────────────── */}
-          <div
-            className="flex-1 flex items-center gap-2 min-w-0 transition-all duration-300"
-            style={{ padding: stuck ? "0 16px" : "0 20px" }}
+          {/* Label — hides when stuck */}
+          <span
+            className="text-[#222] font-semibold uppercase tracking-[0.08em] select-none overflow-hidden whitespace-nowrap transition-all duration-[350ms]"
+            style={{ fontSize: 10, maxHeight: stuck ? 0 : 14, opacity: stuck ? 0 : 1, marginBottom: stuck ? 0 : 2 }}
           >
-            {stuck && (
-              <Search
-                className="flex-shrink-0 text-[#6a6a6a] transition-all duration-300"
-                style={{ width: 14, height: 14 }}
-              />
-            )}
-            <div className="flex flex-col justify-center min-w-0 flex-1">
-              {/* Segment label — only shown when large */}
-              <span
-                className="uppercase font-semibold text-[#222] leading-none transition-all duration-300 overflow-hidden whitespace-nowrap"
-                style={{
-                  fontSize: 10,
-                  letterSpacing: "0.08em",
-                  maxHeight: stuck ? 0 : 14,
-                  opacity: stuck ? 0 : 1,
-                  marginBottom: stuck ? 0 : 2,
-                }}
-              >
-                What
-              </span>
-              <input
-                value={searchInput}
-                onChange={(e) => onSearchChange(e.target.value)}
-                placeholder={stuck ? "Search artisans…" : "Profession or skill"}
-                className="outline-none bg-transparent text-[#222] truncate w-full transition-all duration-300"
-                style={{ fontSize: stuck ? 13 : 14, lineHeight: 1.4 }}
-              />
-            </div>
-          </div>
-
-          {/* ── Divider ──────────────────────────────── */}
-          <div
-            className="bg-[#dddddd] flex-shrink-0 transition-all duration-300"
-            style={{
-              width: 1,
-              margin: stuck ? "10px 0" : "16px 0",
-            }}
-          />
-
-          {/* ── Filters toggle ───────────────────────── */}
-          <button
-            type="button"
-            onClick={onToggleFilters}
-            className="flex-shrink-0 flex items-center gap-1.5 transition-all duration-300"
-            style={{
-              padding: stuck ? "0 12px" : "0 16px",
-              fontSize: 13,
-              color: hasFilters || showFilters ? "#047857" : "#6a6a6a",
-              fontWeight: hasFilters || showFilters ? 600 : 400,
-            }}
-          >
-            <SlidersHorizontal style={{ width: 14, height: 14 }} />
-            <span
-              className="transition-all duration-300 whitespace-nowrap overflow-hidden"
-              style={{ maxWidth: stuck ? 0 : 60, opacity: stuck ? 0 : 1 }}
-            >
-              Filters
-            </span>
-            {hasFilters && (
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 flex-shrink-0" />
-            )}
-          </button>
-
-          {/* ── Emerald search orb ───────────────────── */}
-          <button
-            type="submit"
-            className="flex-shrink-0 bg-emerald-700 hover:bg-emerald-800 flex items-center justify-center rounded-full transition-all duration-300"
-            style={{
-              width: stuck ? 34 : 48,
-              height: stuck ? 34 : 48,
-              margin: stuck ? "5px 5px 5px 0" : "8px 8px 8px 0",
-            }}
-            aria-label="Search"
-          >
-            <Search
-              className="text-white transition-all duration-300"
-              style={{ width: stuck ? 14 : 18, height: stuck ? 14 : 18 }}
+            Profession
+          </span>
+          <div className="flex items-center gap-1.5">
+            {stuck && <Search className="w-3.5 h-3.5 text-[#6a6a6a] flex-shrink-0" />}
+            <input
+              id="search-what"
+              value={searchInput}
+              onChange={(e) => onSearchChange(e.target.value)}
+              onFocus={() => setFocusedSegment("what")}
+              onBlur={() => setFocusedSegment(null)}
+              placeholder={stuck ? "Search artisans…" : "Skill or profession"}
+              className="outline-none bg-transparent text-[#222] truncate w-full transition-all duration-[350ms]"
+              style={{ fontSize: stuck ? 13 : 14 }}
             />
+            {/* Clear button inside first segment when there's input or filters */}
+            {stuck && hasFilters && (
+              <button
+                type="button"
+                onClick={(e) => { e.preventDefault(); onClear(); }}
+                className="w-5 h-5 rounded-full bg-[#222] flex items-center justify-center flex-shrink-0"
+              >
+                <X className="w-3 h-3 text-white" />
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* ── Divider 1 — hides when stuck ──────────────────── */}
+        <div
+          className="bg-[#dddddd] flex-shrink-0 self-stretch transition-all duration-[350ms]"
+          style={{ width: stuck ? 0 : 1, margin: stuck ? 0 : "16px 0", opacity: stuck ? 0 : 1 }}
+        />
+
+        {/* ── Segment 2: County / Where — hides when stuck ──── */}
+        <div
+          className="flex flex-col justify-center flex-shrink-0 overflow-hidden transition-all duration-[350ms]"
+          style={{
+            flex: stuck ? "0 0 0" : "1 1 0",
+            maxWidth: stuck ? 0 : 180,
+            opacity: stuck ? 0 : 1,
+            padding: stuck ? 0 : "0 20px",
+            pointerEvents: stuck ? "none" : "auto",
+            borderRadius: focusedSegment === "where" ? "9999px" : 0,
+            background: focusedSegment === "where" ? "#f7f7f7" : "transparent",
+          }}
+        >
+          <span
+            className="text-[#222] font-semibold uppercase tracking-[0.08em] select-none whitespace-nowrap mb-0.5"
+            style={{ fontSize: 10 }}
+          >
+            County
+          </span>
+          <select
+            value={county}
+            onChange={(e) => onCountyChange(e.target.value)}
+            onFocus={() => setFocusedSegment("where")}
+            onBlur={() => setFocusedSegment(null)}
+            className="outline-none bg-transparent text-sm text-[#222] w-full appearance-none cursor-pointer"
+            style={{ color: county ? "#222" : "#929292" }}
+          >
+            <option value="">Anywhere in Kenya</option>
+            {counties.filter(c => c.name).map(c => (
+              <option key={c.name!} value={c.name!}>{c.name}</option>
+            ))}
+          </select>
+        </div>
+
+        {/* ── Divider 2 — hides when stuck ──────────────────── */}
+        <div
+          className="bg-[#dddddd] flex-shrink-0 self-stretch transition-all duration-[350ms]"
+          style={{ width: stuck ? 0 : 1, margin: stuck ? 0 : "16px 0", opacity: stuck ? 0 : 1 }}
+        />
+
+        {/* ── Segment 3: Sort — hides when stuck ────────────── */}
+        <div
+          className="flex flex-col justify-center flex-shrink-0 overflow-hidden transition-all duration-[350ms]"
+          style={{
+            flex: stuck ? "0 0 0" : "0.8 1 0",
+            maxWidth: stuck ? 0 : 160,
+            opacity: stuck ? 0 : 1,
+            padding: stuck ? 0 : "0 20px",
+            pointerEvents: stuck ? "none" : "auto",
+            borderRadius: focusedSegment === "sort" ? "9999px" : 0,
+            background: focusedSegment === "sort" ? "#f7f7f7" : "transparent",
+          }}
+        >
+          <span
+            className="text-[#222] font-semibold uppercase tracking-[0.08em] select-none whitespace-nowrap mb-0.5"
+            style={{ fontSize: 10 }}
+          >
+            Sort By
+          </span>
+          <select
+            value={sortBy}
+            onChange={(e) => onSortByChange(e.target.value)}
+            onFocus={() => setFocusedSegment("sort")}
+            onBlur={() => setFocusedSegment(null)}
+            className="outline-none bg-transparent text-sm text-[#222] w-full appearance-none cursor-pointer"
+          >
+            {sortOptions.map(o => (
+              <option key={o.value} value={o.value}>{o.label}</option>
+            ))}
+          </select>
+        </div>
+
+        {/* ── Emerald search orb ────────────────────────────── */}
+        <button
+          type="submit"
+          className="bg-emerald-700 hover:bg-emerald-800 flex items-center justify-center rounded-full flex-shrink-0 transition-all duration-[350ms]"
+          style={{
+            width:  stuck ? 34 : 48,
+            height: stuck ? 34 : 48,
+            margin: stuck ? "5px 5px 5px 0" : "8px 8px 8px 0",
+          }}
+          aria-label="Search"
+        >
+          <Search
+            className="text-white transition-all duration-[350ms]"
+            style={{ width: stuck ? 14 : 18, height: stuck ? 14 : 18 }}
+          />
+        </button>
+      </form>
+
+      {/* Active filter chips — appear below pill when filters are set */}
+      {hasFilters && !stuck && (
+        <div className="flex items-center gap-2 mt-3 flex-wrap">
+          {county && (
+            <span className="flex items-center gap-1 px-3 py-1 bg-[#f7f7f7] text-[#222] border border-[#ddd] rounded-full text-xs">
+              📍 {county}
+            </span>
+          )}
+          {sortBy !== "rating" && (
+            <span className="flex items-center gap-1 px-3 py-1 bg-[#f7f7f7] text-[#222] border border-[#ddd] rounded-full text-xs">
+              ↕ {activeSortLabel}
+            </span>
+          )}
+          <button
+            onClick={onClear}
+            className="text-xs text-[#6a6a6a] hover:text-[#222] underline underline-offset-2"
+          >
+            Clear all
           </button>
-        </form>
-      </div>
+        </div>
+      )}
     </>
   );
 }
