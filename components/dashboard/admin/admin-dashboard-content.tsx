@@ -349,7 +349,7 @@ export function AdminDashboardContent() {
 
             {/* Pending verifications — link to verification page */}
             <Link
-              href="/admin-dashboard/artisans?tab=pending"
+              href="/admin-dashboard/verification"
               className="flex items-center gap-3 py-3 hover:bg-muted/50 rounded-lg px-2 -mx-2 transition-colors group"
             >
               <div className="w-7 h-7 rounded-full bg-amber-100 flex items-center justify-center flex-shrink-0">

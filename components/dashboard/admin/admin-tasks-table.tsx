@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from "react"
+import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -188,36 +189,22 @@ export function AdminTasksTable({
                     </TableCell>
                     <TableCell>
                       {verification.certificateUrl ? (
-                        <Button variant="ghost" size="sm">
-                          <Eye className="h-4 w-4 mr-1" />
-                          View
-                        </Button>
+                        <a href={verification.certificateUrl} target="_blank" rel="noopener noreferrer">
+                          <Button variant="ghost" size="sm">
+                            <Eye className="h-4 w-4 mr-1" />
+                            View
+                          </Button>
+                        </a>
                       ) : (
                         <span className="text-muted-foreground text-sm">No certificate</span>
                       )}
                     </TableCell>
                     <TableCell>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="sm">
-                            <MoreHorizontal className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem>
-                            <CheckCircle className="h-4 w-4 mr-2" />
-                            Approve
-                          </DropdownMenuItem>
-                          <DropdownMenuItem>
-                            <AlertTriangle className="h-4 w-4 mr-2" />
-                            Reject
-                          </DropdownMenuItem>
-                          <DropdownMenuItem>
-                            <MessageSquare className="h-4 w-4 mr-2" />
-                            Message
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
+                      <Link href="/admin-dashboard/verification">
+                        <Button variant="outline" size="sm" className="text-xs">
+                          Review
+                        </Button>
+                      </Link>
                     </TableCell>
                   </TableRow>
                 ))
@@ -319,23 +306,12 @@ export function AdminTasksTable({
                       </Badge>
                     </TableCell>
                     <TableCell>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="sm">
-                            <MoreHorizontal className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem>
-                            <CheckCircle className="h-4 w-4 mr-2" />
-                            Mark Resolved
-                          </DropdownMenuItem>
-                          <DropdownMenuItem>
-                            <Eye className="h-4 w-4 mr-2" />
-                            View Details
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
+                      <Link href="/admin-dashboard/monitoring">
+                        <Button variant="outline" size="sm" className="text-xs">
+                          <Eye className="h-4 w-4 mr-1" />
+                          View
+                        </Button>
+                      </Link>
                     </TableCell>
                   </TableRow>
                 ))

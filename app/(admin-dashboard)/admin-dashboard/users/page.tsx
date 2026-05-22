@@ -1,6 +1,8 @@
 'use client'
 
 import { useState, useMemo } from "react"
+import { useQueryClient } from '@tanstack/react-query'
+import { toast } from 'sonner'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -16,8 +18,6 @@ import {
   Search,
   MoreHorizontal,
   Eye,
-  Edit,
-  Trash2,
   Download,
 } from "lucide-react"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
@@ -32,6 +32,22 @@ export default function UsersPage() {
   // React Query hooks - data fetches independently
   const { data: users = [], isLoading: usersLoading } = useUsers()
   const { data: stats, isLoading: statsLoading } = useUserStats()
+  const queryClient = useQueryClient()
+
+  const handleUserAction = async (userId: string, action: 'suspend' | 'unsuspend') => {
+    try {
+      const res = await fetch(`/api/admin/moderation/${userId}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action }),
+      })
+      if (!res.ok) throw new Error('Action failed')
+      queryClient.invalidateQueries({ queryKey: ['admin-users'] })
+      toast.success(action === 'suspend' ? 'User suspended' : 'User activated')
+    } catch {
+      toast.error('Failed to update user status')
+    }
+  }
 
   // Filter users based on search and filters
   const filteredUsers = useMemo(() => {
@@ -250,29 +266,29 @@ export default function UsersPage() {
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
-                            <DropdownMenuItem>
-                              <Eye className="mr-2 h-4 w-4" />
-                              View Details
-                            </DropdownMenuItem>
-                            <DropdownMenuItem>
-                              <Edit className="mr-2 h-4 w-4" />
-                              Edit User
+                            <DropdownMenuItem asChild>
+                              <a href={user.role === 'ARTISAN' ? `/artisans/${user.id}` : '#'} target="_blank" rel="noopener">
+                                <Eye className="mr-2 h-4 w-4" />
+                                View Profile
+                              </a>
                             </DropdownMenuItem>
                             {user.status === 'ACTIVE' ? (
-                              <DropdownMenuItem className="text-orange-600">
+                              <DropdownMenuItem
+                                className="text-orange-600"
+                                onClick={() => handleUserAction(user.id, 'suspend')}
+                              >
                                 <UserX className="mr-2 h-4 w-4" />
                                 Suspend User
                               </DropdownMenuItem>
                             ) : (
-                              <DropdownMenuItem className="text-green-600">
+                              <DropdownMenuItem
+                                className="text-green-600"
+                                onClick={() => handleUserAction(user.id, 'unsuspend')}
+                              >
                                 <UserCheck className="mr-2 h-4 w-4" />
                                 Activate User
                               </DropdownMenuItem>
                             )}
-                            <DropdownMenuItem className="text-red-600">
-                              <Trash2 className="mr-2 h-4 w-4" />
-                              Delete User
-                            </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
                       </TableCell>

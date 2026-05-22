@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useMemo } from 'react'
+import Link from 'next/link'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -12,7 +13,7 @@ import {
   DollarSign, 
   Users, 
   TrendingUp, 
-  MoreVertical,
+  Eye,
   Search,
   Filter,
   AlertCircle
@@ -122,7 +123,7 @@ export default function SubscriptionsPage() {
           <h1 className="text-3xl font-bold tracking-tight">Subscription Management</h1>
           <p className="text-muted-foreground">Monitor and manage platform subscriptions</p>
         </div>
-        <Button>Export Data</Button>
+        <a href="/admin-dashboard/reports"><Button>Export Data</Button></a>
       </div>
 
       {/* Key Metrics Cards */}
@@ -419,9 +420,11 @@ export default function SubscriptionsPage() {
                       {new Date(subscription.createdAt).toLocaleDateString()}
                     </TableCell>
                     <TableCell>
-                      <Button variant="ghost" size="sm">
-                        <MoreVertical className="h-4 w-4" />
-                      </Button>
+                      <Link href={`/artisans/${subscription.profile?.user?.id}`} target="_blank">
+                        <Button variant="ghost" size="sm" title="View artisan profile">
+                          <Eye className="h-4 w-4" />
+                        </Button>
+                      </Link>
                     </TableCell>
                   </TableRow>
                 ))

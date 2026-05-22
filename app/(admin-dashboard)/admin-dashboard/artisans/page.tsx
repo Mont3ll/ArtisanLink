@@ -107,7 +107,7 @@ function ArtisansPageContent() {
           <h1 className="text-3xl font-bold tracking-tight">Artisan Directory</h1>
           <p className="text-muted-foreground">Manage and oversee all platform artisans</p>
         </div>
-        <Button>Export Directory</Button>
+        <a href="/admin-dashboard/reports"><Button>Export Directory</Button></a>
       </div>
 
       {/* Statistics Cards */}
@@ -514,7 +514,7 @@ function PendingArtisanRow({
         </p>
       </div>
       {/* Action — navigates to verification page */}
-      <Link href="/admin-dashboard/artisans?tab=verification">
+      <Link href="/admin-dashboard/verification">
         <Button variant="outline" size="sm" className="text-xs h-7 px-2.5">
           <Eye className="h-3 w-3 mr-1" />
           Review
