@@ -425,3 +425,208 @@
     color: rgb(15 23 42); /* slate-900 */
   }
 }
+
+/* ============================================================
+   ChapaWorks Design System — Airbnb-derived tokens
+   Primary = emerald-700 (#047857) — our "Rausch" equivalent
+   Applied to both public pages and dashboard
+   ============================================================ */
+
+/* Design tokens as CSS custom properties */
+:root {
+  /* Spacing (4px base system) */
+  --space-xxs: 2px;
+  --space-xs:  4px;
+  --space-sm:  8px;
+  --space-md:  12px;
+  --space-base: 16px;
+  --space-lg:  24px;
+  --space-xl:  32px;
+  --space-xxl: 48px;
+  --space-section: 64px;
+
+  /* Typography scale */
+  --text-display-xl: 28px;
+  --text-display-lg: 22px;
+  --text-display-md: 21px;
+  --text-display-sm: 20px;
+  --text-title-md:   16px;
+  --text-body-md:    16px;
+  --text-body-sm:    14px;
+  --text-caption:    14px;
+  --text-caption-sm: 13px;
+  --text-badge:      11px;
+
+  /* Single elevation tier (used on hover, search, dropdowns) */
+  --shadow-float: rgba(0,0,0,0.02) 0 0 0 1px,
+                  rgba(0,0,0,0.04) 0 2px 6px 0,
+                  rgba(0,0,0,0.10) 0 4px 8px 0;
+
+  /* Breakpoints reference (for JS use) */
+  --bp-mobile:  744px;
+  --bp-tablet:  1128px;
+  --bp-desktop: 1440px;
+}
+
+/* Utility: apply the single shadow tier */
+.shadow-float {
+  box-shadow: var(--shadow-float);
+}
+
+/* Search pill — the canonical search surface */
+.search-pill {
+  background: #ffffff;
+  border-radius: 9999px;
+  border: 1px solid #dddddd;
+  box-shadow: var(--shadow-float);
+}
+
+/* Search orb — emerald circular CTA at end of search pill */
+.search-orb {
+  width: 48px;
+  height: 48px;
+  border-radius: 9999px;
+  background: #047857;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s ease;
+  flex-shrink: 0;
+}
+.search-orb:hover {
+  background: #065f46;
+}
+.search-orb-sm {
+  width: 34px;
+  height: 34px;
+  border-radius: 9999px;
+  background: #047857;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s ease;
+  flex-shrink: 0;
+}
+.search-orb-sm:hover { background: #065f46; }
+
+/* Category strip tab — active has 2px ink underline */
+.category-tab-active {
+  color: #222222;
+  border-bottom: 2px solid #222222;
+}
+.category-tab-inactive {
+  color: #6a6a6a;
+  border-bottom: 2px solid transparent;
+}
+.category-tab-inactive:hover {
+  color: #222222;
+  border-bottom-color: #dddddd;
+}
+
+/* Artisan card hover — subtle elevation lift */
+.artisan-card:hover {
+  box-shadow: var(--shadow-float);
+}
+
+/* Header scroll transition utilities */
+.header-row-search {
+  transition: max-height 0.3s cubic-bezier(0.4,0,0.2,1),
+              opacity 0.3s cubic-bezier(0.4,0,0.2,1),
+              transform 0.3s cubic-bezier(0.4,0,0.2,1);
+}
+.header-pill-compact {
+  transition: opacity 0.25s ease, transform 0.25s ease;
+}
+
+/* ============================================================
+   Typography — Modest weight scale (Airbnb-derived)
+   Headings use 500-600, NOT 700 for display text
+   ============================================================ */
+.display-xl { font-size: 28px; font-weight: 600; line-height: 1.3; }
+.display-lg { font-size: 22px; font-weight: 500; line-height: 1.2; }
+.display-md { font-size: 20px; font-weight: 600; line-height: 1.2; }
+.title-md    { font-size: 16px; font-weight: 600; line-height: 1.25; }
+.title-sm    { font-size: 15px; font-weight: 500; line-height: 1.25; }
+.body-md     { font-size: 16px; font-weight: 400; line-height: 1.5; }
+.body-sm     { font-size: 14px; font-weight: 400; line-height: 1.43; }
+.caption     { font-size: 14px; font-weight: 500; line-height: 1.29; }
+.caption-sm  { font-size: 13px; font-weight: 400; line-height: 1.23; }
+.badge-text  { font-size: 11px; font-weight: 600; line-height: 1.18; }
+
+/* ============================================================
+   Button tokens — 8px radius, 48px height primary
+   ============================================================ */
+.btn-primary {
+  height: 48px;
+  padding: 0 24px;
+  border-radius: 8px;
+  background: #047857;
+  color: #ffffff;
+  font-size: 16px;
+  font-weight: 500;
+  transition: background 0.15s ease;
+}
+.btn-primary:hover { background: #065f46; }
+.btn-primary:disabled { background: #a7f3d0; cursor: not-allowed; }
+
+.btn-secondary {
+  height: 48px;
+  padding: 0 24px;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #222222;
+  font-size: 16px;
+  font-weight: 500;
+  border: 1px solid #222222;
+  transition: background 0.15s ease;
+}
+.btn-secondary:hover { background: #f7f7f7; }
+
+/* ============================================================
+   Form inputs — 8px radius, 56px height, focus: 2px ink border
+   ============================================================ */
+.form-input {
+  height: 56px;
+  padding: 0 16px;
+  border-radius: 8px;
+  border: 1px solid #dddddd;
+  background: #ffffff;
+  font-size: 16px;
+  color: #222222;
+  outline: none;
+  transition: border-color 0.15s ease, border-width 0.15s ease;
+}
+.form-input:focus {
+  border: 2px solid #222222;
+}
+.form-input::placeholder { color: #929292; }
+
+/* ============================================================
+   Card — rounded-xl, hairline border, float shadow on hover
+   ============================================================ */
+.card-surface {
+  border-radius: 12px;
+  border: 1px solid #dddddd;
+  background: #ffffff;
+  transition: box-shadow 0.2s ease;
+}
+.card-surface:hover {
+  box-shadow: var(--shadow-float);
+}
+
+/* ============================================================
+   Dashboard sidebar overrides — emerald primary tokens
+   ============================================================ */
+[data-slot="sidebar"] {
+  --sidebar: #ffffff;
+  --sidebar-foreground: #222222;
+  --sidebar-primary: #047857;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #f7f7f7;
+  --sidebar-accent-foreground: #222222;
+  --sidebar-border: #ebebeb;
+}
+[data-slot="sidebar-menu-button"][data-active="true"] {
+  background: #f0fdf4 !important;
+  color: #047857 !important;
+}

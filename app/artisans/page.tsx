@@ -3,12 +3,11 @@
 import { useState, useEffect, Suspense } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import PublicNav from "@/components/layout/public-nav";
+import ArtisansBrowseHeader from "@/components/layout/artisans-browse-header";
 import { ArtisanCard, ArtisanCardSkeleton, type ArtisanCardData } from "@/components/artisan";
 import {
   Search,
   ArrowRight,
-  SlidersHorizontal,
   X,
   ChevronDown,
 } from "lucide-react";
@@ -97,82 +96,49 @@ function BrowseArtisansContent() {
 
   return (
     <div className="bg-white text-[#222] min-h-screen">
-      <PublicNav />
+      {/* Morphing two-row header with scroll-responsive search pill */}
+      <ArtisansBrowseHeader
+        searchInput={searchInput}
+        onSearchChange={(v) => setSearchInput(v)}
+        onSearchSubmit={handleSearch}
+        activeCategory={profession || 'all'}
+        onCategoryChange={(id) => { setProfession(id === 'all' ? '' : id); setPage(1); }}
+        showFilters={showFilters}
+        onToggleFilters={() => setShowFilters(!showFilters)}
+        hasFilters={!!hasFilters}
+      />
 
-      {/* Sticky search + filter bar — matches homepage pill style */}
-      <div className="sticky top-16 z-30 bg-white/95 backdrop-blur-sm border-b border-[#ddd]">
-        <div className="max-w-4xl mx-auto px-4 py-3">
-          <form
-            onSubmit={handleSearch}
-            className="flex items-stretch bg-white rounded-full border border-[#ddd] shadow-[rgba(0,0,0,0.02)_0_0_0_1px,rgba(0,0,0,0.04)_0_2px_6px,rgba(0,0,0,0.1)_0_4px_8px] overflow-hidden h-11"
-          >
-            <div className="flex-1 flex items-center gap-2 px-4 min-w-0">
-              <Search className="w-4 h-4 text-[#6a6a6a] flex-shrink-0" />
-              <input
-                value={searchInput}
-                onChange={(e) => setSearchInput(e.target.value)}
-                placeholder="Profession, name, or skill…"
-                className="w-full text-sm outline-none placeholder:text-[#929292] bg-transparent text-[#222]"
-              />
-              {searchInput && (
-                <button type="button" onClick={() => { setSearchInput(''); setQuery(''); setPage(1); }} className="text-[#929292] hover:text-[#222] flex-shrink-0">
-                  <X className="w-3.5 h-3.5" />
-                </button>
-              )}
-            </div>
-            <div className="w-px bg-[#ddd] self-stretch" />
-            {/* Filter toggle integrated into search bar */}
-            <button
-              type="button"
-              onClick={() => setShowFilters(!showFilters)}
-              className={`flex items-center gap-1.5 px-3 text-sm transition-colors ${
-                showFilters || hasFilters ? 'text-emerald-700' : 'text-[#6a6a6a] hover:text-[#222]'
-              }`}
-            >
-              <SlidersHorizontal className="w-4 h-4" />
-              <span className="hidden sm:inline">Filters</span>
-              {hasFilters && <span className="w-1.5 h-1.5 rounded-full bg-emerald-600" />}
-            </button>
-            <button
-              type="submit"
-              className="m-1.5 px-4 bg-emerald-700 hover:bg-emerald-800 transition-colors rounded-full text-white text-sm font-medium flex-shrink-0"
-            >
-              Search
-            </button>
-          </form>
-
-          {/* Active filter pills */}
-          {hasFilters && (
-            <div className="flex items-center gap-2 mt-2 flex-wrap">
-              {profession && (
-                <button onClick={() => { setProfession(''); setPage(1); }} className="flex items-center gap-1 px-2.5 py-1 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-full text-xs font-medium">
-                  {profession} <X className="w-3 h-3" />
-                </button>
-              )}
-              {county && (
-                <button onClick={() => { setCounty(''); setPage(1); }} className="flex items-center gap-1 px-2.5 py-1 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-full text-xs font-medium">
-                  {county} <X className="w-3 h-3" />
-                </button>
-              )}
-              {query && (
-                <button onClick={() => { setQuery(''); setSearchInput(''); setPage(1); }} className="flex items-center gap-1 px-2.5 py-1 bg-[#f7f7f7] text-[#6a6a6a] border border-[#ddd] rounded-full text-xs">
-                  &ldquo;{query}&rdquo; <X className="w-3 h-3" />
-                </button>
-              )}
-              <button onClick={clearFilters} className="text-xs text-[#6a6a6a] hover:text-[#3f3f3f] underline">Clear all</button>
-            </div>
-          )}
-
+      {/* Active filter pills (below header) */}
+      {(hasFilters || showFilters) && (
+        <div className="px-6 md:px-10 py-3 border-b border-[#ebebeb] bg-white">
+          <div className="max-w-6xl mx-auto flex items-center gap-2 flex-wrap">
+            {profession && (
+              <button onClick={() => { setProfession(''); setPage(1); }} className="flex items-center gap-1 px-3 py-1 bg-[#f7f7f7] text-[#222] border border-[#ddd] rounded-full text-sm hover:bg-[#f2f2f2] transition-colors">
+                {profession} <X className="w-3 h-3 ml-0.5 text-[#6a6a6a]" />
+              </button>
+            )}
+            {county && (
+              <button onClick={() => { setCounty(''); setPage(1); }} className="flex items-center gap-1 px-3 py-1 bg-[#f7f7f7] text-[#222] border border-[#ddd] rounded-full text-sm hover:bg-[#f2f2f2] transition-colors">
+                {county} <X className="w-3 h-3 ml-0.5 text-[#6a6a6a]" />
+              </button>
+            )}
+            {query && (
+              <button onClick={() => { setQuery(''); setSearchInput(''); setPage(1); }} className="flex items-center gap-1 px-3 py-1 bg-[#f7f7f7] text-[#6a6a6a] border border-[#ddd] rounded-full text-xs hover:bg-[#f2f2f2] transition-colors">
+                &ldquo;{query}&rdquo; <X className="w-3 h-3" />
+              </button>
+            )}
+            {hasFilters && <button onClick={clearFilters} className="text-sm text-[#6a6a6a] hover:text-[#222] underline underline-offset-2 ml-1">Clear all</button>}
+          </div>
           {/* Expanded filter dropdowns */}
           {showFilters && (
-            <div className="mt-4 bg-white rounded-xl border border-[#ddd] p-5 grid sm:grid-cols-3 gap-4">
+            <div className="mt-3 max-w-6xl mx-auto bg-white rounded-xl border border-[#ddd] p-5 grid sm:grid-cols-3 gap-4 shadow-float">
               <div>
                 <label className="block text-xs font-semibold text-[#6a6a6a] uppercase tracking-wide mb-2">Profession</label>
                 <div className="relative">
                   <select
                     value={profession}
                     onChange={(e) => { setProfession(e.target.value); setPage(1); }}
-                    className="w-full appearance-none bg-white border border-[#ddd] rounded-lg px-3 py-2 text-sm text-[#222] outline-none focus:border-emerald-600 pr-8"
+                    className="w-full appearance-none bg-white border border-[#ddd] rounded-lg px-3 py-2 text-sm text-[#222] outline-none focus:border-[#222] pr-8"
                   >
                     <option value="">All Professions</option>
                     {facets?.professions?.filter(p => p.name).map((p) => (
@@ -182,14 +148,13 @@ function BrowseArtisansContent() {
                   <ChevronDown className="absolute right-3 top-2.5 w-4 h-4 text-[#929292] pointer-events-none" />
                 </div>
               </div>
-
               <div>
                 <label className="block text-xs font-semibold text-[#6a6a6a] uppercase tracking-wide mb-2">County</label>
                 <div className="relative">
                   <select
                     value={county}
                     onChange={(e) => { setCounty(e.target.value); setPage(1); }}
-                    className="w-full appearance-none bg-white border border-[#ddd] rounded-lg px-3 py-2 text-sm text-[#222] outline-none focus:border-emerald-600 pr-8"
+                    className="w-full appearance-none bg-white border border-[#ddd] rounded-lg px-3 py-2 text-sm text-[#222] outline-none focus:border-[#222] pr-8"
                   >
                     <option value="">All Counties</option>
                     {facets?.counties?.filter(c => c.name).map((c) => (
@@ -199,14 +164,13 @@ function BrowseArtisansContent() {
                   <ChevronDown className="absolute right-3 top-2.5 w-4 h-4 text-[#929292] pointer-events-none" />
                 </div>
               </div>
-
               <div>
                 <label className="block text-xs font-semibold text-[#6a6a6a] uppercase tracking-wide mb-2">Sort By</label>
                 <div className="relative">
                   <select
                     value={sortBy}
                     onChange={(e) => { setSortBy(e.target.value); setPage(1); }}
-                    className="w-full appearance-none bg-white border border-[#ddd] rounded-lg px-3 py-2 text-sm text-[#222] outline-none focus:border-emerald-600 pr-8"
+                    className="w-full appearance-none bg-white border border-[#ddd] rounded-lg px-3 py-2 text-sm text-[#222] outline-none focus:border-[#222] pr-8"
                   >
                     <option value="rating">Highest Rated</option>
                     <option value="reviews">Most Reviews</option>
@@ -219,10 +183,10 @@ function BrowseArtisansContent() {
             </div>
           )}
         </div>
-      </div>
+      )}
 
       {/* Results */}
-      <section className="py-12 px-6">
+      <section className="py-8 px-6">
         <div className="max-w-6xl mx-auto">
           {/* Count */}
           <div className="flex items-center justify-between mb-8">

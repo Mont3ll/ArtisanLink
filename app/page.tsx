@@ -82,23 +82,27 @@ export default function Home() {
           </p>
         </div>
 
-        {/* Pill search bar — Airbnb-style */}
+        {/* Segmented pill search bar — What / Where + Emerald search orb */}
         <form
           onSubmit={handleHeroSearch}
-          className="max-w-2xl mx-auto flex items-stretch bg-white rounded-full border border-[#ddd] shadow-[rgba(0,0,0,0.02)_0_0_0_1px,rgba(0,0,0,0.04)_0_2px_6px,rgba(0,0,0,0.1)_0_4px_8px] overflow-hidden h-14"
+          className="search-pill max-w-2xl mx-auto flex items-stretch"
+          style={{ height: 64 }}
         >
-          <div className="flex-1 flex items-center gap-2 px-5 min-w-0">
-            <Search className="w-4 h-4 text-[#6a6a6a] flex-shrink-0" />
+          {/* What segment */}
+          <div className="flex-1 flex flex-col justify-center px-5 min-w-0">
+            <span className="text-[10px] font-semibold text-[#222] uppercase tracking-[0.08em] leading-none mb-0.5">What</span>
             <input
               value={heroQuery}
               onChange={(e) => setHeroQuery(e.target.value)}
-              placeholder="Service or artisan name"
-              className="w-full text-sm outline-none placeholder:text-[#929292] bg-transparent text-[#222]"
+              placeholder="Profession or skill"
+              className="text-sm outline-none placeholder:text-[#929292] bg-transparent text-[#222] w-full"
             />
           </div>
-          <div className="w-px bg-[#ddd] self-stretch" />
-          <div className="flex items-center gap-2 px-5">
-            <MapPin className="w-4 h-4 text-[#6a6a6a] flex-shrink-0" />
+          {/* Segment divider */}
+          <div className="w-px bg-[#ddd] self-stretch my-3 flex-shrink-0" />
+          {/* Where segment */}
+          <div className="flex flex-col justify-center px-5 flex-shrink-0">
+            <span className="text-[10px] font-semibold text-[#222] uppercase tracking-[0.08em] leading-none mb-0.5">Where</span>
             <input
               value={heroLocation}
               onChange={(e) => setHeroLocation(e.target.value)}
@@ -106,12 +110,13 @@ export default function Home() {
               className="w-28 text-sm outline-none placeholder:text-[#929292] bg-transparent text-[#222]"
             />
           </div>
+          {/* Emerald search orb */}
           <button
             type="submit"
-            className="m-2 w-10 h-10 bg-emerald-700 hover:bg-emerald-800 transition-colors rounded-full flex items-center justify-center flex-shrink-0"
+            className="search-orb m-2"
             aria-label="Search"
           >
-            <Search className="w-4 h-4 text-white" />
+            <Search className="w-5 h-5 text-white" />
           </button>
         </form>
       </section>

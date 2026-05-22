@@ -61,9 +61,22 @@ export default {
         },
       },
       borderRadius: {
-        lg: "var(--radius)",
-        md: "calc(var(--radius) - 2px)",
-        sm: "calc(var(--radius) - 4px)",
+        lg: "var(--radius)",      // 10px — cards, panels
+        md: "calc(var(--radius) - 2px)",  // 8px — buttons, inputs
+        sm: "calc(var(--radius) - 4px)",  // 6px
+        xl: "calc(var(--radius) + 4px)",  // 14px — large cards
+        '2xl': "calc(var(--radius) + 8px)", // 18px — hero cards
+        full: "9999px",           // pills, search bar, orbs
+      },
+      screens: {
+        // Airbnb breakpoints
+        mobile: "744px",
+        tablet: "1128px",
+        wide:   "1440px",
+      },
+      boxShadow: {
+        // Single elevation tier from Airbnb design guide
+        float: "rgba(0,0,0,0.02) 0 0 0 1px, rgba(0,0,0,0.04) 0 2px 6px, rgba(0,0,0,0.10) 0 4px 8px",
       },
       fontFamily: {
         sans: ["var(--font-geist-sans)", "sans-serif"],
