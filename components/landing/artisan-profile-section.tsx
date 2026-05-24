@@ -1,20 +1,19 @@
 "use client";
 
 import Link from "next/link";
+import { motion } from "framer-motion";
 import {
-  ArrowLeft,
   BadgeCheck,
-  Briefcase,
-  Calendar,
-  Globe,
-  ImageIcon,
+  Bookmark,
+  BriefcaseBusiness,
+  CalendarDays,
+  Globe2,
   MapPin,
   MessageCircle,
   Star,
 } from "lucide-react";
 
-import { AvatarFallback } from "@/components/ui2";
-import { COLORS, SHADOWS } from "@/lib/design-tokens";
+import { COLORS, SHADOWS, TRANSITIONS } from "@/lib/design-tokens";
 import type { ArtisanCardData } from "./artisan-preview-card";
 
 type PortfolioItem = {
@@ -45,245 +44,114 @@ export type FullArtisanProfile = ArtisanCardData & {
   reviews?: Review[];
 };
 
-function formatKes(value: number | null) {
-  if (!value) return "Rate on request";
-  return `KES ${new Intl.NumberFormat("en-KE").format(value)}/hr`;
-}
-
-function formatMemberSince(value: string) {
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return "recently";
-  return String(date.getFullYear());
-}
-
 export function ArtisanProfileSkeleton() {
   return (
-    <main className="mx-auto max-w-[1280px] px-5 py-8 md:px-10">
-      <div className="mb-5 h-5 w-32 animate-pulse rounded bg-[#f2f2f2]" />
-      <div className="rounded-[28px] border bg-white p-5 md:p-6" style={{ borderColor: COLORS.hairlineSoft }}>
-        <div className="flex flex-col gap-6 md:flex-row">
-          <div className="h-24 w-24 animate-pulse rounded-full bg-[#f2f2f2]" />
-          <div className="flex-1 space-y-3">
-            <div className="h-8 w-56 animate-pulse rounded bg-[#f2f2f2]" />
-            <div className="h-5 w-40 animate-pulse rounded bg-[#f2f2f2]" />
-            <div className="h-16 w-full animate-pulse rounded bg-[#f2f2f2]" />
-          </div>
-        </div>
-      </div>
-    </main>
+    <section className="mx-auto max-w-[1080px] px-5 py-12 md:px-10 md:py-16">
+      <div className="mb-6 h-20 animate-pulse rounded-[18px] bg-[#f2f2f2]" />
+      <div className="h-[520px] animate-pulse rounded-[28px] border bg-[#f7f7f7]" style={{ borderColor: COLORS.hairlineSoft }} />
+    </section>
   );
 }
 
+function initials(name: string) {
+  return name.split(" ").map((part) => part[0]).join("").slice(0, 2).toUpperCase();
+}
+
 export function ArtisanProfileSection({ artisan }: { artisan: FullArtisanProfile }) {
-  const location = [artisan.location.city, artisan.location.county]
-    .filter(Boolean)
-    .join(", ");
+  const locationStr = [artisan.location.city, artisan.location.county].filter(Boolean).join(", ") || "Kenya";
+  const profileBio = artisan.bio || `${artisan.name} is a verified ${artisan.profession?.toLowerCase()} focused on clean workmanship, responsive communication, and practical project scoping. This profile preview shows how public artisan pages combine trust signals, portfolio work, skills, and hiring calls to action.`;
+  const portfolioFrames = [
+    artisan.gradient,
+    `linear-gradient(135deg, ${COLORS.primaryTint} 0%, #ffffff 42%, ${COLORS.primarySoft} 100%)`,
+    `linear-gradient(135deg, #f7f7f7 0%, #d9f99d 44%, ${COLORS.primaryActive} 100%)`,
+    `linear-gradient(135deg, #f8fafc 0%, #e2e8f0 42%, #047857 100%)`,
+    `linear-gradient(135deg, #fff7ed 0%, #fed7aa 44%, #065f46 100%)`,
+    `linear-gradient(135deg, #ecfeff 0%, #a7f3d0 40%, #134e4a 100%)`,
+  ];
 
   return (
-    <main className="bg-white">
-      <section className="mx-auto max-w-[1280px] px-5 pb-8 pt-6 md:px-10 md:pb-12 md:pt-8">
-        <Link
-          href="/artisans"
-          className="mb-5 inline-flex items-center gap-2 text-[14px] font-medium transition-colors hover:underline"
-          style={{ color: COLORS.muted }}
-        >
-          <ArrowLeft size={16} />
-          Back to artisans
-        </Link>
-
-        <div
-          className="overflow-hidden rounded-[32px] border bg-white"
-          style={{ borderColor: COLORS.hairlineSoft, boxShadow: SHADOWS.card }}
-        >
-          <div
-            className="h-40 md:h-52"
-            style={{
-              background:
-                artisan.gradient ??
-                "linear-gradient(135deg, #ecfdf5 0%, #a7f3d0 45%, #047857 100%)",
-            }}
-          />
-          <div className="p-5 md:p-7">
-            <div className="flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
-              <div className="flex flex-col gap-4 md:flex-row md:items-end">
-                <div className="-mt-16 rounded-full border-4 border-white bg-white shadow-sm">
-                  {artisan.profileImage ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={artisan.profileImage}
-                      alt={artisan.name}
-                      className="h-28 w-28 rounded-full object-cover"
-                    />
-                  ) : (
-                    <AvatarFallback name={artisan.name} size={112} />
-                  )}
-                </div>
-                <div>
-                  <div className="flex flex-wrap items-center gap-2">
-                    <h1
-                      className="text-[30px] font-semibold leading-[1.1] tracking-[-0.04em] md:text-[40px]"
-                      style={{ color: COLORS.ink }}
-                    >
-                      {artisan.name}
-                    </h1>
-                    {artisan.isVerified && <BadgeCheck size={22} style={{ color: COLORS.primary }} />}
-                    {artisan.isPremium && (
-                      <span className="rounded-full bg-[#222] px-2.5 py-1 text-[11px] font-semibold text-white">
-                        Pro
-                      </span>
-                    )}
-                  </div>
-                  <p className="mt-2 text-[17px] font-medium" style={{ color: COLORS.primaryActive }}>
-                    {artisan.profession}
-                  </p>
-                  <div className="mt-3 flex flex-wrap gap-3 text-[14px]" style={{ color: COLORS.muted }}>
-                    <span className="inline-flex items-center gap-1.5">
-                      <Star size={15} fill={COLORS.amber} stroke={COLORS.amber} />
-                      <strong style={{ color: COLORS.ink }}>{artisan.rating.average.toFixed(1)}</strong>
-                      ({artisan.rating.total} reviews)
-                    </span>
-                    <span className="inline-flex items-center gap-1.5">
-                      <MapPin size={15} />
-                      {location || "Kenya"}
-                    </span>
-                    {artisan.experience ? (
-                      <span className="inline-flex items-center gap-1.5">
-                        <Briefcase size={15} />
-                        {artisan.experience} years experience
-                      </span>
-                    ) : null}
-                    <span className="inline-flex items-center gap-1.5">
-                      <Calendar size={15} />
-                      Since {formatMemberSince(artisan.memberSince)}
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex flex-col gap-2 sm:flex-row md:flex-col lg:flex-row">
-                <Link
-                  href={`/sign-in?redirect_url=/artisans/${artisan.id}`}
-                  className="inline-flex h-12 items-center justify-center gap-2 rounded-lg px-5 text-[15px] font-medium text-white transition-colors hover:bg-emerald-800"
-                  style={{ background: COLORS.primary }}
-                >
-                  <MessageCircle size={18} />
-                  Message artisan
-                </Link>
-                <Link
-                  href="/artisans"
-                  className="inline-flex h-12 items-center justify-center rounded-lg border px-5 text-[15px] font-medium transition-colors hover:bg-[#f7f7f7]"
-                  style={{ borderColor: COLORS.hairline, color: COLORS.ink }}
-                >
-                  Browse similar
-                </Link>
-              </div>
-            </div>
-          </div>
+    <section className="mx-auto max-w-[1080px] px-5 py-12 md:px-10 md:py-16" id="artisan-profile-preview">
+      <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+        <div>
+          <p className="mb-2 text-[14px] font-medium leading-[1.29]" style={{ color: COLORS.muted }}>Verified artisan profile</p>
+          <h1 className="text-[22px] font-medium leading-[1.18] tracking-[-0.44px]" style={{ color: COLORS.ink }}>Full artisan profile</h1>
+          <p className="mt-2 max-w-[620px] text-[14px] leading-[1.43]" style={{ color: COLORS.muted }}>Review portfolio work, ratings, skills, location, pricing, and trust signals before starting a job request.</p>
         </div>
-      </section>
+        <Link href="/artisans" className="h-10 w-fit rounded-full border px-4 py-2 text-[14px] font-medium transition-colors hover:bg-[#f7f7f7]" style={{ borderColor: COLORS.hairline, color: COLORS.ink }}>Browse more artisans</Link>
+      </div>
 
-      <section className="mx-auto grid max-w-[1280px] gap-6 px-5 pb-14 md:px-10 lg:grid-cols-[1fr_360px]">
-        <div className="space-y-6">
-          <div className="rounded-[24px] border bg-white p-5" style={{ borderColor: COLORS.hairlineSoft }}>
-            <h2 className="text-[20px] font-semibold leading-[1.2]" style={{ color: COLORS.ink }}>
-              About
-            </h2>
-            <p className="mt-3 text-[15px] leading-[1.6]" style={{ color: COLORS.body }}>
-              {artisan.bio || `${artisan.name} is a verified ${artisan.profession.toLowerCase()} serving clients in ${location || "Kenya"}.`}
-            </p>
-          </div>
-
-          <div className="rounded-[24px] border bg-white p-5" style={{ borderColor: COLORS.hairlineSoft }}>
-            <div className="mb-4 flex items-center justify-between gap-3">
-              <h2 className="text-[20px] font-semibold leading-[1.2]" style={{ color: COLORS.ink }}>
-                Portfolio
-              </h2>
-              <span className="text-[13px]" style={{ color: COLORS.muted }}>
-                {artisan.portfolio.length} project{artisan.portfolio.length === 1 ? "" : "s"}
-              </span>
+      <motion.div initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={TRANSITIONS.route} className="rounded-[28px] border bg-white p-5 md:p-6" style={{ borderColor: COLORS.hairlineSoft, boxShadow: SHADOWS.card }}>
+        <div className="flex flex-col gap-5 border-b pb-6 md:flex-row md:items-center md:justify-between" style={{ borderColor: COLORS.hairlineSoft }}>
+          <div className="flex items-start gap-4">
+            <div className="relative grid h-20 w-20 shrink-0 place-items-center overflow-hidden rounded-full border-4 border-white shadow-sm" style={{ background: artisan.gradient }}>
+              {artisan.profileImage ? <img src={artisan.profileImage} alt={artisan.name} className="h-full w-full object-cover" /> : <span className="text-[24px] font-bold" style={{ color: COLORS.primary }}>{initials(artisan.name)}</span>}
+              {artisan.isVerified && <BadgeCheck className="absolute bottom-1 right-1 h-5 w-5 rounded-full bg-white text-emerald-600" />}
             </div>
-            {artisan.portfolio.length ? (
-              <div className="grid gap-4 sm:grid-cols-2">
-                {artisan.portfolio.map((item) => (
-                  <article key={item.id} className="overflow-hidden rounded-[18px] border" style={{ borderColor: COLORS.hairlineSoft }}>
-                    <div className="aspect-[4/3] bg-[#f2f2f2]">
-                      {item.imageUrl ? (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img src={item.imageUrl} alt={item.title} className="h-full w-full object-cover" />
-                      ) : (
-                        <div className="grid h-full place-items-center" style={{ color: COLORS.muted }}>
-                          <ImageIcon size={24} />
-                        </div>
-                      )}
-                    </div>
-                    <div className="p-4">
-                      <h3 className="text-[15px] font-semibold" style={{ color: COLORS.ink }}>
-                        {item.title}
-                      </h3>
-                      {item.description ? (
-                        <p className="mt-1 line-clamp-2 text-[13px] leading-[1.45]" style={{ color: COLORS.muted }}>
-                          {item.description}
-                        </p>
-                      ) : null}
-                    </div>
-                  </article>
-                ))}
+            <div>
+              <div className="mb-2 flex flex-wrap items-center gap-2">
+                <h2 className="text-[22px] font-medium leading-[1.18] tracking-[-0.44px]" style={{ color: COLORS.ink }}>{artisan.name}</h2>
+                {artisan.isAvailable && <span className="rounded-full border px-2.5 py-1 text-[11px] font-semibold leading-[1.18]" style={{ borderColor: COLORS.primarySoft, background: COLORS.primaryTint, color: COLORS.primaryActive }}>Available</span>}
               </div>
-            ) : (
-              <div className="rounded-[18px] border border-dashed p-8 text-center" style={{ borderColor: COLORS.hairline }}>
-                <ImageIcon className="mx-auto mb-3" size={24} style={{ color: COLORS.muted }} />
-                <p className="text-[14px]" style={{ color: COLORS.muted }}>
-                  Portfolio projects will appear here once published.
-                </p>
+              <p className="text-[14px] leading-[1.43]" style={{ color: COLORS.muted }}>{artisan.profession} · {locationStr}</p>
+              <div className="mt-2 flex flex-wrap items-center gap-3 text-[14px] leading-[1.43]" style={{ color: COLORS.body }}>
+                <span className="flex items-center gap-1"><Star size={14} fill={COLORS.ink} /> {artisan.rating.average.toFixed(1)} ({artisan.rating.total})</span>
+                <span>{artisan.hourlyRate ? `KES ${artisan.hourlyRate.toLocaleString()} / hr` : "Rate on request"}</span>
+                <span>Member since {new Date(artisan.memberSince).getFullYear() || 2024}</span>
               </div>
-            )}
+            </div>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <Link href="/sign-in" className="flex h-11 items-center gap-2 rounded-lg border px-4 text-[14px] font-medium transition-colors hover:bg-[#f7f7f7]" style={{ borderColor: COLORS.ink, color: COLORS.ink }}><Bookmark size={16} />Save</Link>
+            <Link href={`/sign-in?redirect_url=/artisans/${artisan.id}`} className="flex h-11 items-center gap-2 rounded-lg px-4 text-[14px] font-medium text-white transition-colors hover:bg-emerald-800" style={{ background: COLORS.primary }}><MessageCircle size={16} />Message</Link>
           </div>
         </div>
 
-        <aside className="space-y-5">
-          <div className="rounded-[24px] border bg-white p-5" style={{ borderColor: COLORS.hairlineSoft }}>
-            <p className="text-[13px] font-medium" style={{ color: COLORS.muted }}>
-              Starting rate
-            </p>
-            <p className="mt-2 text-[26px] font-semibold tracking-[-0.04em]" style={{ color: COLORS.ink }}>
-              {formatKes(artisan.hourlyRate)}
-            </p>
-            <p className="mt-2 text-[13px]" style={{ color: COLORS.muted }}>
-              Confirm exact scope and timing before hiring.
-            </p>
+        <div className="mt-6 grid gap-7 md:grid-cols-[1fr_320px]">
+          <div>
+            <section className="border-b pb-6" style={{ borderColor: COLORS.hairlineSoft }}>
+              <h3 className="text-[21px] font-bold leading-[1.43]" style={{ color: COLORS.ink }}>About this artisan</h3>
+              <p className="mt-3 text-[16px] leading-[1.5]" style={{ color: COLORS.body }}>{profileBio}</p>
+            </section>
+            <section className="pt-6">
+              <div className="mb-4 flex items-center justify-between gap-3">
+                <h3 className="text-[21px] font-bold leading-[1.43]" style={{ color: COLORS.ink }}>Portfolio work</h3>
+                <Link href={`/artisans/${artisan.id}`} className="text-[14px] font-medium underline-offset-4 hover:underline" style={{ color: COLORS.ink }}>View all</Link>
+              </div>
+              <div className="grid gap-3 sm:grid-cols-2">
+                {portfolioFrames.map((frame, index) => {
+                  const item = artisan.portfolio[index];
+                  return (
+                    <div key={index} className="group relative aspect-[4/3] overflow-hidden rounded-[14px] text-left" style={{ background: frame }}>
+                      {item?.imageUrl ? <img src={item.imageUrl} alt={item.title} className="absolute inset-0 h-full w-full object-cover transition-transform duration-300 group-hover:scale-105" /> : <div className="absolute inset-0 transition-transform duration-300 group-hover:scale-105" style={{ background: frame }} />}
+                      <div className="absolute bottom-3 left-3 rounded-full bg-white px-3 py-1 text-[11px] font-semibold shadow-sm" style={{ color: COLORS.ink }}>{item?.title || `Project ${index + 1}`}</div>
+                    </div>
+                  );
+                })}
+              </div>
+            </section>
           </div>
-
-          <div className="rounded-[24px] border bg-white p-5" style={{ borderColor: COLORS.hairlineSoft }}>
-            <h2 className="text-[16px] font-semibold" style={{ color: COLORS.ink }}>
-              Skills
-            </h2>
-            <div className="mt-3 flex flex-wrap gap-2">
-              {artisan.specializations.map((skill) => (
-                <span
-                  key={skill.name}
-                  className="rounded-full border px-3 py-1.5 text-[13px]"
-                  style={{ borderColor: COLORS.hairlineSoft, background: COLORS.surfaceSoft, color: COLORS.body }}
-                >
-                  {skill.name}
-                </span>
-              ))}
+          <aside className="space-y-4">
+            <div className="rounded-[14px] border p-5" style={{ borderColor: COLORS.hairlineSoft }}>
+              <h3 className="mb-3 text-[16px] font-semibold leading-[1.25]" style={{ color: COLORS.ink }}>Skills</h3>
+              <div className="flex flex-wrap gap-1.5">{artisan.specializations.map((specialization) => <span key={specialization.name} className="rounded-full border px-2.5 py-1 text-[13px] leading-[1.23]" style={{ borderColor: COLORS.hairlineSoft, background: COLORS.surfaceSoft, color: COLORS.muted }}>{specialization.name}</span>)}</div>
             </div>
-          </div>
-
-          {artisan.website ? (
-            <a
-              href={artisan.website}
-              target="_blank"
-              rel="noreferrer"
-              className="flex items-center gap-2 rounded-[18px] border bg-white p-4 text-[14px] font-medium hover:bg-[#f7f7f7]"
-              style={{ borderColor: COLORS.hairlineSoft, color: COLORS.ink }}
-            >
-              <Globe size={16} />
-              Visit website
-            </a>
-          ) : null}
-        </aside>
-      </section>
-    </main>
+            <div className="rounded-[14px] border p-5" style={{ borderColor: COLORS.hairlineSoft }}>
+              <h3 className="mb-4 text-[16px] font-semibold leading-[1.25]" style={{ color: COLORS.ink }}>Details</h3>
+              <div className="grid gap-3 text-[14px] leading-[1.43]" style={{ color: COLORS.body }}>
+                <p className="flex items-center gap-2"><MapPin size={16} style={{ color: COLORS.muted }} /> {locationStr}</p>
+                <p className="flex items-center gap-2"><BriefcaseBusiness size={16} style={{ color: COLORS.muted }} /> {artisan.profession}</p>
+                <p className="flex items-center gap-2"><CalendarDays size={16} style={{ color: COLORS.muted }} /> {artisan.experience || 4} years experience</p>
+                <p className="flex items-center gap-2"><Globe2 size={16} style={{ color: COLORS.muted }} /> chapaworks.co.ke/profile/{artisan.id}</p>
+              </div>
+            </div>
+            <div className="rounded-[14px] p-5 text-white" style={{ background: COLORS.primary }}>
+              <h3 className="text-[16px] font-semibold leading-[1.25]">Ready to hire?</h3>
+              <p className="mt-2 text-[14px] leading-[1.43] text-white/85">Sign in to save this artisan, start a conversation, and request a quote.</p>
+              <Link href="/sign-in" className="mt-4 flex h-11 w-full items-center justify-center rounded-lg bg-white px-4 text-[14px] font-medium transition-transform hover:scale-[1.01]" style={{ color: COLORS.primaryActive }}>Sign in to message</Link>
+            </div>
+          </aside>
+        </div>
+      </motion.div>
+    </section>
   );
 }
