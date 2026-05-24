@@ -1,9 +1,5 @@
-import { ClientLayout } from "@/components/role/role-based-layout"
+import { ClientDashboardLayout } from "@/components/dashboard2/client/client-dashboard-layout";
 
-export default function ClientDashboardLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
-  return <ClientLayout>{children}</ClientLayout>
+export default function Layout({ children }: { children: React.ReactNode }) {
+  return <ClientDashboardLayout>{children}</ClientDashboardLayout>;
 }
