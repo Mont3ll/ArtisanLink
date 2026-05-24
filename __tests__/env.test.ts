@@ -27,7 +27,7 @@ describe('getRequiredEnv', () => {
   })
 
   it('should throw error when environment variable is missing', () => {
-    delete process.env.DATABASE_URL
+    Reflect.deleteProperty(process.env, 'DATABASE_URL')
     expect(() => getRequiredEnv('DATABASE_URL')).toThrow(
       'Missing required environment variable: DATABASE_URL'
     )
@@ -61,7 +61,7 @@ describe('getOptionalEnv', () => {
   })
 
   it('should return default value when environment variable is missing', () => {
-    delete process.env.NEXT_PUBLIC_APP_URL
+    Reflect.deleteProperty(process.env, 'NEXT_PUBLIC_APP_URL')
     expect(getOptionalEnv('NEXT_PUBLIC_APP_URL', 'http://localhost:3000')).toBe(
       'http://localhost:3000'
     )
