@@ -33,6 +33,16 @@
   --color-secondary: var(--secondary);
   --color-primary-foreground: var(--primary-foreground);
   --color-primary: var(--primary);
+  --color-primary-active: #047857;
+  --color-primary-soft: #d1fae5;
+  --color-primary-tint: #ecfdf5;
+  --color-ink: #222222;
+  --color-body: #3f3f3f;
+  --color-muted-soft: #929292;
+  --color-hairline: #dddddd;
+  --color-hairline-soft: #ebebeb;
+  --color-surface-soft: #f7f7f7;
+  --color-surface-strong: #f2f2f2;
   --color-popover-foreground: var(--popover-foreground);
   --color-popover: var(--popover);
   --color-card-foreground: var(--card-foreground);
