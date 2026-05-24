@@ -1,9 +1,5 @@
-import { AdminLayout } from "@/components/role/role-based-layout"
+import { AdminDashboardLayout } from "@/components/dashboard2/admin/admin-dashboard-layout";
 
-export default function AdminDashboardLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
-  return <AdminLayout>{children}</AdminLayout>
+export default function Layout({ children }: { children: React.ReactNode }) {
+  return <AdminDashboardLayout>{children}</AdminDashboardLayout>;
 }
