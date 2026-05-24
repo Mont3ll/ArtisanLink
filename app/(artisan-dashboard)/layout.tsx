@@ -1,9 +1,5 @@
-import { ArtisanLayout } from "@/components/role/role-based-layout"
+import { ArtisanDashboardLayout } from "@/components/dashboard2/artisan/artisan-dashboard-layout";
 
-export default function ArtisanDashboardLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
-  return <ArtisanLayout>{children}</ArtisanLayout>
+export default function Layout({ children }: { children: React.ReactNode }) {
+  return <ArtisanDashboardLayout>{children}</ArtisanDashboardLayout>;
 }
