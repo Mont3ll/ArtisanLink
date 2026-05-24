@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
-import { ArrowRight, Search } from "lucide-react";
+import { Search } from "lucide-react";
 
 import { ArtisanCtaBand } from "@/components/landing/artisan-cta-band";
 import {
@@ -24,6 +24,30 @@ const TAB_PROFESSIONS: Record<ProductTabId, string[]> = {
   build: ["Carpenter", "Mason", "Welder"],
   design: ["Painter", "Carpenter"],
 };
+
+const HOME_TAB_COPY: Record<ProductTabId, { title: string; subtitle: string }> = {
+  repairs: {
+    title: "Available repair artisans near you",
+    subtitle: "Fast-response specialists for plumbing, electrical, cleaning, and general home fixes.",
+  },
+  build: {
+    title: "Build specialists for your next project",
+    subtitle: "Carpenters, masons, and welders for installations, upgrades, and structural work.",
+  },
+  design: {
+    title: "Design and finishing artisans",
+    subtitle: "Painters, carpenters, and finish-focused artisans for interiors, surfaces, and custom details.",
+  },
+};
+
+const cityLinks: Array<[string, string]> = [
+  ["Nairobi", "Home repair specialists"],
+  ["Kiambu", "Carpenters and masons"],
+  ["Mombasa", "Cleaning and maintenance"],
+  ["Machakos", "Plumbers and electricians"],
+  ["Kajiado", "Welders and fabricators"],
+  ["Nakuru", "Painters and finishers"],
+];
 
 const FALLBACK_GRADIENTS = [
   "linear-gradient(135deg, #ecfdf5 0%, #a7f3d0 45%, #047857 100%)",
@@ -113,6 +137,7 @@ function extractArtisans(payload: unknown): RawArtisan[] {
 export default function HomePage() {
   const [activeTab, setActiveTab] = useState<ProductTabId>("repairs");
   const [activeCategory, setActiveCategory] = useState("All");
+  const [showAllCards, setShowAllCards] = useState(false);
   const [artisans, setArtisans] = useState<ArtisanCardData[]>([]);
   const [selectedPortfolioArtisan, setSelectedPortfolioArtisan] = useState<ArtisanCardData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -149,41 +174,64 @@ export default function HomePage() {
     return matching.length ? matching : artisans;
   }, [activeCategory, activeTab, artisans]);
 
+  const visibleArtisans = showAllCards ? artisans : filteredArtisans;
+  const content = HOME_TAB_COPY[activeTab];
+
   const browseHref =
     activeCategory !== "All" ? `/artisans?profession=${encodeURIComponent(activeCategory)}` : "/artisans";
 
   return (
     <div className="min-h-screen bg-white">
-      <Header activeTab={activeTab} onTabChange={setActiveTab} />
+      <Header
+        activeTab={activeTab}
+        onTabChange={(tab) => {
+          setActiveTab(tab);
+          setActiveCategory("All");
+          setShowAllCards(false);
+        }}
+      />
       <HeroBand activeTab={activeTab} />
-      <CategoryStrip activeCategory={activeCategory} onChange={setActiveCategory} />
+      <CategoryStrip
+        activeCategory={activeCategory}
+        onChange={(category) => {
+          setActiveCategory(category);
+          setShowAllCards(false);
+        }}
+      />
 
       <section className="mx-auto max-w-[1280px] px-5 py-8 md:px-10 md:py-10">
-        <div className="mb-6 flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+        <div className="mb-6 flex items-end justify-between gap-4">
           <div>
-            <p className="mb-2 text-[14px] font-medium leading-[1.29]" style={{ color: COLORS.muted }}>
-              Recommended artisans
-            </p>
-            <h2 className="text-[22px] font-medium leading-[1.18] tracking-[-0.44px]" style={{ color: COLORS.ink }}>
-              {activeCategory === "All" ? "Available specialists near you" : `${activeCategory} specialists`}
+            <h2 className="text-[22px] font-semibold leading-tight tracking-[-0.01em]" style={{ color: COLORS.ink }}>
+              {showAllCards
+                ? "All available artisans"
+                : activeCategory !== "All"
+                  ? `${activeCategory} artisans`
+                  : content.title}
             </h2>
+            <p className="mt-1 text-[14px]" style={{ color: COLORS.muted }}>
+              {showAllCards
+                ? "Browse every featured artisan in the preview, then collapse back to the selected category."
+                : activeCategory !== "All"
+                  ? `Showing available ${activeCategory.toLowerCase()} professionals from the marketplace preview.`
+                  : content.subtitle}
+            </p>
           </div>
-          <Link
-            href={browseHref}
-            className="inline-flex w-fit items-center gap-2 rounded-lg border px-4 py-2 text-[14px] font-medium transition-colors hover:bg-[#f7f7f7]"
+          <button
+            onClick={() => setShowAllCards((value) => !value)}
+            className="hidden cursor-pointer rounded-full border px-4 py-2 text-[14px] font-medium transition-colors hover:bg-[#f7f7f7] md:block"
             style={{ borderColor: COLORS.hairline, color: COLORS.ink }}
           >
-            Browse all
-            <ArrowRight size={16} />
-          </Link>
+            {showAllCards ? "Show fewer" : `Show all ${activeTab === "repairs" ? "artisans" : activeTab}`}
+          </button>
         </div>
 
         <div className="grid grid-cols-1 items-start gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           <AnimatePresence mode="popLayout" initial={false}>
             {loading ? (
               Array.from({ length: 8 }).map((_, index) => <ArtisanCardSkeleton key={index} />)
-            ) : filteredArtisans.length > 0 ? (
-              filteredArtisans.slice(0, 8).map((artisan) => (
+            ) : visibleArtisans.length > 0 ? (
+              visibleArtisans.slice(0, 8).map((artisan) => (
                 <motion.div
                   key={artisan.id}
                   layout
@@ -236,6 +284,27 @@ export default function HomePage() {
 
       <HowItWorksSection />
       <ArtisanCtaBand />
+      <section className="mx-auto max-w-[1280px] px-5 py-12 md:px-10 md:py-16">
+        <h2 className="text-[22px] font-semibold" style={{ color: COLORS.ink }}>
+          Explore artisans by area
+        </h2>
+        <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-6">
+          {cityLinks.map(([city, type]) => (
+            <Link
+              key={city}
+              href={browseHref === "/artisans" ? `/artisans?county=${encodeURIComponent(city)}` : browseHref}
+              className="rounded-2xl p-3 text-left transition hover:bg-[#f7f7f7]"
+            >
+              <span className="block text-[16px] font-semibold" style={{ color: COLORS.ink }}>
+                {city}
+              </span>
+              <span className="block text-[14px]" style={{ color: COLORS.muted }}>
+                {type}
+              </span>
+            </Link>
+          ))}
+        </div>
+      </section>
       <Footer />
       <PortfolioQuickView
         artisan={selectedPortfolioArtisan}
