@@ -187,7 +187,9 @@ function StableSegmentedTabs<T extends string>({ id, value, onChange, options, s
         const Icon = opt.icon;
         return (
           <button key={`${id}-${opt.id}`} type="button" onClick={() => onChange(opt.id)} className={`${compact ? "h-8 min-w-[72px] px-2 text-[12px]" : "h-9 min-w-[92px] px-3 text-[13px]"} relative inline-flex items-center justify-center gap-1.5 overflow-hidden rounded-full text-center font-semibold leading-none transition-colors`} style={{ color: active ? COLORS.ink : COLORS.muted }}>
-            {active && <motion.span layoutId={`${id}-stable-pill`} className="absolute inset-0 rounded-full bg-white shadow-sm" transition={{ type: "spring", stiffness: 420, damping: 34 }} />}
+            <AnimatePresence initial={false}>
+              {active && <motion.span key={`${id}-${opt.id}-pill`} layoutId={`${id}-stable-pill`} className="absolute inset-0 rounded-full bg-white shadow-sm" transition={{ type: "spring", stiffness: 420, damping: 34 }} />}
+            </AnimatePresence>
             {Icon && <Icon size={compact ? 13 : 14} className="relative z-10 shrink-0" style={{ color: active ? COLORS.primary : COLORS.muted }} />}
             <span className="relative z-10 whitespace-nowrap leading-none">{opt.label}</span>
           </button>
