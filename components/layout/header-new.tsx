@@ -474,6 +474,7 @@ function AccountControls() {
           borderColor: COLORS.hairline,
           boxShadow: SHADOWS.soft,
           background: menuOpen ? COLORS.surfaceSoft : COLORS.canvas,
+          color: COLORS.ink,
         }}
         aria-label="Open account menu"
         aria-expanded={menuOpen}
