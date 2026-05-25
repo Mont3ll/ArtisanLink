@@ -124,7 +124,7 @@ export default function PublicArtisanProfilePage() {
   }, [id]);
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white pt-[132px] md:pt-[180px]">
       <Header />
       {isLoading ? <ArtisanProfileSkeleton /> : null}
       {!isLoading && (error || !artisan) ? (

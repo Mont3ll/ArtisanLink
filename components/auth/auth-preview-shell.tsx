@@ -34,8 +34,11 @@ export function AuthPreviewShell({
       : ["Browse verified artisans near you", "Save profiles and compare options", "Message artisans before requesting a quote"];
 
   return (
-    <main className="min-h-screen bg-white">
-      <section id="auth-preview" className="mx-auto max-w-[1080px] px-5 py-12 md:px-10 md:py-16">
+    <main className="min-h-screen bg-white pt-[132px] md:pt-[180px]">
+      <section
+        id="auth-preview"
+        className="mx-auto flex min-h-screen max-w-[1080px] flex-col justify-center px-5 py-12 md:px-10 md:py-16"
+      >
         <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
           <div>
             <p className="mb-2 text-[14px] font-medium leading-[1.29]" style={{ color: COLORS.muted }}>Account access</p>

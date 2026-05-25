@@ -12,7 +12,7 @@ export const metadata: Metadata = {
 
 export default function ForArtisansRoute() {
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white pt-[132px] md:pt-[180px]">
       <Header />
       <ForArtisansPage />
       <Footer />

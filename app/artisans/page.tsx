@@ -120,7 +120,7 @@ export default function BrowseArtisansPage() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen bg-white">
+        <div className="min-h-screen bg-white pt-[132px] md:pt-[180px]">
           <Header />
           <BrowseDirectorySkeleton />
           <Footer />
@@ -185,7 +185,7 @@ function BrowseArtisansContent() {
   }, [searchParams]);
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white pt-[132px] md:pt-[180px]">
       <Header />
       {loading ? (
         <>

@@ -181,7 +181,7 @@ export default function HomePage() {
     activeCategory !== "All" ? `/artisans?profession=${encodeURIComponent(activeCategory)}` : "/artisans";
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white pt-[132px] md:pt-[180px]">
       <Header
         activeTab={activeTab}
         onTabChange={(tab) => {

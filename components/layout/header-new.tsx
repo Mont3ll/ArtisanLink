@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useEffect, useRef, useState } from "react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@clerk/nextjs";
 import {
@@ -498,32 +497,6 @@ function AccountControls() {
       >
         <MapPin size={18} />
       </button>
-      {isSignedIn ? (
-        <Link
-          href="/dashboard"
-          className="hidden cursor-pointer rounded-full px-4 py-3 text-[14px] font-semibold text-white transition-colors duration-200 ease-out hover:bg-emerald-800 lg:block"
-          style={{ background: COLORS.primary }}
-        >
-          Dashboard
-        </Link>
-      ) : (
-        <div className="hidden items-center gap-2 lg:flex">
-          <Link
-            href="/sign-in"
-            className="cursor-pointer rounded-full px-4 py-3 text-[14px] font-semibold transition-colors duration-200 ease-out hover:bg-[#f7f7f7]"
-            style={{ color: COLORS.ink }}
-          >
-            Sign in
-          </Link>
-          <Link
-            href="/sign-up"
-            className="cursor-pointer rounded-full px-4 py-3 text-[14px] font-semibold text-white transition-colors duration-200 ease-out hover:bg-emerald-800"
-            style={{ background: COLORS.primary }}
-          >
-            Sign up
-          </Link>
-        </div>
-      )}
       <button
         className="flex h-12 cursor-pointer items-center gap-3 rounded-full border py-2 pl-3 pr-2 transition-[background-color,box-shadow] duration-200 ease-out hover:shadow-md"
         style={{
