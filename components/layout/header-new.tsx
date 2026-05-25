@@ -406,47 +406,18 @@ function AccountMenuPopover({
           style={{ background: COLORS.hairlineSoft }}
         />
 
-        {isSignedIn ? (
-          <button
-            onClick={() => navigate("/dashboard")}
-            className="flex w-full cursor-pointer items-center gap-3 rounded-[12px] px-3 py-2.5 text-left transition-colors duration-150 hover:bg-[#f7f7f7]"
+        <button
+          onClick={() => navigate(isSignedIn ? "/dashboard" : "/sign-in")}
+          className="flex w-full cursor-pointer items-center gap-3 rounded-[12px] px-3 py-2.5 text-left transition-colors duration-150 hover:bg-[#f7f7f7]"
+        >
+          <LogIn size={16} style={{ color: COLORS.body }} />
+          <span
+            className="text-[14px] leading-[1.43]"
+            style={{ color: COLORS.ink }}
           >
-            <UserRound size={16} style={{ color: COLORS.body }} />
-            <span
-              className="text-[14px] leading-[1.43]"
-              style={{ color: COLORS.ink }}
-            >
-              Dashboard
-            </span>
-          </button>
-        ) : (
-          <div className="grid gap-1">
-            <button
-              onClick={() => navigate("/sign-in")}
-              className="flex w-full cursor-pointer items-center gap-3 rounded-[12px] px-3 py-2.5 text-left transition-colors duration-150 hover:bg-[#f7f7f7]"
-            >
-              <LogIn size={16} style={{ color: COLORS.body }} />
-              <span
-                className="text-[14px] leading-[1.43]"
-                style={{ color: COLORS.ink }}
-              >
-                Log in or sign up
-              </span>
-            </button>
-            <button
-              onClick={() => navigate("/sign-up")}
-              className="flex w-full cursor-pointer items-center gap-3 rounded-[12px] px-3 py-2.5 text-left transition-colors duration-150 hover:bg-[#f7f7f7]"
-            >
-              <UserPlus size={16} style={{ color: COLORS.body }} />
-              <span
-                className="text-[14px] leading-[1.43]"
-                style={{ color: COLORS.ink }}
-              >
-                Create account
-              </span>
-            </button>
-          </div>
-        )}
+            {isSignedIn ? "Dashboard" : "Log in or sign up"}
+          </span>
+        </button>
       </motion.div>
     </motion.div>
   );

@@ -12,6 +12,7 @@ import {
   Wrench,
   Zap,
 } from "lucide-react";
+import { motion } from "framer-motion";
 
 import { COLORS, SHADOWS } from "@/lib/design-tokens";
 
@@ -45,20 +46,41 @@ export function CategoryStrip({
             <button
               key={category.label}
               onClick={() => onChange(category.label)}
-              className="flex min-w-fit cursor-pointer items-center gap-2 rounded-full border px-4 py-2 text-[14px] font-medium leading-[1.29] transition-[background-color,border-color,box-shadow,transform] duration-150 hover:-translate-y-0.5 hover:bg-[#f7f7f7]"
+              className="relative flex min-w-fit cursor-pointer items-center gap-2 rounded-full border px-4 py-2 text-[14px] font-medium leading-[1.29] transition-[border-color,color,transform] duration-150 hover:-translate-y-0.5"
               style={{
                 borderColor: active ? COLORS.ink : COLORS.hairline,
                 color: active ? COLORS.ink : COLORS.body,
-                background: COLORS.canvas,
-                boxShadow: active ? SHADOWS.soft : "none",
               }}
             >
+              {/* Spring-animated background pill */}
+              {active && (
+                <motion.span
+                  layoutId="category-active-bg"
+                  className="absolute inset-0 rounded-full"
+                  style={{
+                    background: COLORS.canvas,
+                    boxShadow: SHADOWS.soft,
+                  }}
+                  transition={{
+                    type: "spring",
+                    stiffness: 360,
+                    damping: 34,
+                    mass: 0.58,
+                  }}
+                />
+              )}
               <Icon
                 size={16}
                 strokeWidth={active ? 2.25 : 1.9}
-                style={{ color: active ? COLORS.primary : COLORS.muted }}
+                style={{
+                  color: active ? COLORS.primary : COLORS.muted,
+                  position: "relative",
+                  zIndex: 1,
+                }}
               />
-              {category.label}
+              <span style={{ position: "relative", zIndex: 1 }}>
+                {category.label}
+              </span>
             </button>
           );
         })}
