@@ -1,9 +1,9 @@
 "use client";
 
-import { Eye, MapPin, MessageCircle, Star, BadgeCheck } from "lucide-react";
+import { BadgeCheck, Eye, Images, MessageCircle, Star } from "lucide-react";
 import { useRouter } from "next/navigation";
 
-import { COLORS, SHADOWS } from "@/lib/design-tokens";
+import { COLORS } from "@/lib/design-tokens";
 
 export type ArtisanCardData = {
   id: string;
@@ -24,30 +24,32 @@ export type ArtisanCardData = {
 const fallbackGradient =
   "linear-gradient(135deg, #ecfdf5 0%, #a7f3d0 45%, #047857 100%)";
 
-function formatKes(value: number | null) {
-  if (!value) return "Rate on request";
-  return `KES ${new Intl.NumberFormat("en-KE").format(value)}/hr`;
+function getInitials(name: string) {
+  return name
+    .split(" ")
+    .map((p) => p[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase();
 }
 
 export function ArtisanCardSkeleton() {
   return (
-    <div
-      className="overflow-hidden rounded-[22px] border bg-white"
-      style={{ borderColor: COLORS.hairlineSoft }}
-    >
-      <div className="aspect-[4/3] animate-pulse bg-[#f2f2f2]" />
-      <div className="p-4">
-        <div className="mb-3 flex items-center gap-3">
-          <div className="h-11 w-11 animate-pulse rounded-full bg-[#f2f2f2]" />
-          <div className="flex-1 space-y-2">
-            <div className="h-4 w-2/3 animate-pulse rounded bg-[#f2f2f2]" />
-            <div className="h-3 w-1/2 animate-pulse rounded bg-[#f2f2f2]" />
-          </div>
+    <div className="animate-pulse">
+      <div
+        className="mb-3 aspect-[4/3] rounded-[14px]"
+        style={{ background: "#f2f2f2" }}
+      />
+      <div className="mb-2 flex items-start gap-3">
+        <div className="h-10 w-10 rounded-full bg-[#f2f2f2]" />
+        <div className="flex-1 space-y-2 pt-1">
+          <div className="h-4 w-2/3 rounded bg-[#f2f2f2]" />
+          <div className="h-3 w-1/2 rounded bg-[#f2f2f2]" />
         </div>
-        <div className="space-y-2">
-          <div className="h-3 w-full animate-pulse rounded bg-[#f2f2f2]" />
-          <div className="h-3 w-4/5 animate-pulse rounded bg-[#f2f2f2]" />
-        </div>
+      </div>
+      <div className="flex gap-2">
+        <div className="h-10 flex-1 rounded-lg bg-[#f2f2f2]" />
+        <div className="h-10 flex-1 rounded-lg bg-[#f2f2f2]" />
       </div>
     </div>
   );
@@ -61,147 +63,189 @@ export function ArtisanPreviewCard({
   onOpenPortfolio?: (artisan: ArtisanCardData) => void;
 }) {
   const router = useRouter();
-  const location = [artisan.location.city, artisan.location.county]
-    .filter(Boolean)
-    .join(", ");
+  const abbr = getInitials(artisan.name);
+  const locationStr =
+    [artisan.location.city, artisan.location.county].filter(Boolean).join(", ") || "Kenya";
+  const heroImg = artisan.portfolioThumbnail ?? artisan.profileImage;
 
   const handleOpenPortfolio = () => {
     if (onOpenPortfolio) {
       onOpenPortfolio(artisan);
       return;
     }
-
     router.push(`/artisans/${artisan.id}`);
   };
 
   return (
     <article
-      className="group overflow-hidden rounded-[22px] border bg-white transition-[box-shadow,transform] duration-200 hover:-translate-y-1"
-      style={{ borderColor: COLORS.hairlineSoft, boxShadow: SHADOWS.soft }}
+      className="group block rounded-[14px] transition-all duration-200 ease-out hover:-translate-y-0.5"
     >
+      {/* Image */}
       <button
         type="button"
         onClick={handleOpenPortfolio}
-        className="block w-full cursor-pointer text-left"
-        aria-label={`Preview ${artisan.name}'s portfolio`}
+        className="relative mb-3 block aspect-[4/3] w-full cursor-pointer overflow-hidden rounded-[14px] bg-[#f2f2f2] text-left"
+        aria-label={`View ${artisan.name}'s portfolio`}
       >
-        <div className="relative aspect-[4/3] overflow-hidden">
-          {artisan.portfolioThumbnail ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={artisan.portfolioThumbnail}
-              alt={`${artisan.name} portfolio preview`}
-              className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
-            />
-          ) : (
-            <div
-              className="h-full w-full transition-transform duration-300 group-hover:scale-105"
-              style={{ background: artisan.gradient ?? fallbackGradient }}
-            />
-          )}
-          <div className="absolute left-3 top-3 flex items-center gap-2">
+        {heroImg ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={heroImg}
+            alt={artisan.profession ?? artisan.name}
+            className="h-full w-full object-cover transition-transform duration-300 ease-out group-hover:scale-105"
+          />
+        ) : (
+          <div
+            className="flex h-full w-full items-center justify-center transition-transform duration-300 ease-out group-hover:scale-105"
+            style={{ background: artisan.gradient ?? fallbackGradient }}
+          >
             <span
-              className="rounded-full px-2.5 py-1 text-[11px] font-semibold leading-none"
-              style={{
-                background: artisan.isAvailable ? COLORS.primaryTint : "#f7f7f7",
-                color: artisan.isAvailable ? COLORS.primaryActive : COLORS.muted,
-              }}
+              className="text-[32px] font-bold"
+              style={{ color: COLORS.primary }}
             >
-              {artisan.isAvailable ? "Available" : "Booked"}
+              {abbr}
             </span>
-            {artisan.isPremium && (
-              <span
-                className="rounded-full px-2.5 py-1 text-[11px] font-semibold leading-none text-white"
-                style={{ background: COLORS.ink }}
-              >
-                Pro
-              </span>
-            )}
           </div>
+        )}
+
+        {/* "View work" hover badge */}
+        <div
+          className="absolute bottom-3 right-3 flex items-center gap-1 rounded-full bg-white px-3 py-1 text-[11px] font-semibold opacity-0 shadow-sm transition-opacity group-hover:opacity-100"
+          style={{ color: COLORS.ink }}
+        >
+          <Images size={13} style={{ color: COLORS.primary }} />
+          View work
         </div>
+
+        {/* Availability */}
+        {artisan.isAvailable && (
+          <div
+            className="absolute left-3 top-3 flex items-center gap-1 rounded-full bg-white px-3 py-1 text-[11px] font-semibold leading-[1.18] shadow-sm"
+            style={{ color: COLORS.ink }}
+          >
+            <div
+              className="h-1.5 w-1.5 rounded-full"
+              style={{ background: COLORS.primary }}
+            />
+            Available
+          </div>
+        )}
+
+        {artisan.isPremium && !artisan.isAvailable && (
+          <div className="absolute left-3 top-3 rounded-full bg-white px-3 py-1 text-[11px] font-semibold leading-[1.18] shadow-sm text-[#222222]">
+            Featured
+          </div>
+        )}
       </button>
 
-      <div className="p-4">
-        <div className="flex items-start justify-between gap-3">
-          <div className="min-w-0">
-            <div className="flex items-center gap-1.5">
-              <h3
-                className="truncate text-[16px] font-semibold leading-[1.25]"
-                style={{ color: COLORS.ink }}
-              >
-                {artisan.name}
-              </h3>
-              {artisan.isVerified && (
-                <BadgeCheck size={16} style={{ color: COLORS.primary }} />
-              )}
+      {/* Info row: avatar + name/rating/meta */}
+      <div className="mb-2 flex items-start gap-3">
+        <div className="relative mt-0.5 flex-shrink-0">
+          {artisan.profileImage ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={artisan.profileImage}
+              alt={artisan.name}
+              className="h-10 w-10 rounded-full border-2 border-white object-cover shadow-sm"
+            />
+          ) : (
+            <div className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-white bg-emerald-100 shadow-sm">
+              <span className="text-[13px] font-bold text-emerald-700">
+                {abbr}
+              </span>
             </div>
+          )}
+          {artisan.isVerified && (
+            <BadgeCheck
+              className="absolute -bottom-0.5 -right-0.5 h-4 w-4 rounded-full bg-white text-emerald-600"
+              aria-label="Verified artisan"
+            />
+          )}
+        </div>
+
+        <div className="min-w-0 flex-1">
+          <div className="flex items-start justify-between gap-2">
             <p
-              className="mt-0.5 text-[14px] leading-[1.43]"
-              style={{ color: COLORS.muted }}
+              className="truncate text-[16px] font-semibold leading-[1.25]"
+              style={{ color: COLORS.ink }}
             >
-              {artisan.profession}
+              {artisan.name}
             </p>
+            {artisan.rating.total > 0 && (
+              <div className="flex flex-shrink-0 items-center gap-1 pt-0.5">
+                <Star
+                  className="h-3.5 w-3.5"
+                  fill={COLORS.ink}
+                  style={{ color: COLORS.ink }}
+                />
+                <span
+                  className="text-[14px] font-medium leading-[1.29]"
+                  style={{ color: COLORS.ink }}
+                >
+                  {artisan.rating.average.toFixed(1)}
+                </span>
+                <span
+                  className="text-[13px] leading-[1.23]"
+                  style={{ color: COLORS.mutedSoft }}
+                >
+                  ({artisan.rating.total})
+                </span>
+              </div>
+            )}
           </div>
-          <div className="flex items-center gap-1 text-[13px] font-semibold" style={{ color: COLORS.ink }}>
-            <Star size={14} fill={COLORS.amber} stroke={COLORS.amber} />
-            {artisan.rating.average.toFixed(1)}
-          </div>
+          <p className="truncate text-[14px] leading-[1.43]" style={{ color: COLORS.muted }}>
+            {[artisan.profession, locationStr].filter(Boolean).join(" · ")}
+          </p>
+          {artisan.hourlyRate ? (
+            <p className="mt-0.5 text-[14px] leading-[1.43]" style={{ color: COLORS.ink }}>
+              <span className="font-semibold">
+                KES {artisan.hourlyRate.toLocaleString()}
+              </span>
+              <span style={{ color: COLORS.muted }}> / hr</span>
+            </p>
+          ) : null}
         </div>
+      </div>
 
-        <div className="mt-3 flex items-center gap-1.5 text-[13px]" style={{ color: COLORS.muted }}>
-          <MapPin size={14} />
-          <span className="truncate">{location || "Kenya"}</span>
-        </div>
-
-        <div className="mt-3 flex flex-wrap gap-1.5">
-          {artisan.specializations.slice(0, 3).map((item) => (
+      {/* Specialization tags */}
+      {artisan.specializations.length > 0 && (
+        <div className="mb-3 flex flex-wrap gap-1.5">
+          {artisan.specializations.slice(0, 2).map((s) => (
             <span
-              key={item.name}
-              className="rounded-full border px-2.5 py-1 text-[12px] leading-none"
+              key={s.name}
+              className="whitespace-nowrap rounded-full border px-2.5 py-1 text-[13px] leading-[1.23]"
               style={{
-                borderColor: COLORS.hairlineSoft,
                 background: COLORS.surfaceSoft,
-                color: COLORS.body,
+                borderColor: COLORS.hairlineSoft,
+                color: COLORS.muted,
               }}
             >
-              {item.name}
+              {s.name}
             </span>
           ))}
         </div>
+      )}
 
-        <div
-          className="mt-4 flex items-center justify-between border-t pt-4"
-          style={{ borderColor: COLORS.hairlineSoft }}
+      {/* Actions */}
+      <div className="flex gap-2">
+        <button
+          type="button"
+          onClick={() => router.push(`/artisans/${artisan.id}`)}
+          className="flex min-h-10 flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-lg border px-3 py-2 text-[14px] font-medium leading-[1.29] transition-colors group-hover:border-emerald-600 group-hover:text-emerald-700"
+          style={{ borderColor: COLORS.hairline, color: COLORS.body }}
         >
-          <div>
-            <p className="text-[14px] font-semibold" style={{ color: COLORS.ink }}>
-              {formatKes(artisan.hourlyRate)}
-            </p>
-            <p className="text-[12px]" style={{ color: COLORS.mutedSoft }}>
-              {artisan.rating.total} review{artisan.rating.total === 1 ? "" : "s"}
-            </p>
-          </div>
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={handleOpenPortfolio}
-              className="grid h-9 w-9 place-items-center rounded-full border transition-colors hover:bg-[#f7f7f7]"
-              style={{ borderColor: COLORS.hairline, color: COLORS.ink }}
-              aria-label={`Preview ${artisan.name}'s portfolio`}
-            >
-              <Eye size={16} />
-            </button>
-            <button
-              type="button"
-              onClick={() => router.push(`/sign-in?redirect_url=/artisans/${artisan.id}`)}
-              className="grid h-9 w-9 place-items-center rounded-full text-white transition-colors hover:bg-emerald-800"
-              style={{ background: COLORS.primary }}
-              aria-label={`Message ${artisan.name}`}
-            >
-              <MessageCircle size={16} />
-            </button>
-          </div>
-        </div>
+          <Eye className="h-4 w-4" />
+          View Profile
+        </button>
+        <button
+          type="button"
+          onClick={() => router.push(`/sign-in?redirect_url=/artisans/${artisan.id}`)}
+          className="flex min-h-10 flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-lg px-3 py-2 text-[14px] font-medium leading-[1.29] text-white transition-colors hover:bg-emerald-800"
+          style={{ background: COLORS.primary }}
+        >
+          <MessageCircle className="h-4 w-4" />
+          Message
+        </button>
       </div>
     </article>
   );
