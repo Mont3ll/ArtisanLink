@@ -11,7 +11,9 @@ type Status =
   | "COMPLETED"
   | "CANCELLED"
   | "REJECTED"
-  | "SUSPENDED";
+  | "SUSPENDED"
+  | "VERIFIED"
+  | "REVIEW";
 
 const STATUS_CONFIG: Record<
   Status,
@@ -70,6 +72,18 @@ const STATUS_CONFIG: Record<
     bg: "#fff7ed",
     color: "#9a3412",
     dot: "#f97316",
+  },
+  VERIFIED: {
+    label: "Verified",
+    bg: COLORS.primaryTint,
+    color: COLORS.primaryActive,
+    dot: COLORS.primary,
+  },
+  REVIEW: {
+    label: "In Review",
+    bg: "#faf5ff",
+    color: "#7e22ce",
+    dot: "#a855f7",
   },
 };
 
