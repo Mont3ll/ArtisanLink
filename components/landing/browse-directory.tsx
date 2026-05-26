@@ -101,6 +101,7 @@ export function BrowseDirectorySection({
     return value === "reviews" || value === "rate" || value === "recent" ? value : "rating";
   });
   const [availableOnly, setAvailableOnly] = useState(() => searchParams.get("available") === "true");
+  const [verifiedOnly, setVerifiedOnly] = useState(() => searchParams.get("verified") === "true");
   const [page, setPage] = useState(1);
   const [selectedPortfolioArtisan, setSelectedPortfolioArtisan] = useState<ArtisanCardData | null>(null);
 
@@ -157,7 +158,7 @@ export function BrowseDirectorySection({
       if (sortBy === "recent") return 0;
       return b.rating.average - a.rating.average;
     });
-  }, [availableOnly, county, initialArtisans, profession, query, sortBy]);
+  }, [availableOnly, county, initialArtisans, profession, query, sortBy, verifiedOnly]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const visible = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
@@ -171,13 +172,14 @@ export function BrowseDirectorySection({
   }, [totalPages]);
 
   const hasFilters =
-    query || profession !== "All professions" || county !== "All counties" || availableOnly;
+    query || profession !== "All professions" || county !== "All counties" || availableOnly || verifiedOnly;
 
   const resetFilters = () => {
     setQuery("");
     setProfession("All professions");
     setCounty("All counties");
     setAvailableOnly(false);
+    setVerifiedOnly(false);
     setSortBy("rating");
     setPage(1);
   };
@@ -274,6 +276,19 @@ export function BrowseDirectorySection({
               <ListFilter size={16} />
               Available
             </button>
+            <button
+              type="button"
+              onClick={() => setVerifiedOnly((value) => !value)}
+              className="flex h-14 cursor-pointer items-center justify-center gap-2 rounded-full border px-4 text-[14px] font-medium transition-colors hover:bg-[#f7f7f7]"
+              style={{
+                borderColor: verifiedOnly ? COLORS.ink : COLORS.hairline,
+                color: COLORS.ink,
+                background: verifiedOnly ? COLORS.surfaceSoft : COLORS.canvas,
+              }}
+            >
+              <BadgeCheck size={16} />
+              Verified
+            </button>
           </div>
 
           <div className="mt-4 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
@@ -286,6 +301,7 @@ export function BrowseDirectorySection({
                 <FilterChip label={county} onRemove={() => setCounty("All counties")} />
               )}
               {availableOnly && <FilterChip label="Available now" onRemove={() => setAvailableOnly(false)} />}
+              {verifiedOnly && <FilterChip label="Verified only" onRemove={() => setVerifiedOnly(false)} />}
               {!hasFilters && (
                 <span className="text-[14px] leading-[1.43]" style={{ color: COLORS.muted }}>
                   No active filters. Showing recommended artisans.
