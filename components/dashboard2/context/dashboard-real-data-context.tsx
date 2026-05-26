@@ -113,8 +113,8 @@ export function DashboardRealDataProvider({
 
 /**
  * Read real user data from the nearest DashboardRealDataProvider.
- * Throws when called outside a provider — use the try/catch pattern in
- * source-admin-preview.tsx for graceful degradation in preview mode.
+ * Throws when called outside a provider — prefer useOptionalDashboardRealData
+ * in components that may render both inside and outside the provider.
  */
 export function useDashboardRealData(): DashboardRealData {
   const ctx = useContext(DashboardRealDataContext);
@@ -124,4 +124,13 @@ export function useDashboardRealData(): DashboardRealData {
     );
   }
   return ctx;
+}
+
+/**
+ * Safe variant: returns null when called outside a DashboardRealDataProvider
+ * instead of throwing. Use this in components that render in both preview
+ * (no provider) and production (with provider) contexts.
+ */
+export function useOptionalDashboardRealData(): DashboardRealData | null {
+  return useContext(DashboardRealDataContext);
 }

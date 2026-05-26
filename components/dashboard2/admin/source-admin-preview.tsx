@@ -2,7 +2,7 @@
 // @ts-nocheck
 "use client";
 
-import { useDashboardRealData } from "@/components/dashboard2/context/dashboard-real-data-context";
+import { useOptionalDashboardRealData } from "@/components/dashboard2/context/dashboard-real-data-context";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
   AnimatePresence,
@@ -5319,14 +5319,9 @@ function DashboardNotificationButton({
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement | null>(null);
 
-  // Real unread count from context — gracefully falls back to fixture length if not in provider
-  let realUnreadCount = 0;
-  try {
-    const ctx = useDashboardRealData();
-    realUnreadCount = ctx.unreadCount;
-  } catch {
-    // Outside DashboardRealDataProvider — preview mode
-  }
+  // Real unread count from context — null when not in a provider (preview mode)
+  const _notifCtx = useOptionalDashboardRealData();
+  const realUnreadCount = _notifCtx?.unreadCount ?? 0;
 
   const notifications =
     role === "Admin"
@@ -5485,16 +5480,10 @@ function DashboardProfileButton({
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement | null>(null);
 
-  // Real user identity from context — gracefully falls back to fixture if not in provider
-  let realDisplayName: string | null = null;
-  let realAvatarUrl: string | null = null;
-  try {
-    const ctx = useDashboardRealData();
-    realDisplayName = ctx.displayName;
-    realAvatarUrl = ctx.avatarUrl;
-  } catch {
-    // Outside DashboardRealDataProvider — fixture/preview mode
-  }
+  // Real user identity from context — null when not in a provider (preview mode)
+  const _profileCtx = useOptionalDashboardRealData();
+  const realDisplayName = _profileCtx?.displayName ?? null;
+  const realAvatarUrl = _profileCtx?.avatarUrl ?? null;
 
   const displayName =
     realDisplayName ??
@@ -10870,16 +10859,10 @@ function ArtisanDashboardCoreSection({
   const [profileBannerDismissed, setProfileBannerDismissed] = useState(false);
   const [profileSaved, setProfileSaved] = useState(false);
 
-  // Real verification status from context — graceful fallback for preview mode
-  let realVerificationStatus: string | null = null;
-  let realRejectionReason: string | null = null;
-  try {
-    const realData = useDashboardRealData();
-    realVerificationStatus = realData.verificationStatus;
-    realRejectionReason = realData.rejectionReason;
-  } catch {
-    // Preview/prototype mode: no context — treat as PENDING (show banner)
-  }
+  // Real verification status from context — null when not in a provider (preview mode)
+  const _verifCtx = useOptionalDashboardRealData();
+  const realVerificationStatus = _verifCtx?.verificationStatus ?? null;
+  const realRejectionReason = _verifCtx?.rejectionReason ?? null;
 
   const showVerificationBanner =
     !verificationBannerDismissed &&
