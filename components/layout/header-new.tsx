@@ -464,9 +464,10 @@ function AccountControls() {
       <button
         onClick={() => router.push("/artisans")}
         className="hidden h-10 w-10 cursor-pointer place-items-center rounded-full transition-colors duration-200 ease-out hover:bg-[#f7f7f7] md:grid"
+        style={{ color: COLORS.ink }}
         aria-label="Browse artisans by location"
       >
-        <MapPin size={18} />
+        <MapPin size={18} strokeWidth={2} />
       </button>
       <button
         className="flex h-12 cursor-pointer items-center gap-3 rounded-full border py-2 pl-3 pr-2 transition-[background-color,box-shadow] duration-200 ease-out hover:shadow-md"
@@ -882,8 +883,12 @@ function MorphingSearchBar({
   const hasActive = activeSection !== null;
   const shellRef = useRef<HTMLDivElement | null>(null);
   const trackRef = useRef<HTMLDivElement | null>(null);
+  const compactTrackRef = useRef<HTMLDivElement | null>(null);
   const orbRef = useRef<HTMLButtonElement | null>(null);
   const sectionRefs = useRef<
+    Partial<Record<Exclude<SearchSection, null>, HTMLButtonElement | null>>
+  >({});
+  const compactSectionRefs = useRef<
     Partial<Record<Exclude<SearchSection, null>, HTMLButtonElement | null>>
   >({});
   const [activeMetric, setActiveMetric] = useState<{
@@ -891,6 +896,14 @@ function MorphingSearchBar({
     width: number;
   } | null>(null);
   const [hoverMetric, setHoverMetric] = useState<{
+    left: number;
+    width: number;
+  } | null>(null);
+  const [compactActiveMetric, setCompactActiveMetric] = useState<{
+    left: number;
+    width: number;
+  } | null>(null);
+  const [compactHoverMetric, setCompactHoverMetric] = useState<{
     left: number;
     width: number;
   } | null>(null);
@@ -915,15 +928,39 @@ function MorphingSearchBar({
     return { left, width: Math.max(0, right - left) };
   };
 
+  const measureCompactSection = (sectionId: Exclude<SearchSection, null>) => {
+    const track = compactTrackRef.current;
+    const section = compactSectionRefs.current[sectionId];
+    if (!track || !section) return null;
+
+    const trackRect = track.getBoundingClientRect();
+    const sectionRect = section.getBoundingClientRect();
+    return {
+      left: sectionRect.left - trackRect.left,
+      width: sectionRect.width,
+    };
+  };
+
   useEffect(() => {
     const measure = () => {
       setActiveMetric(activeSection ? measureSection(activeSection) : null);
       setHoverMetric(hoveredSection ? measureSection(hoveredSection) : null);
+      setCompactActiveMetric(
+        activeSection ? measureCompactSection(activeSection) : null,
+      );
+      setCompactHoverMetric(
+        hoveredSection && hoveredSection !== activeSection
+          ? measureCompactSection(hoveredSection)
+          : null,
+      );
     };
 
-    measure();
+    const frame = requestAnimationFrame(measure);
     window.addEventListener("resize", measure);
-    return () => window.removeEventListener("resize", measure);
+    return () => {
+      cancelAnimationFrame(frame);
+      window.removeEventListener("resize", measure);
+    };
   }, [activeSection, hoveredSection]);
 
   return (
@@ -980,80 +1017,43 @@ function MorphingSearchBar({
                     transition={{
                       left: {
                         type: "spring",
-                        stiffness: 340,
-                        damping: 31,
-                        mass: 0.56,
+                        stiffness: 360,
+                        damping: 34,
+                        mass: 0.55,
                       },
                       width: {
                         type: "spring",
-                        stiffness: 340,
-                        damping: 31,
-                        mass: 0.56,
-                      },
-                      opacity: { duration: 0.1, ease: [0.22, 1, 0.36, 1] },
-                      scaleX: {
-                        type: "spring",
                         stiffness: 360,
-                        damping: 32,
-                        mass: 0.52,
+                        damping: 34,
+                        mass: 0.55,
                       },
+                      opacity: { duration: 0.1 },
                     }}
                     style={{
-                      left: hoverMetric.left,
-                      width: hoverMetric.width,
                       background: COLORS.surfaceSoft,
                       boxShadow: SHADOWS.soft,
                       transformOrigin: "center",
                     }}
                   />
                 )}
-              {activeMetric && (
-                <motion.span
-                  key="active-search-slider"
-                  className="pointer-events-none absolute top-1/2 z-0 h-[58px] -translate-y-1/2 rounded-full bg-white"
-                  initial={{
-                    opacity: 0,
-                    left: activeMetric.left,
-                    width: activeMetric.width,
-                    scaleX: 0.96,
-                  }}
-                  animate={{
-                    opacity: 1,
-                    left: activeMetric.left,
-                    width: activeMetric.width,
-                    scaleX: 1,
-                  }}
-                  exit={{ opacity: 0, scaleX: 0.96 }}
-                  transition={{
-                    left: {
-                      type: "spring",
-                      stiffness: 340,
-                      damping: 31,
-                      mass: 0.56,
-                    },
-                    width: {
-                      type: "spring",
-                      stiffness: 340,
-                      damping: 31,
-                      mass: 0.56,
-                    },
-                    opacity: { duration: 0.12, ease: [0.22, 1, 0.36, 1] },
-                    scaleX: {
-                      type: "spring",
-                      stiffness: 360,
-                      damping: 32,
-                      mass: 0.52,
-                    },
-                  }}
-                  style={{
-                    left: activeMetric.left,
-                    width: activeMetric.width,
-                    boxShadow: SHADOWS.card,
-                    transformOrigin: "center",
-                  }}
-                />
-              )}
             </AnimatePresence>
+            {activeMetric && (
+              <motion.span
+                className="pointer-events-none absolute top-1/2 z-0 h-[58px] -translate-y-1/2 rounded-full bg-white"
+                initial={false}
+                animate={{ left: activeMetric.left, width: activeMetric.width }}
+                transition={{
+                  type: "spring",
+                  stiffness: 360,
+                  damping: 34,
+                  mass: 0.58,
+                }}
+                style={{
+                  boxShadow: SHADOWS.card,
+                  transformOrigin: "center",
+                }}
+              />
+            )}
             {fullSegments.map((segment, index) => {
               const selected = activeSection === segment.id;
               return (
@@ -1101,6 +1101,7 @@ function MorphingSearchBar({
           </motion.div>
 
           <motion.div
+            ref={compactTrackRef}
             className="absolute inset-0 flex min-w-0 items-center overflow-hidden pl-3 text-left will-change-transform"
             style={{
               opacity: compactOpacity,
@@ -1110,10 +1111,74 @@ function MorphingSearchBar({
               pointerEvents: compactPointerEvents,
             }}
           >
-            <span className="flex min-w-0 flex-1 items-center gap-2 whitespace-nowrap">
+            <AnimatePresence initial={false}>
+              {compactHoverMetric && hoveredSection && (
+                <motion.span
+                  key="compact-hover-search-slider"
+                  className="pointer-events-none absolute z-0 h-10 rounded-full"
+                  initial={{
+                    opacity: 0,
+                    left: compactHoverMetric.left,
+                    width: compactHoverMetric.width,
+                    scaleX: 0.98,
+                  }}
+                  animate={{
+                    opacity: 1,
+                    left: compactHoverMetric.left,
+                    width: compactHoverMetric.width,
+                    scaleX: 1,
+                  }}
+                  exit={{ opacity: 0, scaleX: 0.98 }}
+                  transition={{
+                    left: {
+                      type: "spring",
+                      stiffness: 360,
+                      damping: 34,
+                      mass: 0.55,
+                    },
+                    width: {
+                      type: "spring",
+                      stiffness: 360,
+                      damping: 34,
+                      mass: 0.55,
+                    },
+                    opacity: { duration: 0.1 },
+                  }}
+                  style={{
+                    background: COLORS.surfaceSoft,
+                    boxShadow: SHADOWS.soft,
+                    transformOrigin: "center",
+                  }}
+                />
+              )}
+            </AnimatePresence>
+            {compactActiveMetric && (
+              <motion.span
+                className="pointer-events-none absolute z-0 h-10 rounded-full bg-white"
+                initial={false}
+                animate={{
+                  left: compactActiveMetric.left,
+                  width: compactActiveMetric.width,
+                }}
+                transition={{
+                  type: "spring",
+                  stiffness: 360,
+                  damping: 34,
+                  mass: 0.58,
+                }}
+                style={{
+                  boxShadow: SHADOWS.soft,
+                  transformOrigin: "center",
+                }}
+              />
+            )}
+            <span className="relative z-10 flex min-w-0 flex-1 items-center gap-2 whitespace-nowrap">
               {compactSegments.map((segment, index) => (
                 <React.Fragment key={segment.id}>
                   <motion.button
+                    ref={(node) => {
+                      compactSectionRefs.current[segment.id] = node;
+                    }}
                     onClick={() => onSelectSection(segment.id)}
                     onMouseEnter={() => setHoveredSection(segment.id)}
                     onMouseLeave={() => setHoveredSection(null)}
@@ -1123,12 +1188,8 @@ function MorphingSearchBar({
                     style={{
                       color: index < 2 ? COLORS.ink : COLORS.muted,
                       y: compactTextY,
-                      background:
-                        hoveredSection === segment.id
-                          ? COLORS.surfaceSoft
-                          : "transparent",
-                      boxShadow:
-                        hoveredSection === segment.id ? SHADOWS.soft : "none",
+                      background: "transparent",
+                      boxShadow: "none",
                     }}
                   >
                     {segment.label}

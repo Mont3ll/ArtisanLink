@@ -30,6 +30,7 @@ import {
 } from "lucide-react";
 
 import { FluidPillTabs, StatusChip } from "@/components/ui2";
+import { SimpleDashboardView } from "@/components/dashboard2/shared/simple-dashboard-view";
 import { COLORS, SHADOWS, TRANSITIONS } from "@/lib/design-tokens";
 
 // ────────────────────────────────────────────────────────────────────────────
@@ -924,5 +925,210 @@ export function AdminSettingsView() {
         ))}
       </div>
     </main>
+  );
+}
+
+
+// ────────────────────────────────────────────────────────────────────────────
+// Extended admin operations pages (source-aligned modular replacements)
+// ────────────────────────────────────────────────────────────────────────────
+
+export function AdminDatabaseView() {
+  return (
+    <SimpleDashboardView
+      eyebrow="Admin · Database"
+      title="Database operations"
+      body="Inspect data health, table growth, storage pressure, and operational readiness without leaving the redesigned admin shell."
+      actions={[{ label: "Refresh data", href: "/admin-dashboard/database" }, { label: "System health", href: "/admin-dashboard/system" }]}
+      stats={[
+        { label: "Tables tracked", value: 18, subtext: "Core marketplace entities", icon: Activity },
+        { label: "Storage health", value: "96%", subtext: "Within safe operating range", icon: Gauge },
+        { label: "Query latency", value: "42ms", subtext: "Median API read path", icon: TrendingUp },
+        { label: "Backups", value: "Healthy", subtext: "Latest snapshot verified", icon: FileCheck2 },
+      ]}
+      items={[
+        { title: "User and role tables", body: "Users, profiles, admin roles, client accounts, and artisan onboarding records." },
+        { title: "Marketplace entities", body: "Jobs, quotes, conversations, reviews, saved artisans, and portfolio projects." },
+        { title: "Financial records", body: "Subscriptions, payments, payouts, commission entries, and reconciliation state." },
+        { title: "Operational audit trail", body: "Admin activity logs, moderation decisions, system events, and notification records." },
+        { title: "Location coverage", body: "Counties, cities, service areas, and artisan supply density." },
+        { title: "Maintenance queue", body: "Indexes, stale records, retention policy checks, and consistency scans." },
+      ]}
+    />
+  );
+}
+
+export function AdminEarningsView() {
+  return (
+    <SimpleDashboardView
+      eyebrow="Admin · Earnings"
+      title="Marketplace earnings"
+      body="Track gross marketplace volume, platform commission, artisan net earnings, and daily revenue movement."
+      actions={[{ label: "Open analytics", href: "/admin-dashboard/analytics" }, { label: "Payouts", href: "/admin-dashboard/payouts" }]}
+      stats={[
+        { label: "Gross volume", value: "KES 1.84M", subtext: "+18% this month", icon: ReceiptText },
+        { label: "Platform commission", value: "KES 184K", subtext: "Blended 8.1% rate", icon: BarChart3 },
+        { label: "Artisan net", value: "KES 1.65M", subtext: "After commission", icon: Hammer },
+        { label: "Failed payouts", value: 5, subtext: "Needs review", icon: Flag },
+      ]}
+      items={[
+        { title: "Daily earnings trend", body: "Source preview uses compact operational cards and admin charting for selected time ranges." },
+        { title: "Commission tiers", body: "Separate free and premium artisan commission rates with visible admin controls." },
+        { title: "Top earning artisans", body: "Rank artisans by completed jobs, gross amount, commission, and payout readiness." },
+        { title: "Revenue exceptions", body: "Surface failed, disputed, reversed, or partially reconciled payment records." },
+        { title: "Subscription impact", body: "Correlate premium subscription status with placement, completed jobs, and commission." },
+        { title: "Export workflow", body: "Prepare CSV reporting for finance and operations review." },
+      ]}
+    />
+  );
+}
+
+export function AdminPayoutsView() {
+  return (
+    <SimpleDashboardView
+      eyebrow="Admin · Payouts"
+      title="Payout control center"
+      body="Review artisan payout batches, failed transfers, retry actions, and manual review queues in the redesigned admin system."
+      actions={[{ label: "Review queue", href: "/admin-dashboard/payouts" }, { label: "Earnings", href: "/admin-dashboard/earnings" }]}
+      stats={[
+        { label: "Pending payout", value: "KES 438K", subtext: "27 artisan payouts", icon: ReceiptText },
+        { label: "Processing", value: 12, subtext: "Sent to provider", icon: Activity },
+        { label: "Manual review", value: 5, subtext: "Requires action", icon: Flag },
+        { label: "Completed", value: "KES 2.1M", subtext: "This month", icon: FileCheck2 },
+      ]}
+      items={[
+        { title: "Retry failed payout", body: "Use controlled retry state for temporary provider or phone validation failures." },
+        { title: "Cancel payout", body: "Stop unsafe transfers and leave a clear admin audit note." },
+        { title: "Mark complete", body: "Resolve externally confirmed payout state after finance verification." },
+        { title: "Add notes", body: "Attach internal context for compliance, support, and finance teams." },
+        { title: "Provider status", body: "Expose pending, processing, completed, failed, and cancelled payout states." },
+        { title: "Artisan identity", body: "Keep artisan name, phone, amount, and date visible in every row." },
+      ]}
+    />
+  );
+}
+
+export function AdminReportsView() {
+  return (
+    <SimpleDashboardView
+      eyebrow="Admin · Reports"
+      title="Report generation"
+      body="Generate operational exports for users, artisans, reviews, subscriptions, payments, and platform activity."
+      actions={[{ label: "Generate overview", href: "/admin-dashboard/reports" }, { label: "Analytics", href: "/admin-dashboard/analytics" }]}
+      stats={[
+        { label: "Report types", value: 7, subtext: "Overview, users, artisans, reviews, subscriptions, payments, activity", icon: FileCheck2 },
+        { label: "Records ready", value: "12.4K", subtext: "Across admin datasets", icon: Activity },
+        { label: "CSV exports", value: "Enabled", subtext: "Finance-friendly format", icon: BarChart3 },
+        { label: "Latest report", value: "Today", subtext: "Generated in preview", icon: CalendarDays },
+      ]}
+      items={[
+        { title: "Overview report", body: "Platform summary, growth movement, revenue, and trust operations." },
+        { title: "Users report", body: "Client, artisan, and admin account records with status details." },
+        { title: "Artisans report", body: "Verification, availability, subscription, portfolio, and review data." },
+        { title: "Payments report", body: "Job payments, subscription revenue, payouts, and reconciliation status." },
+        { title: "Reviews report", body: "Ratings, moderation flags, disputes, and customer feedback quality." },
+        { title: "Activity report", body: "Admin actions, system events, and audit-ready operational notes." },
+      ]}
+    />
+  );
+}
+
+export function AdminSearchView() {
+  return (
+    <SimpleDashboardView
+      eyebrow="Admin · Search"
+      title="Global admin search"
+      body="Search across users, artisans, jobs, settings, activity, and operational records with source-aligned quick actions."
+      actions={[{ label: "Search users", href: "/admin-dashboard/search" }, { label: "Browse artisans", href: "/admin-dashboard/artisans" }]}
+      stats={[
+        { label: "Search domains", value: 5, subtext: "Users, artisans, jobs, settings, activity", icon: Search },
+        { label: "Verified artisans", value: 428, subtext: "Quick search preset", icon: BadgeCheck },
+        { label: "Recent activity", value: "Live", subtext: "Audit log indexed", icon: Activity },
+        { label: "Trending", value: "Nairobi", subtext: "High-intent query cluster", icon: TrendingUp },
+      ]}
+      items={[
+        { title: "Verified artisans", body: "Find profiles by name, profession, county, verification status, or subscription." },
+        { title: "Recent activities", body: "Jump into admin audit events, moderation decisions, and invite actions." },
+        { title: "System settings", body: "Locate configurable platform controls quickly." },
+        { title: "Trending marketplace data", body: "Expose high-demand professions, locations, and client request clusters." },
+        { title: "Status filtering", body: "Filter by active, pending, rejected, suspended, or verified records." },
+        { title: "Cross-linking", body: "Move directly from a search result to the relevant admin detail surface." },
+      ]}
+    />
+  );
+}
+
+export function AdminSubscriptionsView() {
+  return (
+    <SimpleDashboardView
+      eyebrow="Admin · Subscriptions"
+      title="Subscription management"
+      body="Monitor artisan plans, premium visibility, renewal state, subscription revenue, and churn risk."
+      actions={[{ label: "Review plans", href: "/admin-dashboard/subscriptions" }, { label: "Earnings", href: "/admin-dashboard/earnings" }]}
+      stats={[
+        { label: "Active plans", value: 162, subtext: "Premium artisans", icon: CreditCard },
+        { label: "MRR", value: "KES 243K", subtext: "+12% monthly", icon: BarChart3 },
+        { label: "Past due", value: 8, subtext: "Payment attention", icon: Flag },
+        { label: "Conversion", value: "34%", subtext: "Verified to paid", icon: TrendingUp },
+      ]}
+      items={[
+        { title: "Plan distribution", body: "Separate monthly, annual, trial, cancelled, and free artisan records." },
+        { title: "Premium placement", body: "Confirm premium badge, priority search status, portfolio limits, and commission rate." },
+        { title: "Renewal risk", body: "Identify past-due subscriptions and artisan accounts losing benefits." },
+        { title: "Revenue summary", body: "Connect subscription payments to admin earnings and finance reports." },
+        { title: "User identity", body: "Show email, artisan name, current plan, status, and renewal date." },
+        { title: "Plan actions", body: "Prepare detail views for plan review, support, and billing follow-up." },
+      ]}
+    />
+  );
+}
+
+export function AdminSystemView() {
+  return (
+    <SimpleDashboardView
+      eyebrow="Admin · System"
+      title="System health"
+      body="Monitor platform infrastructure, job workers, API services, storage, and operational alerts in the source dashboard style."
+      actions={[{ label: "Refresh health", href: "/admin-dashboard/system" }, { label: "Monitoring", href: "/admin-dashboard/monitoring" }]}
+      stats={[
+        { label: "API health", value: "Healthy", subtext: "All critical routes responding", icon: Activity },
+        { label: "Workers", value: "4/4", subtext: "Background jobs online", icon: Gauge },
+        { label: "Storage", value: "71%", subtext: "Below warning threshold", icon: BarChart3 },
+        { label: "Alerts", value: 2, subtext: "Non-critical warnings", icon: Flag },
+      ]}
+      items={[
+        { title: "API services", body: "Track auth, user sync, payment, upload, search, and notification endpoints." },
+        { title: "Background jobs", body: "Monitor payout processing, subscription checks, notifications, and cleanup tasks." },
+        { title: "Infrastructure capacity", body: "Expose storage, CPU, memory, and queue pressure as admin-ready signals." },
+        { title: "Log stream", body: "Show info, warning, and error activity with clear severity treatment." },
+        { title: "Incident readiness", body: "Keep support and engineering actions close to the health overview." },
+        { title: "Data dependency status", body: "Connect system health to database, analytics, and monitoring pages." },
+      ]}
+    />
+  );
+}
+
+export function AdminHelpView() {
+  return (
+    <SimpleDashboardView
+      eyebrow="Admin · Help"
+      title="Help and support"
+      body="Provide administrators with documentation, escalation paths, tutorials, and support contact cards in the redesigned shell."
+      actions={[{ label: "Contact support", href: "/admin-dashboard/help" }, { label: "System health", href: "/admin-dashboard/system" }]}
+      stats={[
+        { label: "Guides", value: 12, subtext: "Admin playbooks", icon: FileCheck2 },
+        { label: "Tutorials", value: 8, subtext: "Workflow walkthroughs", icon: Sparkles },
+        { label: "Support SLA", value: "2h", subtext: "Priority admin response", icon: Activity },
+        { label: "Open tickets", value: 3, subtext: "Needs triage", icon: Mail },
+      ]}
+      items={[
+        { title: "Admin guide", body: "Complete overview of verification, moderation, users, invites, and analytics." },
+        { title: "Payment operations", body: "How to interpret job payments, subscriptions, commissions, and payouts." },
+        { title: "Trust and safety", body: "Escalation guidance for profile flags, review abuse, and reported content." },
+        { title: "System operations", body: "Monitoring, health checks, maintenance windows, and incident playbooks." },
+        { title: "Contact channels", body: "Support email, phone escalation, engineering handoff, and finance review paths." },
+        { title: "Release notes", body: "Track admin console changes and rollout notes for operational teams." },
+      ]}
+    />
   );
 }

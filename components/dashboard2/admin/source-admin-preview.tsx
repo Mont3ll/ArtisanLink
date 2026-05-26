@@ -10912,6 +10912,16 @@ function ArtisanDashboardCoreSection({
         + 5 // default: specializations shown
       );
 
+  // Conversation overlay for messages pane
+  const _hasRealConversations = Boolean(_verifCtx?.conversations?.length);
+  const messageThreadJobs = _hasRealConversations
+    ? (_verifCtx!.conversations as unknown as typeof artisanJobRows)
+    : artisanJobRows;
+  const messageGetContactName = _hasRealConversations
+    ? (job: (typeof artisanJobRows)[number]) =>
+        (job as unknown as { client: string }).client ?? job.title
+    : (job: (typeof artisanJobRows)[number]) => job.client;
+
   const newPortfolioProject: ArtisanPortfolioProject = {
     id: "portfolio-new",
     title: "Untitled portfolio project",
@@ -12160,10 +12170,10 @@ function ArtisanDashboardCoreSection({
 
           {view === "messages" && (
             <DashboardMessagesPane
-              jobs={artisanJobRows}
+              jobs={messageThreadJobs}
               selectedJob={selectedJob}
               onSelectJob={setSelectedJob}
-              getContactName={(job) => job.client}
+              getContactName={messageGetContactName}
               role="artisan"
               onCreateJobFromQuote={createJobFromConversationQuote}
             />
@@ -13708,6 +13718,17 @@ function ClientDashboardCoreSection({
   const [reviewRating, setReviewRating] = useState(5);
   const [reviewText, setReviewText] = useState("");
   const savedArtisans = artisans.slice(0, 4);
+
+  // Conversation overlay for client messages pane
+  const _clientCtx = useOptionalDashboardRealData();
+  const _hasClientConversations = Boolean(_clientCtx?.conversations?.length);
+  const clientMessageThreadJobs = _hasClientConversations
+    ? (_clientCtx!.conversations as unknown as typeof clientJobs)
+    : clientJobs;
+  const clientMessageGetContactName = _hasClientConversations
+    ? (job: (typeof clientJobs)[number]) =>
+        (job as unknown as { artisan: string }).artisan ?? job.title
+    : (job: (typeof clientJobs)[number]) => job.artisan;
   const recommendedArtisans = artisans
     .filter((artisan) => artisan.isVerified)
     .slice(0, 4);
@@ -14454,10 +14475,10 @@ function ClientDashboardCoreSection({
 
           {view === "messages" && (
             <DashboardMessagesPane
-              jobs={clientJobs}
+              jobs={clientMessageThreadJobs}
               selectedJob={selectedJob}
               onSelectJob={setSelectedJob}
-              getContactName={(job) => job.artisan}
+              getContactName={clientMessageGetContactName}
               role="client"
             />
           )}

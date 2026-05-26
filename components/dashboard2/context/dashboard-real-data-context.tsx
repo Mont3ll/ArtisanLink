@@ -9,9 +9,11 @@ import { useArtisanJobsAdapter } from "@/lib/hooks/use-artisan-jobs-adapter";
 import { useArtisanPortfolioAdapter } from "@/lib/hooks/use-artisan-portfolio-adapter";
 import { useArtisanEarningsAdapter } from "@/lib/hooks/use-artisan-earnings-adapter";
 import { useArtisanSettingsAdapter } from "@/lib/hooks/use-artisan-settings-adapter";
+import { useConversationsAdapter } from "@/lib/hooks/use-conversations-adapter";
 import type { SourceArtisanJob } from "@/lib/hooks/use-artisan-jobs-adapter";
 import type { SourcePortfolioProject } from "@/lib/hooks/use-artisan-portfolio-adapter";
 import type { SourceEarningRow } from "@/lib/hooks/use-artisan-earnings-adapter";
+import type { SourceConversationThread } from "@/lib/hooks/use-conversations-adapter";
 
 export type DashboardRole = "artisan" | "client" | "admin";
 
@@ -47,6 +49,10 @@ export interface DashboardRealData {
   artisanCompletionPct: number | null;
   /** Artisan-only: real profile fields for settings tab display. */
   artisanProfile: ArtisanProfileSnapshot | null;
+  /** Conversations for artisan and client roles. null for admin. */
+  conversations: SourceConversationThread[] | null;
+  /** DB user ID — needed by useSendMessage to identify the sender. */
+  currentUserId: string | null;
 }
 
 const DashboardRealDataContext = createContext<DashboardRealData | null>(null);
@@ -56,15 +62,18 @@ const DashboardRealDataContext = createContext<DashboardRealData | null>(null);
 function ArtisanProvider({
   children,
   base,
+  dbUserId,
 }: {
   children: React.ReactNode;
-  base: Omit<DashboardRealData, "verificationStatus" | "rejectionReason" | "artisanJobs" | "artisanPortfolio" | "artisanEarnings" | "artisanCompletionPct" | "artisanProfile">;
+  base: Omit<DashboardRealData, "verificationStatus" | "rejectionReason" | "artisanJobs" | "artisanPortfolio" | "artisanEarnings" | "artisanCompletionPct" | "artisanProfile" | "conversations" | "currentUserId">;
+  dbUserId: string | null;
 }) {
   const { data: dashData } = useArtisanDashboard();
   const { jobs } = useArtisanJobsAdapter();
   const { projects } = useArtisanPortfolioAdapter();
   const { earningRows } = useArtisanEarningsAdapter();
   const { profile, completionPct } = useArtisanSettingsAdapter();
+  const { threads } = useConversationsAdapter(dbUserId);
 
   const artisanProfile: ArtisanProfileSnapshot | null = profile
     ? {
@@ -88,6 +97,8 @@ function ArtisanProvider({
     artisanEarnings: earningRows.length > 0 ? earningRows : null,
     artisanCompletionPct: completionPct,
     artisanProfile,
+    conversations: threads.length > 0 ? threads : null,
+    currentUserId: dbUserId,
   };
 
   return (
@@ -100,9 +111,13 @@ function ArtisanProvider({
 function NonArtisanProvider({
   children,
   base,
+  role,
+  dbUserId,
 }: {
   children: React.ReactNode;
-  base: Omit<DashboardRealData, "verificationStatus" | "rejectionReason" | "artisanJobs" | "artisanPortfolio" | "artisanEarnings" | "artisanCompletionPct" | "artisanProfile">;
+  base: Omit<DashboardRealData, "verificationStatus" | "rejectionReason" | "artisanJobs" | "artisanPortfolio" | "artisanEarnings" | "artisanCompletionPct" | "artisanProfile" | "conversations" | "currentUserId">;
+  role: DashboardRole;
+  dbUserId: string | null;
 }) {
   // Call all artisan hooks unconditionally so hook count is stable across role changes.
   // Next.js does not hot-swap providers; this avoids potential hook-order issues.
@@ -111,6 +126,7 @@ function NonArtisanProvider({
   useArtisanPortfolioAdapter();
   useArtisanEarningsAdapter();
   useArtisanSettingsAdapter();
+  const { threads } = useConversationsAdapter(dbUserId);
 
   const value: DashboardRealData = {
     ...base,
@@ -121,6 +137,8 @@ function NonArtisanProvider({
     artisanEarnings: null,
     artisanCompletionPct: null,
     artisanProfile: null,
+    conversations: role === "admin" ? null : (threads.length > 0 ? threads : null),
+    currentUserId: role === "admin" ? null : dbUserId,
   };
 
   return (
@@ -148,7 +166,7 @@ export function DashboardRealDataProvider({
   const { data: currentUserData, isLoading: userLoading } = useCurrentUser();
   const { data: unreadData } = useUnreadMessages();
 
-  const base: Omit<DashboardRealData, "verificationStatus" | "rejectionReason" | "artisanJobs" | "artisanPortfolio" | "artisanEarnings" | "artisanCompletionPct" | "artisanProfile"> = {
+  const base: Omit<DashboardRealData, "verificationStatus" | "rejectionReason" | "artisanJobs" | "artisanPortfolio" | "artisanEarnings" | "artisanCompletionPct" | "artisanProfile" | "conversations" | "currentUserId"> = {
     isLoading: !isLoaded || userLoading,
     displayName: clerkUser
       ? `${clerkUser.firstName ?? ""} ${clerkUser.lastName ?? ""}`.trim() || null
@@ -162,10 +180,12 @@ export function DashboardRealDataProvider({
     unreadCount: unreadData?.total ?? 0,
   };
 
+  const dbUserId = currentUserData?.user?.id ?? null;
+
   if (role === "artisan") {
-    return <ArtisanProvider base={base}>{children}</ArtisanProvider>;
+    return <ArtisanProvider base={base} dbUserId={dbUserId}>{children}</ArtisanProvider>;
   }
-  return <NonArtisanProvider base={base}>{children}</NonArtisanProvider>;
+  return <NonArtisanProvider base={base} role={role} dbUserId={dbUserId}>{children}</NonArtisanProvider>;
 }
 
 // ─── consumer hooks ───────────────────────────────────────────────────────────

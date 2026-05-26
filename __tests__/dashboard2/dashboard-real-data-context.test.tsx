@@ -61,6 +61,10 @@ vi.mock('@/lib/hooks/use-artisan-settings-adapter', () => ({
   useArtisanSettingsAdapter: vi.fn(() => ({ profile: null, specializations: [], categories: [], completionPct: 50, isLoading: false, counties: [] })),
 }))
 
+vi.mock('@/lib/hooks/use-conversations-adapter', () => ({
+  useConversationsAdapter: vi.fn(() => ({ threads: [], isLoading: false, error: null, unreadCount: 0 })),
+}))
+
 // Import after mocks
 import {
   DashboardRealDataProvider,

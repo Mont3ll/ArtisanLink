@@ -11,7 +11,9 @@ import { COLORS, TRANSITIONS } from "@/lib/design-tokens";
 export function AdminDashboardLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
-  const activeItem = ADMIN_NAV.find((item) => pathname === item.href || pathname.startsWith(`${item.href}/`)) ?? ADMIN_NAV[0];
+  const normalizedPathname = pathname.replace(/^\/admin(?=\/|$)/, "/admin-dashboard");
+  const sourceRouteMode = pathname === "/admin" || pathname.startsWith("/admin/");
+  const activeItem = ADMIN_NAV.find((item) => normalizedPathname === item.href || normalizedPathname.startsWith(`${item.href}/`)) ?? ADMIN_NAV[0];
 
   return (
     <DashboardShell
@@ -23,7 +25,9 @@ export function AdminDashboardLayout({ children }: { children: React.ReactNode }
       activeView={activeItem.id as AdminDashboardView}
       onSelect={(view) => {
         const target = ADMIN_NAV.find((item) => item.id === view);
-        if (target) router.push(target.href);
+        if (target) {
+          router.push(sourceRouteMode ? target.href.replace(/^\/admin-dashboard/, "/admin") : target.href);
+        }
       }}
       role="Admin"
       headerMeta={
