@@ -65,6 +65,16 @@ vi.mock('@/lib/hooks/use-admin-data-adapter', () => ({
   }),
 }))
 
+vi.mock('@/lib/hooks/use-client-data-adapter', () => ({
+  useClientDataAdapter: () => ({
+    clientJobs: [],
+    stats: { activeJobs: '0', savedArtisans: '0', completedJobs: '0', unreadMessages: '0' },
+    savedArtisanIds: [],
+    savedCount: 0,
+    isLoading: false,
+  }),
+}))
+
 function TestConsumer() {
   const ctx = useOptionalDashboardRealData()
   if (!ctx) return <div data-testid="no-ctx">no context</div>

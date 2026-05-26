@@ -11,6 +11,7 @@ import { useArtisanEarningsAdapter } from "@/lib/hooks/use-artisan-earnings-adap
 import { useArtisanSettingsAdapter } from "@/lib/hooks/use-artisan-settings-adapter";
 import { useConversationsAdapter } from "@/lib/hooks/use-conversations-adapter";
 import { useAdminDataAdapter } from "@/lib/hooks/use-admin-data-adapter";
+import { useClientDataAdapter } from "@/lib/hooks/use-client-data-adapter";
 import type { SourceArtisanJob } from "@/lib/hooks/use-artisan-jobs-adapter";
 import type { SourcePortfolioProject } from "@/lib/hooks/use-artisan-portfolio-adapter";
 import type { SourceEarningRow } from "@/lib/hooks/use-artisan-earnings-adapter";
@@ -20,6 +21,7 @@ import type {
   SourceAdminArtisan,
   SourceAdminStats,
 } from "@/lib/hooks/use-admin-data-adapter";
+import type { SourceClientJob, SourceClientStats } from "@/lib/hooks/use-client-data-adapter";
 
 export type DashboardRole = "artisan" | "client" | "admin";
 
@@ -65,6 +67,10 @@ export interface DashboardRealData {
   adminArtisans: SourceAdminArtisan[] | null;
   /** Admin-only: dashboard stats. null when not admin. */
   adminStats: SourceAdminStats | null;
+  /** Client-only: real jobs adapted to source-preview format. null when not client/not loaded. */
+  clientJobs: SourceClientJob[] | null;
+  /** Client-only: overview dashboard stats. null when not client/not loaded. */
+  clientStats: SourceClientStats | null;
 }
 
 const DashboardRealDataContext = createContext<DashboardRealData | null>(null);
@@ -77,7 +83,7 @@ function ArtisanProvider({
   dbUserId,
 }: {
   children: React.ReactNode;
-  base: Omit<DashboardRealData, "verificationStatus" | "rejectionReason" | "artisanJobs" | "artisanPortfolio" | "artisanEarnings" | "artisanCompletionPct" | "artisanProfile" | "conversations" | "currentUserId" | "adminVerificationQueue" | "adminArtisans" | "adminStats">;
+  base: Omit<DashboardRealData, "verificationStatus" | "rejectionReason" | "artisanJobs" | "artisanPortfolio" | "artisanEarnings" | "artisanCompletionPct" | "artisanProfile" | "conversations" | "currentUserId" | "adminVerificationQueue" | "adminArtisans" | "adminStats" | "clientJobs" | "clientStats">;
   dbUserId: string | null;
 }) {
   const { data: dashData } = useArtisanDashboard();
@@ -88,6 +94,8 @@ function ArtisanProvider({
   const { threads } = useConversationsAdapter(dbUserId);
   // Call unconditionally so hook count matches NonArtisanProvider
   useAdminDataAdapter();
+  // Call unconditionally so hook count matches NonArtisanProvider
+  useClientDataAdapter();
 
   const artisanProfile: ArtisanProfileSnapshot | null = profile
     ? {
@@ -116,6 +124,8 @@ function ArtisanProvider({
     adminVerificationQueue: null,
     adminArtisans: null,
     adminStats: null,
+    clientJobs: null,
+    clientStats: null,
   };
 
   return (
@@ -132,7 +142,7 @@ function NonArtisanProvider({
   dbUserId,
 }: {
   children: React.ReactNode;
-  base: Omit<DashboardRealData, "verificationStatus" | "rejectionReason" | "artisanJobs" | "artisanPortfolio" | "artisanEarnings" | "artisanCompletionPct" | "artisanProfile" | "conversations" | "currentUserId" | "adminVerificationQueue" | "adminArtisans" | "adminStats">;
+  base: Omit<DashboardRealData, "verificationStatus" | "rejectionReason" | "artisanJobs" | "artisanPortfolio" | "artisanEarnings" | "artisanCompletionPct" | "artisanProfile" | "conversations" | "currentUserId" | "adminVerificationQueue" | "adminArtisans" | "adminStats" | "clientJobs" | "clientStats">;
   role: DashboardRole;
   dbUserId: string | null;
 }) {
@@ -144,6 +154,7 @@ function NonArtisanProvider({
   useArtisanSettingsAdapter();
   const { threads } = useConversationsAdapter(dbUserId);
   const { verificationQueue, adminArtisans, stats } = useAdminDataAdapter();
+  const { clientJobs: realClientJobs, stats: realClientStats } = useClientDataAdapter();
 
   const value: DashboardRealData = {
     ...base,
@@ -159,6 +170,8 @@ function NonArtisanProvider({
     adminVerificationQueue: role === "admin" ? (verificationQueue.length > 0 ? verificationQueue : null) : null,
     adminArtisans: role === "admin" ? (adminArtisans.length > 0 ? adminArtisans : null) : null,
     adminStats: role === "admin" ? stats : null,
+    clientJobs: role === "client" ? (realClientJobs.length > 0 ? realClientJobs : null) : null,
+    clientStats: role === "client" ? realClientStats : null,
   };
 
   return (
@@ -186,7 +199,7 @@ export function DashboardRealDataProvider({
   const { data: currentUserData, isLoading: userLoading } = useCurrentUser();
   const { data: unreadData } = useUnreadMessages();
 
-  const base: Omit<DashboardRealData, "verificationStatus" | "rejectionReason" | "artisanJobs" | "artisanPortfolio" | "artisanEarnings" | "artisanCompletionPct" | "artisanProfile" | "conversations" | "currentUserId" | "adminVerificationQueue" | "adminArtisans" | "adminStats"> = {
+  const base: Omit<DashboardRealData, "verificationStatus" | "rejectionReason" | "artisanJobs" | "artisanPortfolio" | "artisanEarnings" | "artisanCompletionPct" | "artisanProfile" | "conversations" | "currentUserId" | "adminVerificationQueue" | "adminArtisans" | "adminStats" | "clientJobs" | "clientStats"> = {
     isLoading: !isLoaded || userLoading,
     displayName: clerkUser
       ? `${clerkUser.firstName ?? ""} ${clerkUser.lastName ?? ""}`.trim() || null
