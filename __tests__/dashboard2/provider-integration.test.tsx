@@ -55,6 +55,16 @@ vi.mock('@/lib/hooks/use-conversations-adapter', () => ({
   useConversationsAdapter: () => ({ threads: [], isLoading: false, error: null, unreadCount: 0 }),
 }))
 
+vi.mock('@/lib/hooks/use-admin-data-adapter', () => ({
+  useAdminDataAdapter: () => ({
+    verificationQueue: [],
+    adminArtisans: [],
+    users: [],
+    stats: null,
+    isLoading: false,
+  }),
+}))
+
 function TestConsumer() {
   const ctx = useOptionalDashboardRealData()
   if (!ctx) return <div data-testid="no-ctx">no context</div>

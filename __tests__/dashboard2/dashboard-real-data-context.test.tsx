@@ -65,6 +65,16 @@ vi.mock('@/lib/hooks/use-conversations-adapter', () => ({
   useConversationsAdapter: vi.fn(() => ({ threads: [], isLoading: false, error: null, unreadCount: 0 })),
 }))
 
+vi.mock('@/lib/hooks/use-admin-data-adapter', () => ({
+  useAdminDataAdapter: vi.fn(() => ({
+    verificationQueue: [],
+    adminArtisans: [],
+    users: [],
+    stats: null,
+    isLoading: false,
+  })),
+}))
+
 // Import after mocks
 import {
   DashboardRealDataProvider,
