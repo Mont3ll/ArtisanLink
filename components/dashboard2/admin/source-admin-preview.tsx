@@ -10870,32 +10870,47 @@ function ArtisanDashboardCoreSection({
       ? true // preview mode: always show banner
       : realVerificationStatus !== "VERIFIED");
   const isVerificationRejected = realVerificationStatus === "REJECTED";
+
+  // Mock resources kept for local optimistic mutations (job creation, portfolio save, etc.)
   const jobsResource = useMockResource(artisanDataFixtures.jobs);
   const portfolioResource = useMockResource(
     artisanDataFixtures.portfolioProjects,
   );
   const earningsResource = useMockResource(artisanDataFixtures.earnings);
-  const artisanJobRows = jobsResource.data;
-  const setArtisanJobRows = jobsResource.setData;
-  const portfolioRows = portfolioResource.data;
-  const setPortfolioRows = portfolioResource.setData;
-  const earningRows = earningsResource.data;
-  const setEarningRows = earningsResource.setData;
-  const artisanDataLoading =
-    jobsResource.loading ||
-    portfolioResource.loading ||
-    earningsResource.loading;
 
-  // Computed profile completion based on prototype state
-  const profileCompletionPct = Math.min(
-    100,
-    50 // base: account exists
-    + (portfolioRows.length >= 2 ? 20 : portfolioRows.length * 10) // portfolio
-    + (artisanJobRows.length > 0 ? 10 : 0) // has jobs
-    + (earningRows.length > 0 ? 10 : 0) // has earnings
-    + 5 // default: name/bio fields shown
-    + 5 // default: specializations shown
+  // Real data overlay — when context has live API data, use it for display;
+  // local mock resources remain for optimistic mutations.
+  const _hasReal = Boolean(
+    _verifCtx && !_verifCtx.isLoading && _verifCtx.artisanJobs !== null
   );
+  const artisanJobRows = _hasReal && _verifCtx?.artisanJobs
+    ? (_verifCtx.artisanJobs as unknown as typeof jobsResource.data)
+    : jobsResource.data;
+  const setArtisanJobRows = jobsResource.setData;
+  const portfolioRows = _hasReal && _verifCtx?.artisanPortfolio
+    ? (_verifCtx.artisanPortfolio as unknown as typeof portfolioResource.data)
+    : portfolioResource.data;
+  const setPortfolioRows = portfolioResource.setData;
+  const earningRows = _hasReal && _verifCtx?.artisanEarnings
+    ? (_verifCtx.artisanEarnings as unknown as typeof earningsResource.data)
+    : earningsResource.data;
+  const setEarningRows = earningsResource.setData;
+  const artisanDataLoading = _hasReal
+    ? false
+    : (jobsResource.loading || portfolioResource.loading || earningsResource.loading);
+
+  // Profile completion: use real context value when available, fall back to formula
+  const profileCompletionPct = (_hasReal && _verifCtx?.artisanCompletionPct != null)
+    ? _verifCtx.artisanCompletionPct
+    : Math.min(
+        100,
+        50 // base: account exists
+        + (portfolioRows.length >= 2 ? 20 : portfolioRows.length * 10) // portfolio
+        + (artisanJobRows.length > 0 ? 10 : 0) // has jobs
+        + (earningRows.length > 0 ? 10 : 0) // has earnings
+        + 5 // default: name/bio fields shown
+        + 5 // default: specializations shown
+      );
 
   const newPortfolioProject: ArtisanPortfolioProject = {
     id: "portfolio-new",
@@ -12912,7 +12927,7 @@ function ArtisanDashboardCoreSection({
                             Display name
                           </span>
                           <input
-                            defaultValue="Grace Wanjiku"
+                            defaultValue={_verifCtx?.displayName ?? "Grace Wanjiku"}
                             className="h-11 min-w-0 rounded-lg border px-3 text-[14px] outline-none"
                             style={{ borderColor: COLORS.hairline }}
                           />
@@ -12925,7 +12940,7 @@ function ArtisanDashboardCoreSection({
                             Primary craft
                           </span>
                           <input
-                            defaultValue="Carpenter"
+                            defaultValue={_verifCtx?.artisanProfile?.profession ?? "Carpenter"}
                             className="h-11 min-w-0 rounded-lg border px-3 text-[14px] outline-none"
                             style={{ borderColor: COLORS.hairline }}
                           />
@@ -12938,7 +12953,9 @@ function ArtisanDashboardCoreSection({
                             Hourly rate
                           </span>
                           <input
-                            defaultValue="KES 2,600"
+                            defaultValue={_verifCtx?.artisanProfile?.hourlyRate
+                              ? `KES ${_verifCtx.artisanProfile.hourlyRate.toLocaleString('en-KE')}`
+                              : "KES 2,600"}
                             className="h-11 min-w-0 rounded-lg border px-3 text-[14px] outline-none"
                             style={{ borderColor: COLORS.hairline }}
                           />
@@ -12968,7 +12985,7 @@ function ArtisanDashboardCoreSection({
                             Bio
                           </span>
                           <textarea
-                            defaultValue="Carpenter focused on cabinets, custom beds, shelving, repairs, and clean finishing for homes and small businesses."
+                            defaultValue={_verifCtx?.artisanProfile?.bio ?? "Carpenter focused on cabinets, custom beds, shelving, repairs, and clean finishing for homes and small businesses."}
                             className="min-h-24 rounded-lg border px-3 py-2 text-[14px] outline-none"
                             style={{ borderColor: COLORS.hairline }}
                           />
@@ -13165,11 +13182,22 @@ function ArtisanDashboardCoreSection({
                           >
                             County
                           </span>
-                          <input
-                            defaultValue="Kiambu"
-                            className="h-11 min-w-0 rounded-lg border px-3 text-[14px] outline-none"
+                          <select
+                            defaultValue={_verifCtx?.artisanProfile?.county ?? "Kiambu"}
+                            className="h-11 min-w-0 cursor-pointer rounded-lg border bg-white px-3 text-[14px] outline-none"
                             style={{ borderColor: COLORS.hairline }}
-                          />
+                          >
+                            {["Baringo","Bomet","Bungoma","Busia","Elgeyo-Marakwet","Embu","Garissa",
+                              "Homa Bay","Isiolo","Kajiado","Kakamega","Kericho","Kiambu","Kilifi",
+                              "Kirinyaga","Kisii","Kisumu","Kitui","Kwale","Laikipia","Lamu",
+                              "Machakos","Makueni","Mandera","Marsabit","Meru","Migori","Mombasa",
+                              "Murang'a","Nairobi","Nakuru","Nandi","Narok","Nyamira","Nyandarua",
+                              "Nyeri","Samburu","Siaya","Taita-Taveta","Tana River","Tharaka-Nithi",
+                              "Trans-Nzoia","Turkana","Uasin Gishu","Vihiga","Wajir","West Pokot"
+                            ].map((county) => (
+                              <option key={county} value={county}>{county}</option>
+                            ))}
+                          </select>
                         </label>
                         <label className="grid min-w-0 gap-1.5">
                           <span
@@ -13179,7 +13207,7 @@ function ArtisanDashboardCoreSection({
                             Town / city
                           </span>
                           <input
-                            defaultValue="Kikuyu"
+                            defaultValue={_verifCtx?.artisanProfile?.city ?? "Kikuyu"}
                             className="h-11 min-w-0 rounded-lg border px-3 text-[14px] outline-none"
                             style={{ borderColor: COLORS.hairline }}
                           />
