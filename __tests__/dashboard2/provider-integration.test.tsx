@@ -51,6 +51,10 @@ vi.mock('@/lib/hooks/use-artisan-settings-adapter', () => ({
   useArtisanSettingsAdapter: () => ({ profile: null, specializations: [], categories: [], completionPct: 50, isLoading: false, counties: [] }),
 }))
 
+vi.mock('@/lib/hooks/use-conversations-adapter', () => ({
+  useConversationsAdapter: () => ({ threads: [], isLoading: false, error: null, unreadCount: 0 }),
+}))
+
 function TestConsumer() {
   const ctx = useOptionalDashboardRealData()
   if (!ctx) return <div data-testid="no-ctx">no context</div>
