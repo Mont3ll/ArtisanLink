@@ -1,10 +1,10 @@
 "use client";
 
-import React, { createContext, useContext, useState } from "react";
+import React, { createContext, useContext } from "react";
 import { useUser } from "@clerk/nextjs";
 import { useCurrentUser } from "@/lib/hooks/use-current-user";
 import { useUnreadMessages } from "@/lib/hooks/use-unread-messages";
-import { useArtisanDashboard, type ArtisanDashboardData } from "@/lib/hooks";
+import { useArtisanDashboard } from "@/lib/hooks";
 
 export type DashboardRole = "artisan" | "client" | "admin";
 
@@ -33,12 +33,11 @@ function ArtisanProvider({
   base: Omit<DashboardRealData, "verificationStatus" | "rejectionReason">;
 }) {
   const { data } = useArtisanDashboard();
-  const artisan = data as ArtisanDashboardData | undefined;
 
   const value: DashboardRealData = {
     ...base,
-    verificationStatus: artisan?.profile?.artisanStatus ?? null,
-    rejectionReason: artisan?.profile?.rejectionReason ?? null,
+    verificationStatus: data?.profile?.artisanStatus ?? null,
+    rejectionReason: data?.profile?.rejectionReason ?? null,
   };
 
   return (
