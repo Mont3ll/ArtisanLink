@@ -640,3 +640,131 @@
   background: #f0fdf4 !important;
   color: #047857 !important;
 }
+
+/* Global cursor rules — ensure all clickable elements show pointer */
+button:not(:disabled),
+[role="button"]:not([aria-disabled="true"]),
+a,
+select,
+input[type="checkbox"],
+input[type="radio"],
+label[for] {
+  cursor: pointer;
+}
+button:disabled {
+  cursor: not-allowed;
+}
+
+
+
+/* =============================================================
+   ChapaWorks dark theme
+   Applied by DashboardThemeToggle: body.cw-dark + data attr
+   ============================================================= */
+
+/* Default light values for CSS custom properties */
+:root {
+  --cw-canvas: #ffffff;
+  --cw-ink: #222222;
+  --cw-body: #3f3f3f;
+  --cw-muted: #6a6a6a;
+  --cw-muted-soft: #929292;
+  --cw-hairline: #dddddd;
+  --cw-hairline-soft: #ebebeb;
+  --cw-surface-soft: #f7f7f7;
+  --cw-surface-strong: #f2f2f2;
+  --cw-primary: #059669;
+  --cw-primary-active: #047857;
+  --cw-primary-soft: #d1fae5;
+  --cw-primary-tint: #ecfdf5;
+  --cw-amber: #f59e0b;
+}
+
+/* Dark mode overrides — toggled by body.cw-dark */
+body.cw-dark {
+  --cw-canvas: #1a1a1a;
+  --cw-ink: #f0f0f0;
+  --cw-body: #c8c8c8;
+  --cw-muted: #8a8a8a;
+  --cw-muted-soft: #5a5a5a;
+  --cw-hairline: #333333;
+  --cw-hairline-soft: #2a2a2a;
+  --cw-surface-soft: #222222;
+  --cw-surface-strong: #1d1d1d;
+  --cw-primary: #10b981;
+  --cw-primary-active: #34d399;
+  --cw-primary-soft: #064e3b;
+  --cw-primary-tint: #022c22;
+  --cw-amber: #fbbf24;
+
+  /* Tailwind dark base */
+  color-scheme: dark;
+  background: #111111;
+  color: #f0f0f0;
+}
+
+/* Hard-coded bg-white / bg-[#f7f7f7] in Tailwind classes */
+body.cw-dark [class*="bg-white"],
+body.cw-dark .bg-white {
+  background-color: var(--cw-canvas) !important;
+}
+
+body.cw-dark [class*="bg-\[#f7f7f7\]"],
+body.cw-dark [style*="background: #f7f7f7"],
+body.cw-dark [style*="background-color: #f7f7f7"] {
+  background-color: var(--cw-surface-soft) !important;
+}
+
+/* Inline style backgrounds using hardcoded hex */
+/* surfaceSoft (#f7f7f7) -> overridden via CSS var already if COLORS is used */
+/* Text colors inherit from CSS vars when COLORS.* is used via inline styles */
+
+/* Hardcoded text colors in Tailwind classes */
+body.cw-dark .text-white { color: #ffffff !important; }
+body.cw-dark [class*="text-emerald"],
+body.cw-dark [class*="hover:text-emerald"] { color: #34d399 !important; }
+
+/* Input/textarea backgrounds */
+body.cw-dark input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+body.cw-dark textarea,
+body.cw-dark select {
+  background-color: var(--cw-canvas) !important;
+  color: var(--cw-ink) !important;
+  border-color: var(--cw-hairline) !important;
+}
+body.cw-dark input::placeholder,
+body.cw-dark textarea::placeholder {
+  color: var(--cw-muted) !important;
+}
+
+/* Hover backgrounds */
+body.cw-dark [class*="hover:bg-\[#f7f7f7\]"]:hover {
+  background-color: var(--cw-surface-soft) !important;
+}
+body.cw-dark [class*="hover:bg-white"]:hover {
+  background-color: var(--cw-canvas) !important;
+}
+
+/* Hardcoded inline backgrounds that bypass CSS vars (non-COLORS hardcodes) */
+body.cw-dark [style*="background: #f7f7f7"] { background: var(--cw-surface-soft) !important; }
+body.cw-dark [style*="background: #fffbeb"],
+body.cw-dark [style*="background-color: #fffbeb"] { background: #1a1500 !important; }
+body.cw-dark [style*="background: #fff7ed"] { background: #1a0f00 !important; }
+body.cw-dark [style*="background: #fff1f2"] { background: #1a0006 !important; }
+body.cw-dark [style*="background: #eff6ff"] { background: #000d1a !important; }
+body.cw-dark [style*="background: #f0f9ff"] { background: #00121a !important; }
+body.cw-dark [style*="background: #f0fdf4"] { background: #00130a !important; }
+body.cw-dark [style*="background: #f5f3ff"] { background: #0d0a1a !important; }
+body.cw-dark [style*="background: #eef2ff"] { background: #060a1a !important; }
+body.cw-dark [style*="background: #faf5ff"] { background: #0e0a1a !important; }
+body.cw-dark [style*="background: #fff7ed"] { background: #1a0e00 !important; }
+body.cw-dark [style*="background: linear-gradient(135deg, #f8fafc"] { background: var(--cw-surface-soft) !important; }
+
+/* Auth pages and public pages */
+body.cw-dark .min-h-screen { background: #111111; }
+body.cw-dark h1, body.cw-dark h2, body.cw-dark h3, body.cw-dark h4 {
+  color: var(--cw-ink);
+}
+body.cw-dark p, body.cw-dark span:not([class*="text-white"]):not([class*="text-emerald"]):not([class*="bg-"]) {
+  color: inherit;
+}

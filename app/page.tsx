@@ -18,6 +18,7 @@ import { PortfolioQuickView } from "@/components/landing/portfolio-quick-view";
 import Footer from "@/components/layout/footer-new";
 import Header, { type ProductTabId } from "@/components/layout/header-new";
 import { COLORS } from "@/lib/design-tokens";
+import { previewArtisans } from "@/lib/public-preview-data";
 
 const TAB_PROFESSIONS: Record<ProductTabId, string[]> = {
   repairs: ["Plumber", "Electrician", "Cleaner", "Handyman"],
@@ -138,7 +139,7 @@ export default function HomePage() {
   const [activeTab, setActiveTab] = useState<ProductTabId>("repairs");
   const [activeCategory, setActiveCategory] = useState("All");
   const [showAllCards, setShowAllCards] = useState(false);
-  const [artisans, setArtisans] = useState<ArtisanCardData[]>([]);
+  const [artisans, setArtisans] = useState<ArtisanCardData[]>(previewArtisans);
   const [selectedPortfolioArtisan, setSelectedPortfolioArtisan] = useState<ArtisanCardData | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -150,10 +151,11 @@ export default function HomePage() {
       .then((res) => (res.ok ? res.json() : Promise.reject(new Error("Failed to load artisans"))))
       .then((payload) => {
         if (cancelled) return;
-        setArtisans(extractArtisans(payload).map(normalizeArtisan));
+        const nextArtisans = extractArtisans(payload).map(normalizeArtisan);
+        setArtisans(nextArtisans.length ? nextArtisans : previewArtisans);
       })
       .catch(() => {
-        if (!cancelled) setArtisans([]);
+        if (!cancelled) setArtisans(previewArtisans);
       })
       .finally(() => {
         if (!cancelled) setLoading(false);

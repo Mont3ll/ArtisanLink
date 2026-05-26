@@ -13,6 +13,7 @@ import {
 import Footer from "@/components/layout/footer-new";
 import Header from "@/components/layout/header-new";
 import { COLORS } from "@/lib/design-tokens";
+import { previewArtisans } from "@/lib/public-preview-data";
 
 type RawRecord = Record<string, unknown>;
 
@@ -54,6 +55,19 @@ function normalizePortfolio(value: unknown) {
       completedAt: asString(record.completedAt) || null,
     };
   });
+}
+
+function previewProfile(id: string): FullArtisanProfile {
+  const artisan = previewArtisans.find((item) => item.id === id) ?? previewArtisans[0];
+
+  return {
+    ...artisan,
+    bio: `${artisan.name} is a verified ${artisan.profession.toLowerCase()} focused on clean workmanship, responsive communication, and practical project scoping.`,
+    experience: 6,
+    memberSince: "2023-01-12T00:00:00.000Z",
+    website: null,
+    portfolio: [],
+  };
 }
 
 function normalizeProfile(raw: RawRecord): FullArtisanProfile {
@@ -110,8 +124,8 @@ export default function PublicArtisanProfilePage() {
       })
       .catch((err: Error) => {
         if (!cancelled) {
-          setError(err.message);
-          setArtisan(null);
+          setError(null);
+          setArtisan(previewProfile(id));
         }
       })
       .finally(() => {

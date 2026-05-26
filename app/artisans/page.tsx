@@ -11,6 +11,7 @@ import type { ArtisanCardData } from "@/components/landing/artisan-preview-card"
 import Footer from "@/components/layout/footer-new";
 import Header from "@/components/layout/header-new";
 import { COLORS } from "@/lib/design-tokens";
+import { previewArtisans } from "@/lib/public-preview-data";
 
 const FALLBACK_GRADIENTS = [
   "linear-gradient(135deg, #ecfdf5 0%, #a7f3d0 45%, #047857 100%)",
@@ -134,9 +135,9 @@ export default function BrowseArtisansPage() {
 
 function BrowseArtisansContent() {
   const searchParams = useSearchParams();
-  const [artisans, setArtisans] = useState<ArtisanCardData[]>([]);
-  const [professions, setProfessions] = useState<string[]>([]);
-  const [counties, setCounties] = useState<string[]>([]);
+  const [artisans, setArtisans] = useState<ArtisanCardData[]>(previewArtisans);
+  const [professions, setProfessions] = useState<string[]>(uniqueSorted(previewArtisans.map((artisan) => artisan.profession)));
+  const [counties, setCounties] = useState<string[]>(uniqueSorted(previewArtisans.map((artisan) => artisan.location.county)));
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -153,7 +154,8 @@ function BrowseArtisansContent() {
       .then((res) => (res.ok ? res.json() : Promise.reject(new Error("Failed to load artisans"))))
       .then((payload: SearchPayload) => {
         if (cancelled) return;
-        const nextArtisans = extractArtisans(payload).map(normalizeArtisan);
+        const fetchedArtisans = extractArtisans(payload).map(normalizeArtisan);
+        const nextArtisans = fetchedArtisans.length ? fetchedArtisans : previewArtisans;
         setArtisans(nextArtisans);
         setProfessions(
           uniqueSorted([
@@ -170,9 +172,9 @@ function BrowseArtisansContent() {
       })
       .catch(() => {
         if (!cancelled) {
-          setArtisans([]);
-          setProfessions([]);
-          setCounties([]);
+          setArtisans(previewArtisans);
+          setProfessions(uniqueSorted(previewArtisans.map((artisan) => artisan.profession)));
+          setCounties(uniqueSorted(previewArtisans.map((artisan) => artisan.location.county)));
         }
       })
       .finally(() => {

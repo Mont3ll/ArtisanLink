@@ -1,5 +1,5 @@
-import { ClientSettingsView } from "@/components/dashboard2/client/client-views";
+import SourceAdminPreview from "@/components/dashboard2/admin/source-admin-preview";
 
-export default function ClientSettingsPage() {
-  return <ClientSettingsView />;
+export default function ClientSourcePageSettings() {
+  return <SourceAdminPreview initialRoute="/client/dashboard" />;
 }
