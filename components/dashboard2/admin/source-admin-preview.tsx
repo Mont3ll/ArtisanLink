@@ -15420,6 +15420,20 @@ function AdminOperationsSection({
     string[]
   >([]);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+
+  // Real admin data from context — overlay pattern
+  const _adminCtx = useOptionalDashboardRealData();
+  const hasRealAdminData = Boolean(
+    _adminCtx && !_adminCtx.isLoading && _adminCtx.adminVerificationQueue !== null,
+  );
+  const effectiveVerificationQueue = hasRealAdminData
+    ? (_adminCtx!.adminVerificationQueue as unknown as typeof verificationQueue)
+    : verificationQueue;
+  const effectiveArtisans =
+    hasRealAdminData && (_adminCtx!.adminArtisans?.length ?? 0) > 0
+      ? (_adminCtx!.adminArtisans as unknown as typeof artisans)
+      : artisans;
+
   const openBulkAction = (
     action: AdminBulkAction,
     noun: string,
@@ -15793,7 +15807,7 @@ function AdminOperationsSection({
                     <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
                       <DashboardStatCard
                         label="Pending verification"
-                        value="19"
+                        value={hasRealAdminData ? (_adminCtx?.adminStats?.pendingVerification ?? "19") : String(effectiveVerificationQueue.filter((r) => r.status === "PENDING" || r.status === "REVIEW").length)}
                         helper="8 medium risk"
                         icon={FileCheck2}
                       />
@@ -15805,13 +15819,13 @@ function AdminOperationsSection({
                       />
                       <DashboardStatCard
                         label="Active subscriptions"
-                        value="312"
+                        value={hasRealAdminData ? (_adminCtx?.adminStats?.activeSubscriptions ?? "312") : "312"}
                         helper="KES 46.8K MRR"
                         icon={CreditCard}
                       />
                       <DashboardStatCard
                         label="System health"
-                        value="99.96%"
+                        value={hasRealAdminData ? (_adminCtx?.adminStats?.systemUptime ?? "99.96%") : "99.96%"}
                         helper="1 service in review"
                         icon={Gauge}
                       />
@@ -16205,7 +16219,7 @@ function AdminOperationsSection({
                       <DashboardStatCard
                         label="Pending reviews"
                         value={String(
-                          verificationQueue.filter(
+                          effectiveVerificationQueue.filter(
                             (record) =>
                               record.status === "PENDING" ||
                               record.status === "REVIEW",
@@ -16217,7 +16231,7 @@ function AdminOperationsSection({
                       <DashboardStatCard
                         label="Low risk"
                         value={String(
-                          verificationQueue.filter(
+                          effectiveVerificationQueue.filter(
                             (record) => record.risk === "Low",
                           ).length,
                         )}
@@ -16227,7 +16241,7 @@ function AdminOperationsSection({
                       <DashboardStatCard
                         label="Medium risk"
                         value={String(
-                          verificationQueue.filter(
+                          effectiveVerificationQueue.filter(
                             (record) => record.risk === "Medium",
                           ).length,
                         )}
@@ -16287,9 +16301,9 @@ function AdminOperationsSection({
                             onClick={() =>
                               setSelectedVerificationIds(
                                 selectedVerificationIds.length ===
-                                  verificationQueue.length
+                                  effectiveVerificationQueue.length
                                   ? []
-                                  : verificationQueue.map((row) => row.id),
+                                  : effectiveVerificationQueue.map((row) => row.id),
                               )
                             }
                             className="h-9 rounded-full border px-3 text-[12px] font-semibold"
@@ -16300,7 +16314,7 @@ function AdminOperationsSection({
                             }}
                           >
                             {selectedVerificationIds.length ===
-                            verificationQueue.length
+                            effectiveVerificationQueue.length
                               ? "Deselect all"
                               : "Select all"}
                           </button>
@@ -16331,7 +16345,7 @@ function AdminOperationsSection({
                               </tr>
                             </thead>
                             <tbody>
-                              {verificationQueue.map((row, index) => {
+                              {effectiveVerificationQueue.map((row, index) => {
                                 const selected =
                                   selectedVerificationIds.includes(row.id);
                                 return (
@@ -16438,22 +16452,22 @@ function AdminOperationsSection({
                   </div>
                 )}
 
-                {view === "artisans" && (
+                {view === "effectiveArtisans" && (
                   <div className="grid gap-6">
                     <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
                       <DashboardStatCard
-                        label="Verified artisans"
+                        label="Verified effectiveArtisans"
                         value={String(
-                          artisans.filter((artisan) => artisan.isVerified)
+                          effectiveArtisans.filter((artisan) => artisan.isVerified)
                             .length,
                         )}
                         helper="Eligible for search"
                         icon={BadgeCheck}
                       />
                       <DashboardStatCard
-                        label="Premium artisans"
+                        label="Premium effectiveArtisans"
                         value={String(
-                          artisans.filter((artisan) => artisan.isPremium)
+                          effectiveArtisans.filter((artisan) => artisan.isPremium)
                             .length,
                         )}
                         helper="Priority placement"
@@ -16462,7 +16476,7 @@ function AdminOperationsSection({
                       <DashboardStatCard
                         label="Available now"
                         value={String(
-                          artisans.filter((artisan) => artisan.isAvailable)
+                          effectiveArtisans.filter((artisan) => artisan.isAvailable)
                             .length,
                         )}
                         helper="Can accept requests"
@@ -16471,14 +16485,14 @@ function AdminOperationsSection({
                       <DashboardStatCard
                         label="Average rating"
                         value="4.8"
-                        helper="Across visible artisans"
+                        helper="Across visible effectiveArtisans"
                         icon={Star}
                       />
                     </div>
                     <DashboardDataList
                       title="Artisan directory management"
                       subtitle="Search, inspect, verify, suspend, and manage marketplace artisan visibility. Click a row for quick detail, or Inspect for the full admin workflow."
-                      rows={artisans}
+                      rows={effectiveArtisans}
                       rowKey={(artisan) => artisan.id}
                       getSearchText={(artisan) =>
                         `${artisan.name} ${artisan.profession} ${artisan.location.city} ${artisan.location.county} ${artisan.isVerified ? "verified" : "pending"} ${artisan.isPremium ? "premium" : "standard"}`
@@ -16490,7 +16504,7 @@ function AdminOperationsSection({
                           allLabel: "All professions",
                           options: Array.from(
                             new Set(
-                              artisans.map((artisan) => artisan.profession),
+                              effectiveArtisans.map((artisan) => artisan.profession),
                             ),
                           ),
                           getValue: (artisan) => artisan.profession,
@@ -18488,7 +18502,7 @@ function AdminOperationsSection({
                             label: "Review verification documents",
                             primary: true,
                             onClick: () => {
-                              const record = verificationQueue.find(
+                              const record = effectiveVerificationQueue.find(
                                 (item) => item.name === adminQuickDetail.title,
                               );
                               if (record) {
