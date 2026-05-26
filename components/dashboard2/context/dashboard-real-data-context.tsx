@@ -5,8 +5,26 @@ import { useUser } from "@clerk/nextjs";
 import { useCurrentUser } from "@/lib/hooks/use-current-user";
 import { useUnreadMessages } from "@/lib/hooks/use-unread-messages";
 import { useArtisanDashboard } from "@/lib/hooks";
+import { useArtisanJobsAdapter } from "@/lib/hooks/use-artisan-jobs-adapter";
+import { useArtisanPortfolioAdapter } from "@/lib/hooks/use-artisan-portfolio-adapter";
+import { useArtisanEarningsAdapter } from "@/lib/hooks/use-artisan-earnings-adapter";
+import { useArtisanSettingsAdapter } from "@/lib/hooks/use-artisan-settings-adapter";
+import type { SourceArtisanJob } from "@/lib/hooks/use-artisan-jobs-adapter";
+import type { SourcePortfolioProject } from "@/lib/hooks/use-artisan-portfolio-adapter";
+import type { SourceEarningRow } from "@/lib/hooks/use-artisan-earnings-adapter";
 
 export type DashboardRole = "artisan" | "client" | "admin";
+
+export interface ArtisanProfileSnapshot {
+  bio: string | null;
+  profession: string | null;
+  county: string | null;
+  city: string | null;
+  address: string | null;
+  hourlyRate: number | null;
+  certificateUrl: string | null;
+  artisanStatus: string | null;
+}
 
 export interface DashboardRealData {
   isLoading: boolean;
@@ -19,6 +37,16 @@ export interface DashboardRealData {
   /** Artisan-only. ArtisanProfile.artisanStatus: 'PENDING' | 'VERIFIED' | 'REJECTED' | null */
   verificationStatus: string | null;
   rejectionReason: string | null;
+  /** Artisan-only: real jobs adapted to source-preview format. null when not artisan/not loaded. */
+  artisanJobs: SourceArtisanJob[] | null;
+  /** Artisan-only: real portfolio items adapted to source-preview format. */
+  artisanPortfolio: SourcePortfolioProject[] | null;
+  /** Artisan-only: real earnings rows adapted to source-preview format. */
+  artisanEarnings: SourceEarningRow[] | null;
+  /** Artisan-only: computed profile completion percentage (0–100). */
+  artisanCompletionPct: number | null;
+  /** Artisan-only: real profile fields for settings tab display. */
+  artisanProfile: ArtisanProfileSnapshot | null;
 }
 
 const DashboardRealDataContext = createContext<DashboardRealData | null>(null);
@@ -30,14 +58,36 @@ function ArtisanProvider({
   base,
 }: {
   children: React.ReactNode;
-  base: Omit<DashboardRealData, "verificationStatus" | "rejectionReason">;
+  base: Omit<DashboardRealData, "verificationStatus" | "rejectionReason" | "artisanJobs" | "artisanPortfolio" | "artisanEarnings" | "artisanCompletionPct" | "artisanProfile">;
 }) {
-  const { data } = useArtisanDashboard();
+  const { data: dashData } = useArtisanDashboard();
+  const { jobs } = useArtisanJobsAdapter();
+  const { projects } = useArtisanPortfolioAdapter();
+  const { earningRows } = useArtisanEarningsAdapter();
+  const { profile, completionPct } = useArtisanSettingsAdapter();
+
+  const artisanProfile: ArtisanProfileSnapshot | null = profile
+    ? {
+        bio: profile.bio,
+        profession: profile.profession,
+        county: profile.county,
+        city: profile.city,
+        address: profile.address,
+        hourlyRate: profile.hourlyRate,
+        certificateUrl: profile.certificateUrl,
+        artisanStatus: profile.artisanStatus,
+      }
+    : null;
 
   const value: DashboardRealData = {
     ...base,
-    verificationStatus: data?.profile?.artisanStatus ?? null,
-    rejectionReason: data?.profile?.rejectionReason ?? null,
+    verificationStatus: dashData?.profile?.artisanStatus ?? null,
+    rejectionReason: dashData?.profile?.rejectionReason ?? null,
+    artisanJobs: jobs.length > 0 ? jobs : null,
+    artisanPortfolio: projects.length > 0 ? projects : null,
+    artisanEarnings: earningRows.length > 0 ? earningRows : null,
+    artisanCompletionPct: completionPct,
+    artisanProfile,
   };
 
   return (
@@ -52,16 +102,25 @@ function NonArtisanProvider({
   base,
 }: {
   children: React.ReactNode;
-  base: Omit<DashboardRealData, "verificationStatus" | "rejectionReason">;
+  base: Omit<DashboardRealData, "verificationStatus" | "rejectionReason" | "artisanJobs" | "artisanPortfolio" | "artisanEarnings" | "artisanCompletionPct" | "artisanProfile">;
 }) {
-  // Still call useArtisanDashboard so hook count is stable across role changes
-  // (Next.js does not hot-swap providers; this avoids potential order issues)
+  // Call all artisan hooks unconditionally so hook count is stable across role changes.
+  // Next.js does not hot-swap providers; this avoids potential hook-order issues.
   useArtisanDashboard();
+  useArtisanJobsAdapter();
+  useArtisanPortfolioAdapter();
+  useArtisanEarningsAdapter();
+  useArtisanSettingsAdapter();
 
   const value: DashboardRealData = {
     ...base,
     verificationStatus: null,
     rejectionReason: null,
+    artisanJobs: null,
+    artisanPortfolio: null,
+    artisanEarnings: null,
+    artisanCompletionPct: null,
+    artisanProfile: null,
   };
 
   return (
@@ -75,8 +134,8 @@ function NonArtisanProvider({
 
 /**
  * Wraps a dashboard section to inject real user identity, notification count,
- * and (for artisans) verification status. Falls back gracefully when APIs are
- * unavailable or the user is unauthenticated.
+ * verification status, and artisan-specific data. Falls back gracefully when
+ * APIs are unavailable or the user is unauthenticated.
  */
 export function DashboardRealDataProvider({
   children,
@@ -89,7 +148,7 @@ export function DashboardRealDataProvider({
   const { data: currentUserData, isLoading: userLoading } = useCurrentUser();
   const { data: unreadData } = useUnreadMessages();
 
-  const base: Omit<DashboardRealData, "verificationStatus" | "rejectionReason"> = {
+  const base: Omit<DashboardRealData, "verificationStatus" | "rejectionReason" | "artisanJobs" | "artisanPortfolio" | "artisanEarnings" | "artisanCompletionPct" | "artisanProfile"> = {
     isLoading: !isLoaded || userLoading,
     displayName: clerkUser
       ? `${clerkUser.firstName ?? ""} ${clerkUser.lastName ?? ""}`.trim() || null
@@ -109,7 +168,7 @@ export function DashboardRealDataProvider({
   return <NonArtisanProvider base={base}>{children}</NonArtisanProvider>;
 }
 
-// ─── consumer hook ────────────────────────────────────────────────────────────
+// ─── consumer hooks ───────────────────────────────────────────────────────────
 
 /**
  * Read real user data from the nearest DashboardRealDataProvider.

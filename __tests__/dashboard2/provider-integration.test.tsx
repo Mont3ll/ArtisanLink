@@ -35,6 +35,22 @@ vi.mock('@/lib/hooks', () => ({
   }),
 }))
 
+vi.mock('@/lib/hooks/use-artisan-jobs-adapter', () => ({
+  useArtisanJobsAdapter: () => ({ jobs: [], isLoading: false, error: null }),
+}))
+
+vi.mock('@/lib/hooks/use-artisan-portfolio-adapter', () => ({
+  useArtisanPortfolioAdapter: () => ({ projects: [], isLoading: false, error: null, total: 0, totalPages: 0 }),
+}))
+
+vi.mock('@/lib/hooks/use-artisan-earnings-adapter', () => ({
+  useArtisanEarningsAdapter: () => ({ earningRows: [], isLoading: false, error: null, totalEarned: 0, totalCommission: 0, pendingPayout: 0 }),
+}))
+
+vi.mock('@/lib/hooks/use-artisan-settings-adapter', () => ({
+  useArtisanSettingsAdapter: () => ({ profile: null, specializations: [], categories: [], completionPct: 50, isLoading: false, counties: [] }),
+}))
+
 function TestConsumer() {
   const ctx = useOptionalDashboardRealData()
   if (!ctx) return <div data-testid="no-ctx">no context</div>

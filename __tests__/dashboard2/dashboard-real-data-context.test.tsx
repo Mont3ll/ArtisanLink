@@ -45,6 +45,22 @@ vi.mock('@/lib/hooks', () => ({
   })),
 }))
 
+vi.mock('@/lib/hooks/use-artisan-jobs-adapter', () => ({
+  useArtisanJobsAdapter: vi.fn(() => ({ jobs: [], isLoading: false, error: null, statusCounts: undefined, pagination: undefined })),
+}))
+
+vi.mock('@/lib/hooks/use-artisan-portfolio-adapter', () => ({
+  useArtisanPortfolioAdapter: vi.fn(() => ({ projects: [], isLoading: false, error: null, total: 0, totalPages: 0 })),
+}))
+
+vi.mock('@/lib/hooks/use-artisan-earnings-adapter', () => ({
+  useArtisanEarningsAdapter: vi.fn(() => ({ earningRows: [], isLoading: false, error: null, totalEarned: 0, totalCommission: 0, pendingPayout: 0, pagination: undefined })),
+}))
+
+vi.mock('@/lib/hooks/use-artisan-settings-adapter', () => ({
+  useArtisanSettingsAdapter: vi.fn(() => ({ profile: null, specializations: [], categories: [], completionPct: 50, isLoading: false, counties: [] })),
+}))
+
 // Import after mocks
 import {
   DashboardRealDataProvider,
