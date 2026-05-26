@@ -13729,6 +13729,14 @@ function ClientDashboardCoreSection({
     ? (job: (typeof clientJobs)[number]) =>
         (job as unknown as { artisan: string }).artisan ?? job.title
     : (job: (typeof clientJobs)[number]) => job.artisan;
+
+  // Real client data overlay
+  const _hasRealClientJobData = Boolean(
+    _clientCtx && !_clientCtx.isLoading && _clientCtx.clientJobs !== null
+  );
+  const effectiveClientJobs = _hasRealClientJobData
+    ? (_clientCtx!.clientJobs as unknown as typeof clientJobs)
+    : clientJobs;
   const recommendedArtisans = artisans
     .filter((artisan) => artisan.isVerified)
     .slice(0, 4);
@@ -13829,25 +13837,25 @@ function ClientDashboardCoreSection({
               <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
                 <DashboardStatCard
                   label="Active jobs"
-                  value="3"
+                  value={_hasRealClientJobData ? (_clientCtx?.clientStats?.activeJobs ?? "3") : String(effectiveClientJobs.filter((j) => j.status === "ACTIVE").length)}
                   helper="2 quoted"
                   icon={ClipboardList}
                 />
                 <DashboardStatCard
                   label="Saved artisans"
-                  value="12"
+                  value={_hasRealClientJobData ? (_clientCtx?.clientStats?.savedArtisans ?? "12") : "12"}
                   helper="4 nearby"
                   icon={Bookmark}
                 />
                 <DashboardStatCard
                   label="Unread messages"
-                  value="8"
+                  value={String(_clientCtx?.unreadCount ?? 8)}
                   helper="4 need reply"
                   icon={MessageCircle}
                 />
                 <DashboardStatCard
                   label="Completed jobs"
-                  value="17"
+                  value={_hasRealClientJobData ? (_clientCtx?.clientStats?.completedJobs ?? "17") : String(effectiveClientJobs.filter((j) => j.status === "COMPLETED").length)}
                   helper="5 pending reviews"
                   icon={CheckCircle2}
                 />
@@ -13882,7 +13890,7 @@ function ClientDashboardCoreSection({
                     </button>
                   </div>
                   <div className="grid gap-2">
-                    {clientJobs.map((job) => (
+                    {effectiveClientJobs.map((job) => (
                       <div
                         key={job.id}
                         className="grid gap-3 rounded-[14px] border p-3 text-left transition-colors hover:bg-[#f7f7f7] md:grid-cols-[1fr_auto] md:items-center"
@@ -14056,31 +14064,31 @@ function ClientDashboardCoreSection({
             const filteredJobs = clientJobTab === "All" ? clientJobs
               : clientJobTab === "Quoted" ? clientJobs.filter((job) => job.status === "QUOTED")
               : clientJobTab === "Active" ? clientJobs.filter((job) => job.status === "ACTIVE")
-              : clientJobs.filter((job) => job.status === "COMPLETED");
+              : effectiveClientJobs.filter((job) => job.status === "COMPLETED");
             return (
             <div className="grid gap-6">
               <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
                 <DashboardStatCard
                   label="Quoted jobs"
-                  value={String(clientJobs.filter((job) => job.status === "QUOTED").length)}
+                  value={String(effectiveClientJobs.filter((job) => job.status === "QUOTED").length)}
                   helper="Awaiting your acceptance"
                   icon={ReceiptText}
                 />
                 <DashboardStatCard
                   label="Active jobs"
-                  value={String(clientJobs.filter((job) => job.status === "ACTIVE").length)}
+                  value={String(effectiveClientJobs.filter((job) => job.status === "ACTIVE").length)}
                   helper="Currently in progress"
                   icon={ClipboardList}
                 />
                 <DashboardStatCard
                   label="Completed jobs"
-                  value={String(clientJobs.filter((job) => job.status === "COMPLETED").length)}
-                  helper={`${clientJobs.filter((job) => job.status === "COMPLETED" && !reviewedJobIds.includes(job.id)).length} awaiting review`}
+                  value={String(effectiveClientJobs.filter((job) => job.status === "COMPLETED").length)}
+                  helper={`${effectiveClientJobs.filter((job) => job.status === "COMPLETED" && !reviewedJobIds.includes(job.id)).length} awaiting review`}
                   icon={CheckCircle2}
                 />
                 <DashboardStatCard
                   label="Total spend"
-                  value={formatKes(clientJobs.filter((job) => job.status === "COMPLETED").reduce((sum, job) => sum + Number(job.quote.replace(/[^0-9]/g, "")), 0))}
+                  value={formatKes(effectiveClientJobs.filter((job) => job.status === "COMPLETED").reduce((sum, job) => sum + Number(job.quote.replace(/[^0-9]/g, "")), 0))}
                   helper="Completed job payments"
                   icon={CircleDollarSign}
                 />
@@ -14484,7 +14492,7 @@ function ClientDashboardCoreSection({
           )}
 
           {view === "reviews" && (() => {
-            const completedJobs = clientJobs.filter((job) => job.status === "COMPLETED");
+            const completedJobs = effectiveClientJobs.filter((job) => job.status === "COMPLETED");
             const pendingReviewJobs = completedJobs.filter((job) => !reviewedJobIds.includes(job.id));
             const activeReviewJob = reviewingJob ?? pendingReviewJobs[0] ?? null;
 
@@ -14625,7 +14633,7 @@ function ClientDashboardCoreSection({
                     <div className="rounded-[18px] border bg-white p-5" style={{ borderColor: COLORS.hairlineSoft }}>
                       <p className="text-[15px] font-semibold" style={{ color: COLORS.ink }}>Submitted reviews</p>
                       <div className="mt-4 grid gap-3">
-                        {clientJobs.filter((job) => reviewedJobIds.includes(job.id)).map((job) => (
+                        {effectiveClientJobs.filter((job) => reviewedJobIds.includes(job.id)).map((job) => (
                           <div key={job.id} className="rounded-[14px] border p-3" style={{ borderColor: COLORS.primarySoft, background: COLORS.primaryTint }}>
                             <div className="flex items-start justify-between gap-2">
                               <div>
