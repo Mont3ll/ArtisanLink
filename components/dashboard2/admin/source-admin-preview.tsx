@@ -12379,39 +12379,45 @@ function ArtisanDashboardCoreSection({
               <div className="grid gap-4 md:grid-cols-4">
                 <DashboardStatCard
                   label="Gross earnings"
-                  value={formatKes(
-                    earningRows.reduce(
-                      (sum, row) =>
-                        sum + Number(row.amount.replace(/[^0-9]/g, "")),
-                      0,
-                    ),
-                  )}
+                  value={_verifCtx?.artisanTotalEarned != null
+                    ? formatKes(_verifCtx.artisanTotalEarned)
+                    : formatKes(
+                        earningRows.reduce(
+                          (sum, row) =>
+                            sum + Number(row.amount.replace(/[^0-9]/g, "")),
+                          0,
+                        ),
+                      )}
                   helper="Cash job records"
                   icon={CircleDollarSign}
                 />
                 <DashboardStatCard
                   label="Net earnings"
-                  value={formatKes(
-                    earningRows.reduce(
-                      (sum, row) =>
-                        sum + Number(row.net.replace(/[^0-9]/g, "")),
-                      0,
-                    ),
-                  )}
+                  value={_verifCtx?.artisanTotalEarned != null && _verifCtx?.artisanTotalCommission != null
+                    ? formatKes(_verifCtx.artisanTotalEarned - _verifCtx.artisanTotalCommission)
+                    : formatKes(
+                        earningRows.reduce(
+                          (sum, row) =>
+                            sum + Number(row.net.replace(/[^0-9]/g, "")),
+                          0,
+                        ),
+                      )}
                   helper="After commission"
                   icon={WalletCards}
                 />
                 <DashboardStatCard
                   label="Pending payout"
-                  value={formatKes(
-                    earningRows
-                      .filter((row) => row.status !== "COMPLETED")
-                      .reduce(
-                        (sum, row) =>
-                          sum + Number(row.net.replace(/[^0-9]/g, "")),
-                        0,
-                      ),
-                  )}
+                  value={_verifCtx?.artisanPendingPayout != null
+                    ? formatKes(_verifCtx.artisanPendingPayout)
+                    : formatKes(
+                        earningRows
+                          .filter((row) => row.status !== "COMPLETED")
+                          .reduce(
+                            (sum, row) =>
+                              sum + Number(row.net.replace(/[^0-9]/g, "")),
+                            0,
+                          ),
+                      )}
                   helper="Awaiting completion"
                   icon={ReceiptText}
                 />
