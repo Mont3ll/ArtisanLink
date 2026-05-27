@@ -20181,7 +20181,18 @@ export default function SourceAdminPreview({
       "preview-readiness": "/readiness",
       "support-footer": "/readiness",
     };
-    navigate(anchorToRoute[target] ?? (target as AppRoute));
+    const resolved = anchorToRoute[target] ?? (target as AppRoute);
+    // Always use real navigation for auth and home routes so the
+    // source preview doesn't intercept them with its own public pages
+    const realRoutes: AppRoute[] = ["/sign-in", "/sign-up", "/", "/for-artisans",
+      "/artisans", "/pricing", "/readiness", "/dashboard"];
+    if (realRoutes.includes(resolved) || resolved.startsWith("/sign-") || resolved.startsWith("/artisans/")) {
+      if (typeof window !== "undefined") {
+        window.location.href = resolved;
+        return;
+      }
+    }
+    navigate(resolved);
   };
 
   const triggerPreviewLoading = () => {
