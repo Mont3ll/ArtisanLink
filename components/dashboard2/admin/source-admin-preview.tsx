@@ -2,6 +2,8 @@
 // @ts-nocheck
 "use client";
 
+import { useClerk } from "@clerk/nextjs";
+
 import { useOptionalDashboardRealData } from "@/components/dashboard2/context/dashboard-real-data-context";
 import {
   useInitiatePayment,
@@ -5517,14 +5519,14 @@ function DashboardProfileButton({
     return "/dashboard";
   };
 
+  const { signOut } = useClerk();
   const handleProfileAction = (label: string) => {
     setOpen(false);
-    if (typeof window === "undefined") return;
     if (label === "Sign out") {
-      // Use window.location for sign-out to trigger Clerk's sign-out flow
-      window.location.href = "/sign-in";
+      signOut({ redirectUrl: "/" });
       return;
     }
+    if (typeof window === "undefined") return;
     window.location.hash = routeForAction(label);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };

@@ -39,6 +39,28 @@ export function AuthPreviewShell({
         id="auth-preview"
         className="w-full max-w-[1080px] px-5 py-12 md:px-10 md:py-16"
       >
+        <div className="mb-8 flex items-center justify-between">
+          <Link
+            href="/"
+            className="flex items-center gap-2 text-[15px] font-semibold tracking-[-0.02em] transition-opacity hover:opacity-75"
+            style={{ color: COLORS.ink }}
+          >
+            <span
+              className="grid h-8 w-8 place-items-center rounded-lg text-white"
+              style={{ background: "#059669" }}
+            >
+              <Hammer size={16} />
+            </span>
+            ChapaWorks
+          </Link>
+          <Link
+            href="/"
+            className="inline-flex h-9 items-center gap-1.5 rounded-full border px-3 text-[13px] font-medium transition-colors hover:bg-[#f7f7f7]"
+            style={{ borderColor: COLORS.hairline, color: COLORS.muted }}
+          >
+            ← Home
+          </Link>
+        </div>
         <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
           <div>
             <p className="mb-2 text-[14px] font-medium leading-[1.29]" style={{ color: COLORS.muted }}>Account access</p>
