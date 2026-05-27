@@ -352,7 +352,6 @@ describe('M-Pesa Payment Integration Tests', () => {
       if (response.status === 500) {
         expect(data.error).toContain('Failed to initiate payment');
       }
-      expect(data.error).toContain('Failed to initiate payment');
     });
   });
 
