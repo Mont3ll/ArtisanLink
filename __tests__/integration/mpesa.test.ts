@@ -349,6 +349,9 @@ describe('M-Pesa Payment Integration Tests', () => {
       const data = await response.json();
 
       expect([429, 500]).toContain(response.status);
+      if (response.status === 500) {
+        expect(data.error).toContain('Failed to initiate payment');
+      }
       expect(data.error).toContain('Failed to initiate payment');
     });
   });
