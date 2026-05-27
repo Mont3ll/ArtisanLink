@@ -51,6 +51,16 @@ vi.mock('@/lib/hooks/use-artisan-settings-adapter', () => ({
   useArtisanSettingsAdapter: () => ({ profile: null, specializations: [], categories: [], completionPct: 50, isLoading: false, counties: [] }),
 }))
 
+vi.mock('@/lib/hooks/use-artisan-subscription', () => ({
+  useArtisanSubscription: () => ({ data: { subscription: null }, isLoading: false }),
+  isSubscriptionActive: () => false,
+  getDaysRemaining: () => 30,
+  SUBSCRIPTION_PLANS: {
+    MONTHLY: { name: 'Monthly', price: 150, durationDays: 30, features: [] },
+    ANNUAL: { name: 'Annual', price: 1500, durationDays: 365, features: [] },
+  },
+}))
+
 vi.mock('@/lib/hooks/use-conversations-adapter', () => ({
   useConversationsAdapter: () => ({ threads: [], isLoading: false, error: null, unreadCount: 0 }),
 }))

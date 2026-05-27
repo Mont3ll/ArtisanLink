@@ -12,6 +12,11 @@ import { useArtisanSettingsAdapter } from "@/lib/hooks/use-artisan-settings-adap
 import { useConversationsAdapter } from "@/lib/hooks/use-conversations-adapter";
 import { useAdminDataAdapter } from "@/lib/hooks/use-admin-data-adapter";
 import { useClientDataAdapter } from "@/lib/hooks/use-client-data-adapter";
+import {
+  useArtisanSubscription,
+  isSubscriptionActive,
+} from "@/lib/hooks/use-artisan-subscription";
+import type { SubscriptionData } from "@/lib/hooks/use-artisan-subscription";
 import type { SourceArtisanJob } from "@/lib/hooks/use-artisan-jobs-adapter";
 import type { SourcePortfolioProject } from "@/lib/hooks/use-artisan-portfolio-adapter";
 import type { SourceEarningRow } from "@/lib/hooks/use-artisan-earnings-adapter";
@@ -71,6 +76,16 @@ export interface DashboardRealData {
   clientJobs: SourceClientJob[] | null;
   /** Client-only: overview dashboard stats. null when not client/not loaded. */
   clientStats: SourceClientStats | null;
+  /** Artisan-only: current subscription record. null when not artisan or no subscription. */
+  artisanSubscription: SubscriptionData | null;
+  /** Artisan-only: true when subscription status is ACTIVE. */
+  artisanSubscriptionActive: boolean;
+  /** Artisan-only: total gross earnings from payouts. null when not artisan/not loaded. */
+  artisanTotalEarned: number | null;
+  /** Artisan-only: total commission withheld. null when not artisan/not loaded. */
+  artisanTotalCommission: number | null;
+  /** Artisan-only: total pending payout amount. null when not artisan/not loaded. */
+  artisanPendingPayout: number | null;
 }
 
 const DashboardRealDataContext = createContext<DashboardRealData | null>(null);
@@ -83,15 +98,16 @@ function ArtisanProvider({
   dbUserId,
 }: {
   children: React.ReactNode;
-  base: Omit<DashboardRealData, "verificationStatus" | "rejectionReason" | "artisanJobs" | "artisanPortfolio" | "artisanEarnings" | "artisanCompletionPct" | "artisanProfile" | "conversations" | "currentUserId" | "adminVerificationQueue" | "adminArtisans" | "adminStats" | "clientJobs" | "clientStats">;
+  base: Omit<DashboardRealData, "verificationStatus" | "rejectionReason" | "artisanJobs" | "artisanPortfolio" | "artisanEarnings" | "artisanCompletionPct" | "artisanProfile" | "conversations" | "currentUserId" | "adminVerificationQueue" | "adminArtisans" | "adminStats" | "clientJobs" | "clientStats" | "artisanSubscription" | "artisanSubscriptionActive" | "artisanTotalEarned" | "artisanTotalCommission" | "artisanPendingPayout">;
   dbUserId: string | null;
 }) {
   const { data: dashData } = useArtisanDashboard();
   const { jobs } = useArtisanJobsAdapter();
   const { projects } = useArtisanPortfolioAdapter();
-  const { earningRows } = useArtisanEarningsAdapter();
+  const { earningRows, totalEarned, totalCommission, pendingPayout } = useArtisanEarningsAdapter();
   const { profile, completionPct } = useArtisanSettingsAdapter();
   const { threads } = useConversationsAdapter(dbUserId);
+  const { data: subData } = useArtisanSubscription();
   // Call unconditionally so hook count matches NonArtisanProvider
   useAdminDataAdapter();
   // Call unconditionally so hook count matches NonArtisanProvider
@@ -126,6 +142,11 @@ function ArtisanProvider({
     adminStats: null,
     clientJobs: null,
     clientStats: null,
+    artisanSubscription: subData?.subscription ?? null,
+    artisanSubscriptionActive: isSubscriptionActive(subData?.subscription ?? null),
+    artisanTotalEarned: typeof totalEarned === "number" ? totalEarned : null,
+    artisanTotalCommission: typeof totalCommission === "number" ? totalCommission : null,
+    artisanPendingPayout: typeof pendingPayout === "number" ? pendingPayout : null,
   };
 
   return (
@@ -142,7 +163,7 @@ function NonArtisanProvider({
   dbUserId,
 }: {
   children: React.ReactNode;
-  base: Omit<DashboardRealData, "verificationStatus" | "rejectionReason" | "artisanJobs" | "artisanPortfolio" | "artisanEarnings" | "artisanCompletionPct" | "artisanProfile" | "conversations" | "currentUserId" | "adminVerificationQueue" | "adminArtisans" | "adminStats" | "clientJobs" | "clientStats">;
+  base: Omit<DashboardRealData, "verificationStatus" | "rejectionReason" | "artisanJobs" | "artisanPortfolio" | "artisanEarnings" | "artisanCompletionPct" | "artisanProfile" | "conversations" | "currentUserId" | "adminVerificationQueue" | "adminArtisans" | "adminStats" | "clientJobs" | "clientStats" | "artisanSubscription" | "artisanSubscriptionActive" | "artisanTotalEarned" | "artisanTotalCommission" | "artisanPendingPayout">;
   role: DashboardRole;
   dbUserId: string | null;
 }) {
@@ -152,6 +173,7 @@ function NonArtisanProvider({
   useArtisanPortfolioAdapter();
   useArtisanEarningsAdapter();
   useArtisanSettingsAdapter();
+  useArtisanSubscription();
   const { threads } = useConversationsAdapter(dbUserId);
   const { verificationQueue, adminArtisans, stats } = useAdminDataAdapter();
   const { clientJobs: realClientJobs, stats: realClientStats } = useClientDataAdapter();
@@ -172,6 +194,11 @@ function NonArtisanProvider({
     adminStats: role === "admin" ? stats : null,
     clientJobs: role === "client" ? (realClientJobs.length > 0 ? realClientJobs : null) : null,
     clientStats: role === "client" ? realClientStats : null,
+    artisanSubscription: null,
+    artisanSubscriptionActive: false,
+    artisanTotalEarned: null,
+    artisanTotalCommission: null,
+    artisanPendingPayout: null,
   };
 
   return (
@@ -199,7 +226,7 @@ export function DashboardRealDataProvider({
   const { data: currentUserData, isLoading: userLoading } = useCurrentUser();
   const { data: unreadData } = useUnreadMessages();
 
-  const base: Omit<DashboardRealData, "verificationStatus" | "rejectionReason" | "artisanJobs" | "artisanPortfolio" | "artisanEarnings" | "artisanCompletionPct" | "artisanProfile" | "conversations" | "currentUserId" | "adminVerificationQueue" | "adminArtisans" | "adminStats" | "clientJobs" | "clientStats"> = {
+  const base: Omit<DashboardRealData, "verificationStatus" | "rejectionReason" | "artisanJobs" | "artisanPortfolio" | "artisanEarnings" | "artisanCompletionPct" | "artisanProfile" | "conversations" | "currentUserId" | "adminVerificationQueue" | "adminArtisans" | "adminStats" | "clientJobs" | "clientStats" | "artisanSubscription" | "artisanSubscriptionActive" | "artisanTotalEarned" | "artisanTotalCommission" | "artisanPendingPayout"> = {
     isLoading: !isLoaded || userLoading,
     displayName: clerkUser
       ? `${clerkUser.firstName ?? ""} ${clerkUser.lastName ?? ""}`.trim() || null
