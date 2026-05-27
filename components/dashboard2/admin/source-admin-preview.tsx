@@ -5842,6 +5842,7 @@ function FullDetailViewModal({
   description,
   metrics,
   onClose,
+  artisanId,
 }: {
   title: string;
   subtitle: string;
@@ -5849,6 +5850,7 @@ function FullDetailViewModal({
   description: string;
   metrics: Array<[string, string]>;
   onClose: () => void;
+  artisanId?: string;
 }) {
   const [reviewDecision, setReviewDecision] = useState<
     "approve" | "request" | "reject" | "escalate"
@@ -6136,7 +6138,10 @@ function FullDetailViewModal({
     },
   }[reviewDecision];
 
-  const submitDecision = () => {
+  const [submitting, setSubmitting] = useState(false)
+  const [submitError, setSubmitError] = useState<string | null>(null)
+
+  const submitDecision = async () => {
     const time = new Date().toLocaleTimeString([], {
       hour: "2-digit",
       minute: "2-digit",
@@ -6146,6 +6151,32 @@ function FullDetailViewModal({
       ...current,
     ]);
     setDecisionSubmitted(true);
+
+    // Call real API if artisanId is provided
+    if (artisanId) {
+      setSubmitting(true);
+      setSubmitError(null);
+      try {
+        const response = await fetch("/api/admin/verification/process", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            artisanId,
+            action: reviewDecision === "approve" ? "APPROVE" : "REJECT",
+            reason: decisionNote,
+            adminNotes: decisionNote,
+          }),
+        });
+        if (!response.ok) {
+          const err = await response.json().catch(() => ({}));
+          setSubmitError(err.error ?? "Verification action failed");
+        }
+      } catch {
+        setSubmitError("Network error — decision was staged locally");
+      } finally {
+        setSubmitting(false);
+      }
+    }
   };
 
   return (
@@ -6530,14 +6561,15 @@ function FullDetailViewModal({
                       className="text-[13px] font-semibold"
                       style={{ color: COLORS.primaryActive }}
                     >
-                      Decision staged
+                      {submitting ? "Processing…" : submitError ? "Error" : "Decision submitted"}
                     </p>
                     <p
                       className="mt-1 text-[12px] leading-[1.33]"
-                      style={{ color: COLORS.body }}
+                      style={{ color: submitError ? "#b91c1c" : COLORS.body }}
                     >
-                      The review action has been staged and recorded in the
-                      local audit timeline.
+                      {submitError ?? (artisanId
+                        ? "The verification decision has been applied to the artisan's profile."
+                        : "The review action has been staged and recorded in the local audit timeline.")}
                     </p>
                   </motion.div>
                 )}
@@ -15476,6 +15508,7 @@ function AdminOperationsSection({
     status: DashboardRecord["status"];
     description: string;
     metrics: Array<[string, string]>;
+    artisanId?: string;
   } | null>(null);
   const [analyticsRange, setAnalyticsRange] =
     useState<AdminAnalyticsRange>("month");
@@ -15780,6 +15813,7 @@ function AdminOperationsSection({
         ["Submitted", record.submitted],
         ["Risk", record.risk],
       ],
+      artisanId: record.id,
     });
   };
 
@@ -18628,6 +18662,7 @@ function AdminOperationsSection({
                   description={adminFullDetail.description}
                   metrics={adminFullDetail.metrics}
                   onClose={() => setAdminFullDetail(null)}
+                  artisanId={adminFullDetail.artisanId}
                 />
               )}
             </AnimatePresence>
