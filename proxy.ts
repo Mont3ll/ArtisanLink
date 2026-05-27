@@ -8,9 +8,13 @@ const isProtectedRoute = createRouteMatcher([
   "/client-dashboard(.*)",
   "/artisan-dashboard(.*)",
   "/admin-dashboard(.*)",
-  "/artisan(.*)",
-  "/admin(.*)",
-  "/client(.*)",
+  // Use precise patterns to avoid matching /artisans, /admins, /clients
+  "/artisan",
+  "/artisan/(.*)",
+  "/admin",
+  "/admin/(.*)",
+  "/client",
+  "/client/(.*)",
 ]);
 
 // Public artisan browsing routes - accessible without login
@@ -18,6 +22,18 @@ const isPublicArtisanRoute = createRouteMatcher([
   "/artisans(.*)",
   "/api/search/artisans(.*)",
   "/api/artisans(.*)",
+]);
+
+const isPublicPage = createRouteMatcher([
+  "/",
+  "/for-artisans",
+  "/pricing",
+  "/artisans(.*)",
+  "/invite(.*)",
+  "/sign-in(.*)",
+  "/sign-up(.*)",
+  "/after-sign-in",
+  "/after-sign-up",
 ]);
 
 export const proxy = clerkMiddleware(async (auth, req) => {
@@ -38,11 +54,17 @@ export const proxy = clerkMiddleware(async (auth, req) => {
     return NextResponse.next();
   }
 
+  // Always allow public artisan browsing routes regardless of auth state
+  if (isPublicArtisanRoute(req)) {
+    return NextResponse.next();
+  }
+
+  // Allow public pages (landing, for-artisans, pricing, invite, auth)
+  if (isPublicPage(req)) {
+    return NextResponse.next();
+  }
+
   if (!userId || !isProtectedRoute(req)) {
-    // Allow public artisan browsing routes without any role checks
-    if (isPublicArtisanRoute(req) || !userId) {
-      return NextResponse.next();
-    }
     return NextResponse.next();
   }
 
