@@ -48,3 +48,7 @@ next-env.d.ts
 # Local AI agent instructions
 AGENTS.md
 .worktrees/
+
+# clerk configuration (can include secrets)
+/.clerk/
+.env

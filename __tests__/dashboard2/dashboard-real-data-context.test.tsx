@@ -1,0 +1,239 @@
+import { renderHook, render, screen } from '@testing-library/react'
+import { vi, describe, it, expect, beforeEach } from 'vitest'
+import React from 'react'
+
+// ─── mocks ────────────────────────────────────────────────────────────────────
+
+vi.mock('@clerk/nextjs', () => ({
+  useUser: vi.fn(() => ({
+    isLoaded: true,
+    user: {
+      id: 'clerk-123',
+      firstName: 'Grace',
+      lastName: 'Wanjiku',
+      imageUrl: 'https://example.com/avatar.jpg',
+    },
+  })),
+}))
+
+vi.mock('@/lib/hooks/use-current-user', () => ({
+  useCurrentUser: vi.fn(() => ({
+    data: {
+      clerkUserId: 'clerk-123',
+      user: { id: 'db-456', role: 'ARTISAN', status: 'ACTIVE', email: 'g@w.com', phone: null, firstName: 'Grace', lastName: 'Wanjiku' },
+      profile: { id: 'p-1', profileImage: null, bio: null, profession: 'Carpenter', experience: null, hourlyRate: null, isAvailable: true, city: null, county: null, address: null },
+    },
+    isLoading: false,
+  })),
+}))
+
+vi.mock('@/lib/hooks/use-unread-messages', () => ({
+  useUnreadMessages: vi.fn(() => ({
+    data: { total: 3, byConversation: [] },
+    isLoading: false,
+  })),
+}))
+
+vi.mock('@/lib/hooks', () => ({
+  useArtisanDashboard: vi.fn(() => ({
+    data: {
+      stats: {},
+      recentActivity: [],
+      profile: { artisanStatus: 'PENDING', rejectionReason: null },
+      user: null,
+    },
+  })),
+}))
+
+vi.mock('@/lib/hooks/use-artisan-jobs-adapter', () => ({
+  useArtisanJobsAdapter: vi.fn(() => ({ jobs: [], isLoading: false, error: null, statusCounts: undefined, pagination: undefined })),
+}))
+
+vi.mock('@/lib/hooks/use-artisan-portfolio-adapter', () => ({
+  useArtisanPortfolioAdapter: vi.fn(() => ({ projects: [], isLoading: false, error: null, total: 0, totalPages: 0 })),
+}))
+
+vi.mock('@/lib/hooks/use-artisan-earnings-adapter', () => ({
+  useArtisanEarningsAdapter: vi.fn(() => ({ earningRows: [], isLoading: false, error: null, totalEarned: 0, totalCommission: 0, pendingPayout: 0, pagination: undefined })),
+}))
+
+vi.mock('@/lib/hooks/use-artisan-settings-adapter', () => ({
+  useArtisanSettingsAdapter: vi.fn(() => ({ profile: null, specializations: [], categories: [], completionPct: 50, isLoading: false, counties: [] })),
+}))
+
+vi.mock('@/lib/hooks/use-artisan-subscription', () => ({
+  useArtisanSubscription: () => ({ data: { subscription: null }, isLoading: false }),
+  isSubscriptionActive: () => false,
+  getDaysRemaining: () => 30,
+  SUBSCRIPTION_PLANS: {
+    MONTHLY: { name: 'Monthly', price: 150, durationDays: 30, features: [] },
+    ANNUAL: { name: 'Annual', price: 1500, durationDays: 365, features: [] },
+  },
+}))
+
+vi.mock('@/lib/hooks/use-conversations-adapter', () => ({
+  useConversationsAdapter: vi.fn(() => ({ threads: [], isLoading: false, error: null, unreadCount: 0 })),
+}))
+
+vi.mock('@/lib/hooks/use-admin-data-adapter', () => ({
+  useAdminDataAdapter: vi.fn(() => ({
+    verificationQueue: [],
+    adminArtisans: [],
+    users: [],
+    stats: null,
+    isLoading: false,
+  })),
+}))
+
+vi.mock('@/lib/hooks/use-client-data-adapter', () => ({
+  useClientDataAdapter: () => ({
+    clientJobs: [],
+    stats: { activeJobs: '0', savedArtisans: '0', completedJobs: '0', unreadMessages: '0' },
+    savedArtisanIds: [],
+    savedCount: 0,
+    isLoading: false,
+  }),
+}))
+
+// Import after mocks
+import {
+  DashboardRealDataProvider,
+  useDashboardRealData,
+  type DashboardRole,
+} from '@/components/dashboard2/context/dashboard-real-data-context'
+
+// ─── helpers ──────────────────────────────────────────────────────────────────
+
+function makeWrapper(role: DashboardRole) {
+  return function Wrapper({ children }: { children: React.ReactNode }) {
+    return (
+      <DashboardRealDataProvider role={role}>
+        {children}
+      </DashboardRealDataProvider>
+    )
+  }
+}
+
+// ─── tests ────────────────────────────────────────────────────────────────────
+
+describe('DashboardRealDataProvider', () => {
+  it('renders children without crashing', () => {
+    render(
+      <DashboardRealDataProvider role="artisan">
+        <div data-testid="child">content</div>
+      </DashboardRealDataProvider>,
+    )
+    expect(screen.getByTestId('child')).toBeInTheDocument()
+  })
+})
+
+describe('useDashboardRealData', () => {
+  it('throws when used outside provider', () => {
+    const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
+    expect(() => renderHook(() => useDashboardRealData())).toThrow(
+      'useDashboardRealData must be used inside DashboardRealDataProvider',
+    )
+    consoleSpy.mockRestore()
+  })
+
+  it('returns displayName constructed from Clerk firstName + lastName', () => {
+    const { result } = renderHook(() => useDashboardRealData(), {
+      wrapper: makeWrapper('artisan'),
+    })
+    expect(result.current.displayName).toBe('Grace Wanjiku')
+  })
+
+  it('returns firstName from Clerk user', () => {
+    const { result } = renderHook(() => useDashboardRealData(), {
+      wrapper: makeWrapper('artisan'),
+    })
+    expect(result.current.firstName).toBe('Grace')
+  })
+
+  it('returns DB role from useCurrentUser', () => {
+    const { result } = renderHook(() => useDashboardRealData(), {
+      wrapper: makeWrapper('artisan'),
+    })
+    expect(result.current.role).toBe('ARTISAN')
+  })
+
+  it('returns unreadCount from useUnreadMessages', () => {
+    const { result } = renderHook(() => useDashboardRealData(), {
+      wrapper: makeWrapper('artisan'),
+    })
+    expect(result.current.unreadCount).toBe(3)
+  })
+
+  it('returns verificationStatus for artisan role', () => {
+    const { result } = renderHook(() => useDashboardRealData(), {
+      wrapper: makeWrapper('artisan'),
+    })
+    expect(result.current.verificationStatus).toBe('PENDING')
+  })
+
+  it('returns null verificationStatus for non-artisan role', () => {
+    const { result } = renderHook(() => useDashboardRealData(), {
+      wrapper: makeWrapper('client'),
+    })
+    expect(result.current.verificationStatus).toBeNull()
+  })
+
+  it('returns null verificationStatus for admin role', () => {
+    const { result } = renderHook(() => useDashboardRealData(), {
+      wrapper: makeWrapper('admin'),
+    })
+    expect(result.current.verificationStatus).toBeNull()
+  })
+
+  it('returns isLoading=true when Clerk is not loaded', async () => {
+    const { useUser } = await import('@clerk/nextjs')
+    vi.mocked(useUser).mockReturnValueOnce({
+      isLoaded: false,
+      user: null,
+      isSignedIn: false,
+    } as unknown as ReturnType<typeof useUser>)
+
+    const { result } = renderHook(() => useDashboardRealData(), {
+      wrapper: makeWrapper('artisan'),
+    })
+    expect(result.current.isLoading).toBe(true)
+    expect(result.current.displayName).toBeNull()
+  })
+
+  it('returns avatarUrl from Clerk imageUrl', () => {
+    const { result } = renderHook(() => useDashboardRealData(), {
+      wrapper: makeWrapper('artisan'),
+    })
+    expect(result.current.avatarUrl).toBe('https://example.com/avatar.jpg')
+  })
+
+  it('falls back to DB profileImage when Clerk imageUrl is absent', async () => {
+    const { useUser } = await import('@clerk/nextjs')
+    vi.mocked(useUser).mockReturnValueOnce({
+      isLoaded: true,
+      isSignedIn: true,
+      user: {
+        id: 'clerk-123',
+        firstName: 'Grace',
+        lastName: 'Wanjiku',
+        imageUrl: '',
+      },
+    } as ReturnType<typeof useUser>)
+
+    const { useCurrentUser } = await import('@/lib/hooks/use-current-user')
+    vi.mocked(useCurrentUser).mockReturnValueOnce({
+      data: {
+        clerkUserId: 'clerk-123',
+        user: { id: 'db-456', role: 'ARTISAN', status: 'ACTIVE', email: 'g@w.com', phone: null, firstName: 'Grace', lastName: 'Wanjiku' },
+        profile: { id: 'p-1', profileImage: 'https://cdn.example.com/photo.jpg', bio: null, profession: null, experience: null, hourlyRate: null, isAvailable: true, city: null, county: null, address: null },
+      },
+      isLoading: false,
+    } as ReturnType<typeof useCurrentUser>)
+
+    const { result } = renderHook(() => useDashboardRealData(), {
+      wrapper: makeWrapper('artisan'),
+    })
+    // Clerk imageUrl is empty string (falsy), so falls back to DB profileImage
+    expect(result.current.avatarUrl).toBe('https://cdn.example.com/photo.jpg')
+  })
+})

@@ -68,13 +68,13 @@ export async function GET(req: Request) {
   let dashboardPath: string;
   switch (role) {
     case "admin":
-      dashboardPath = "/admin-dashboard";
+      dashboardPath = "/admin";
       break;
     case "artisan":
-      dashboardPath = "/artisan-dashboard";
+      dashboardPath = "/artisan/dashboard";
       break;
     case "client":
-      dashboardPath = "/client-dashboard";
+      dashboardPath = "/client/dashboard";
       break;
     default:
       return NextResponse.redirect(new URL("/sign-in", baseUrl));

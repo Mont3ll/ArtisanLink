@@ -1,33 +1,133 @@
 "use client";
 
-import { useState, useEffect, Suspense } from "react";
-import Link from "next/link";
+import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import PublicNav from "@/components/layout/public-nav";
-import StickySearchPill from "@/components/layout/sticky-search-pill";
-import { ArtisanCard, ArtisanCardSkeleton, type ArtisanCardData } from "@/components/artisan";
-import {
-  Search,
-  ArrowRight,
-  X,
-} from "lucide-react";
 
-type Artisan = ArtisanCardData & {
-  bio: string | null;
-  experience: number | null;
-  memberSince: string;
-  distance: number | null;
-  portfolioThumbnail?: string | null;
+import {
+  BrowseDirectorySection,
+  BrowseDirectorySkeleton,
+} from "@/components/landing/browse-directory";
+import type { ArtisanCardData } from "@/components/landing/artisan-preview-card";
+import Footer from "@/components/layout/footer-new";
+import Header from "@/components/layout/header-new";
+import { COLORS } from "@/lib/design-tokens";
+import { previewArtisans } from "@/lib/public-preview-data";
+
+const FALLBACK_GRADIENTS = [
+  "linear-gradient(135deg, #ecfdf5 0%, #a7f3d0 45%, #047857 100%)",
+  "linear-gradient(135deg, #f4f1e8 0%, #b89565 44%, #4b3524 100%)",
+  "linear-gradient(135deg, #fef3c7 0%, #fbbf24 44%, #065f46 100%)",
+  "linear-gradient(135deg, #eef2ff 0%, #a7f3d0 46%, #064e3b 100%)",
+];
+
+type RawArtisan = Record<string, unknown>;
+type Facet = { name: string | null; count?: number };
+
+type SearchPayload = {
+  artisans?: RawArtisan[];
+  data?: RawArtisan[];
+  facets?: {
+    professions?: Facet[];
+    counties?: Facet[];
+  };
 };
 
-interface Facets {
-  professions: Array<{ name: string | null; count: number }>;
-  counties: Array<{ name: string | null; count: number }>;
+function asRecord(value: unknown): Record<string, unknown> {
+  return value && typeof value === "object" ? (value as Record<string, unknown>) : {};
+}
+
+function asString(value: unknown, fallback = ""): string {
+  return typeof value === "string" && value.trim() ? value : fallback;
+}
+
+function asNumber(value: unknown, fallback = 0): number {
+  return typeof value === "number" && Number.isFinite(value) ? value : fallback;
+}
+
+function normalizeSpecializations(value: unknown): Array<{ name: string }> {
+  if (!Array.isArray(value)) return [];
+
+  return value
+    .map((item) => {
+      if (typeof item === "string") return { name: item };
+      const record = asRecord(item);
+      return { name: asString(record.name) };
+    })
+    .filter((item) => item.name);
+}
+
+function normalizeArtisan(raw: RawArtisan, index: number): ArtisanCardData {
+  const user = asRecord(raw.user);
+  const location = asRecord(raw.location);
+  const ratingRecord = asRecord(raw.rating);
+  const name = asString(raw.name, asString(user.name, "ChapaWorks artisan"));
+  const profession = asString(raw.profession, "Artisan");
+  const city = asString(raw.city, asString(location.city));
+  const county = asString(raw.county, asString(location.county, "Kenya"));
+  const ratingAverage = asNumber(
+    raw.averageRating,
+    asNumber(ratingRecord.average, asNumber(raw.ratingAverage, 0)),
+  );
+  const ratingTotal = asNumber(
+    raw.totalReviews,
+    asNumber(ratingRecord.total, asNumber(raw.reviewCount, asNumber(raw.reviewsCount, 0))),
+  );
+  const specializations = normalizeSpecializations(raw.specializations);
+
+  return {
+    id: asString(raw.id, `artisan-${index}`),
+    name,
+    profession,
+    profileImage: asString(raw.profileImage, asString(user.image)) || null,
+    portfolioThumbnail:
+      asString(raw.portfolioThumbnail, asString(raw.thumbnail, asString(raw.image))) || null,
+    location: { city, county },
+    hourlyRate: raw.hourlyRate === null ? null : asNumber(raw.hourlyRate, 0) || null,
+    isAvailable:
+      typeof raw.isAvailable === "boolean"
+        ? raw.isAvailable
+        : typeof raw.available === "boolean"
+          ? raw.available
+          : true,
+    isVerified:
+      typeof raw.isVerified === "boolean"
+        ? raw.isVerified
+        : raw.verificationStatus === "APPROVED" || raw.verified === true,
+    isPremium: raw.isPremium === true || raw.subscriptionTier === "PRO",
+    rating: { average: ratingAverage || 4.7, total: ratingTotal },
+    specializations: specializations.length ? specializations : [{ name: profession }],
+    gradient: asString(raw.gradient, FALLBACK_GRADIENTS[index % FALLBACK_GRADIENTS.length]),
+  };
+}
+
+function extractArtisans(payload: SearchPayload): RawArtisan[] {
+  if (Array.isArray(payload)) return payload as RawArtisan[];
+  if (Array.isArray(payload.artisans)) return payload.artisans;
+  if (Array.isArray(payload.data)) return payload.data;
+  return [];
+}
+
+function facetNames(values: Facet[] | undefined): string[] {
+  return (values ?? [])
+    .map((item) => item.name)
+    .filter((value): value is string => Boolean(value));
+}
+
+function uniqueSorted(values: string[]) {
+  return Array.from(new Set(values.filter(Boolean))).sort((a, b) => a.localeCompare(b));
 }
 
 export default function BrowseArtisansPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-white flex items-center justify-center"><div className="w-6 h-6 border-2 border-emerald-600 border-t-transparent rounded-full animate-spin" /></div>}>
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-white pt-[132px] md:pt-[180px]">
+          <Header />
+          <BrowseDirectorySkeleton />
+          <Footer />
+        </div>
+      }
+    >
       <BrowseArtisansContent />
     </Suspense>
   );
@@ -35,222 +135,80 @@ export default function BrowseArtisansPage() {
 
 function BrowseArtisansContent() {
   const searchParams = useSearchParams();
-  const [artisans, setArtisans] = useState<Artisan[]>([]);
-  const [facets, setFacets] = useState<Facets | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [total, setTotal] = useState(0);
-  const [page, setPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
-  // showFilters removed — filters live inside the pill itself
-
-  // Initialize from URL search params (passed from landing page search bar)
-  const [searchInput, setSearchInput] = useState(() => searchParams.get("q") || "");
-  const [query, setQuery] = useState(() => searchParams.get("q") || "");
-  const [profession, setProfession] = useState(() => searchParams.get("profession") || "");
-  const [county, setCounty] = useState(() => searchParams.get("county") || "");
-  const [sortBy, setSortBy] = useState(() => searchParams.get("sortBy") || "rating");
-
-  const fetchArtisans = () => {
-    setIsLoading(true);
-    const params = new URLSearchParams();
-    if (query) params.set("q", query);
-    if (profession) params.set("profession", profession);
-    if (county) params.set("county", county);
-    params.set("sortBy", sortBy);
-    params.set("page", String(page));
-    params.set("limit", "12");
-
-    fetch(`/api/search/artisans?${params}`)
-      .then((r) => r.ok ? r.json() : Promise.reject())
-      .then((data) => {
-        setArtisans(data.artisans || []);
-        setFacets(data.facets || null);
-        setTotal(data.pagination?.total || 0);
-        setTotalPages(data.pagination?.totalPages || 1);
-      })
-      .catch(() => setArtisans([]))
-      .finally(() => setIsLoading(false));
-  };
+  const [artisans, setArtisans] = useState<ArtisanCardData[]>(previewArtisans);
+  const [professions, setProfessions] = useState<string[]>(uniqueSorted(previewArtisans.map((artisan) => artisan.profession)));
+  const [counties, setCounties] = useState<string[]>(uniqueSorted(previewArtisans.map((artisan) => artisan.location.county)));
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchArtisans();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [query, profession, county, sortBy, page]);
+    let cancelled = false;
+    const params = new URLSearchParams();
+    params.set("limit", "50");
 
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    setQuery(searchInput);
-    setPage(1);
-  };
+    for (const [key, value] of searchParams.entries()) {
+      if (key !== "limit" && value) params.set(key, value);
+    }
 
-  const clearFilters = () => {
-    setQuery("");
-    setSearchInput("");
-    setProfession("");
-    setCounty("");
-    setSortBy("rating");
-    setPage(1);
-  };
+    setLoading(true);
+    fetch(`/api/search/artisans?${params.toString()}`)
+      .then((res) => (res.ok ? res.json() : Promise.reject(new Error("Failed to load artisans"))))
+      .then((payload: SearchPayload) => {
+        if (cancelled) return;
+        const fetchedArtisans = extractArtisans(payload).map(normalizeArtisan);
+        const nextArtisans = fetchedArtisans.length ? fetchedArtisans : previewArtisans;
+        setArtisans(nextArtisans);
+        setProfessions(
+          uniqueSorted([
+            ...facetNames(payload.facets?.professions),
+            ...nextArtisans.map((artisan) => artisan.profession),
+          ]),
+        );
+        setCounties(
+          uniqueSorted([
+            ...facetNames(payload.facets?.counties),
+            ...nextArtisans.map((artisan) => artisan.location.county),
+          ]),
+        );
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setArtisans(previewArtisans);
+          setProfessions(uniqueSorted(previewArtisans.map((artisan) => artisan.profession)));
+          setCounties(uniqueSorted(previewArtisans.map((artisan) => artisan.location.county)));
+        }
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
 
-  const hasFilters = !!(query || profession || county || sortBy !== 'rating');
+    return () => {
+      cancelled = true;
+    };
+  }, [searchParams]);
 
   return (
-    <div className="bg-white text-[#222] min-h-screen">
-      {/* Same PublicNav as every other public page */}
-      <PublicNav />
-
-      {/* Page hero — headline + the morphing search pill */}
-      <div className="pt-10 pb-4 px-6 border-b border-[#ddd] bg-white">
-        <div className="max-w-2xl mx-auto text-center mb-6">
-          <p className="text-emerald-700 font-medium mb-2 tracking-wide text-xs uppercase">Browse Artisans</p>
-          <h1 className="text-2xl md:text-3xl font-serif font-semibold text-[#222] mb-1">
-            Discover skilled professionals
-          </h1>
-          <p className="text-[#6a6a6a] text-sm">All verified, rated by real clients across Kenya</p>
-        </div>
-
-        {/* Single morphing search pill — 3 segments large, 1 compact */}
-        <div className="max-w-2xl mx-auto">
-          <StickySearchPill
-            searchInput={searchInput}
-            onSearchChange={(v) => { setSearchInput(v); }}
-            onSearchSubmit={handleSearch}
-            county={county}
-            onCountyChange={(v) => { setCounty(v); setPage(1); }}
-            counties={facets?.counties ?? []}
-            sortBy={sortBy}
-            onSortByChange={(v) => { setSortBy(v); setPage(1); }}
-            hasFilters={hasFilters}
-            onClear={clearFilters}
-          />
-        </div>
-      </div>
-
-      {/* Category strip — profession quick-filters */}
-      <div className="border-b border-[#ddd] overflow-x-auto">
-        <div className="max-w-6xl mx-auto px-6">
-          <div className="flex items-center gap-0">
-            {[
-              { id: 'all', label: 'All' },
-              { id: 'Carpenter', label: 'Carpenter' },
-              { id: 'Electrician', label: 'Electrician' },
-              { id: 'Plumber', label: 'Plumber' },
-              { id: 'Painter', label: 'Painter' },
-              { id: 'Mason', label: 'Mason' },
-              { id: 'Tailor', label: 'Tailor' },
-              { id: 'Welder', label: 'Welder' },
-              { id: 'Mechanic', label: 'Mechanic' },
-              { id: 'Photographer', label: 'Photographer' },
-            ].map((cat) => {
-              const isActive = (cat.id === 'all' && !profession) || profession === cat.id;
-              return (
-                <button
-                  key={cat.id}
-                  onClick={() => { setProfession(cat.id === 'all' ? '' : cat.id); setPage(1); }}
-                  className={`flex-shrink-0 px-4 py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${isActive ? 'border-[#222] text-[#222]' : 'border-transparent text-[#6a6a6a] hover:text-[#222] hover:border-[#ddd]'}`}
-                >
-                  {cat.label}
-                </button>
-              );
-            })}
-          </div>
-        </div>
-      </div>
-
-      {/* Results */}
-      <section className="py-8 px-6">
-        <div className="max-w-6xl mx-auto">
-          {/* Count */}
-          <div className="flex items-center justify-between mb-8">
-            <p className="text-[#6a6a6a] text-sm">
-              {isLoading ? (
-                <span className="inline-block w-32 h-4 bg-[#f2f2f2] rounded animate-pulse" />
-              ) : (
-                <>Showing <strong className="text-[#222]">{artisans.length}</strong> of <strong className="text-[#222]">{total}</strong> artisans{query && <> for "<em>{query}</em>"</>}</>
-              )}
+    <div className="min-h-screen bg-white pt-[132px] md:pt-[180px]">
+      <Header />
+      {loading ? (
+        <>
+          <section className="mx-auto max-w-[1280px] px-5 pt-12 md:px-10">
+            <p className="mb-2 text-[14px] font-medium leading-[1.29]" style={{ color: COLORS.muted }}>
+              Artisan directory
             </p>
-            <p className="text-xs text-[#929292] hidden sm:block">
-              <Link href="/sign-in" className="text-emerald-700 hover:underline">Sign in</Link> to message & save favourites
-            </p>
-          </div>
-
-          {/* Grid */}
-          {isLoading ? (
-            <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {Array.from({ length: 8 }).map((_, i) => (
-                <div key={i} className="animate-pulse">
-                  {/* Photo area — matches ArtisanCard */}
-                  <div className="aspect-square rounded-xl bg-[#f2f2f2] mb-3" />
-                  {/* Name + rating row */}
-                  <div className="flex items-center justify-between gap-2 mb-1">
-                    <div className="h-4 bg-[#f2f2f2] rounded w-3/4" />
-                    <div className="h-3.5 bg-[#f2f2f2] rounded w-8 flex-shrink-0" />
-                  </div>
-                  {/* Profession + location */}
-                  <div className="h-3.5 bg-[#f2f2f2] rounded w-2/3 mb-1" />
-                  {/* Price */}
-                  <div className="h-3.5 bg-[#f2f2f2] rounded w-1/3" />
-                </div>
-              ))}
-            </div>
-          ) : artisans.length === 0 ? (
-            <div className="text-center py-20">
-              <Search className="w-12 h-12 text-[#c1c1c1] mx-auto mb-4" />
-              <h2 className="text-xl font-serif font-bold text-[#3f3f3f] mb-2">No artisans found</h2>
-              <p className="text-[#6a6a6a] mb-6">Try adjusting your search or clearing filters</p>
-              <button onClick={clearFilters} className="bg-emerald-700 text-white px-6 py-3 rounded-lg font-medium hover:bg-emerald-800 transition-colors">
-                Clear all filters
-              </button>
-            </div>
-          ) : (
-            <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {artisans.map((artisan, i) => (
-                <ArtisanCard key={artisan.id || i} artisan={artisan} />
-              ))}
-            </div>
-          )}
-
-          {/* Pagination */}
-          {!isLoading && totalPages > 1 && (
-            <div className="flex items-center justify-center gap-3 mt-12">
-              <button
-                disabled={page <= 1}
-                onClick={() => setPage(p => p - 1)}
-                className="px-5 py-2.5 border border-[#ddd] rounded-lg text-sm font-medium hover:bg-[#f2f2f2] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-              >
-                Previous
-              </button>
-              <span className="text-sm text-[#6a6a6a]">Page {page} of {totalPages}</span>
-              <button
-                disabled={page >= totalPages}
-                onClick={() => setPage(p => p + 1)}
-                className="px-5 py-2.5 border border-[#ddd] rounded-lg text-sm font-medium hover:bg-[#f2f2f2] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-              >
-                Next
-              </button>
-            </div>
-          )}
-
-          {/* Sign-up CTA */}
-          <div className="mt-16 bg-emerald-800 text-white rounded-2xl p-10 text-center">
-            <h2 className="text-2xl md:text-3xl font-serif font-bold mb-3">
-              Ready to hire a skilled artisan?
-            </h2>
-            <p className="text-emerald-200 mb-8 max-w-md mx-auto">
-              Create a free account to message artisans, save favourites, and request job quotes.
-            </p>
-            <div className="flex gap-4 justify-center flex-wrap">
-              <Link href="/sign-up" className="bg-amber-400 text-amber-900 px-8 py-3 rounded-lg font-bold hover:bg-amber-300 transition-colors">
-                Create Free Account
-              </Link>
-              <Link href="/sign-in" className="border border-emerald-600 text-white px-8 py-3 rounded-lg font-medium hover:bg-emerald-700 transition-colors">
-                Sign In
-              </Link>
-            </div>
-          </div>
-        </div>
-      </section>
+            <h1 className="text-[28px] font-semibold leading-[1.2] tracking-[-0.02em] md:text-[32px]" style={{ color: COLORS.ink }}>
+              Discover skilled professionals
+            </h1>
+          </section>
+          <BrowseDirectorySkeleton />
+        </>
+      ) : (
+        <BrowseDirectorySection
+          initialArtisans={artisans}
+          initialProfessions={professions}
+          initialCounties={counties}
+        />
+      )}
+      <Footer />
     </div>
   );
 }
-

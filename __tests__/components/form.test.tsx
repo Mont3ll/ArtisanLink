@@ -100,12 +100,6 @@ describe('Input component', () => {
     })
 
     it('should handle controlled input', async () => {
-      const TestComponent = () => {
-        const [value, setValue] = vi.importActual<typeof import('react')>('react').then(r => r.useState(''))
-        return <Input value={typeof value === 'string' ? value : ''} onChange={(e) => {}} />
-      }
-      
-      // Simple controlled test
       const handleChange = vi.fn()
       render(<Input value="controlled" onChange={handleChange} />)
       expect(screen.getByRole('textbox')).toHaveValue('controlled')

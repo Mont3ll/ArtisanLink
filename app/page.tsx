@@ -1,253 +1,317 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { AnimatePresence, motion } from "framer-motion";
+import { Search } from "lucide-react";
+
+import { ArtisanCtaBand } from "@/components/landing/artisan-cta-band";
 import {
-  Search,
-  MapPin,
-  ArrowRight,
-  Wrench,
-  MessageCircle,
-  Shield,
-  ChevronRight,
-} from "lucide-react";
-import PublicNav from "@/components/layout/public-nav";
-import ChapaWorksLogo from "@/components/common/ChapaWorksLogo";
-import { ArtisanCard, ArtisanCardSkeleton, type ArtisanCardData } from "@/components/artisan";
+  ArtisanCardSkeleton,
+  ArtisanPreviewCard,
+  type ArtisanCardData,
+} from "@/components/landing/artisan-preview-card";
+import { CategoryStrip } from "@/components/landing/category-strip";
+import { HeroBand } from "@/components/landing/hero-band";
+import { HowItWorksSection } from "@/components/landing/how-it-works";
+import { PortfolioQuickView } from "@/components/landing/portfolio-quick-view";
+import Footer from "@/components/layout/footer-new";
+import Header, { type ProductTabId } from "@/components/layout/header-new";
+import { COLORS } from "@/lib/design-tokens";
+import { previewArtisans } from "@/lib/public-preview-data";
 
-interface LiveArtisan extends ArtisanCardData {
-  bio: string | null;
-  distance?: number | null;
-}
+const TAB_PROFESSIONS: Record<ProductTabId, string[]> = {
+  repairs: ["Plumber", "Electrician", "Cleaner", "Handyman"],
+  build: ["Carpenter", "Mason", "Welder"],
+  design: ["Painter", "Carpenter"],
+};
 
-const categories = [
-  { id: "all", name: "All" },
-  { id: "Carpenter", name: "Carpenter" },
-  { id: "Electrician", name: "Electrician" },
-  { id: "Plumber", name: "Plumber" },
-  { id: "Painter", name: "Painter" },
-  { id: "Mason", name: "Mason" },
-  { id: "Tailor", name: "Tailor" },
-  { id: "Welder", name: "Welder" },
-  { id: "Mechanic", name: "Mechanic" },
-  { id: "Photographer", name: "Photographer" },
+const HOME_TAB_COPY: Record<ProductTabId, { title: string; subtitle: string }> = {
+  repairs: {
+    title: "Available repair artisans near you",
+    subtitle: "Fast-response specialists for plumbing, electrical, cleaning, and general home fixes.",
+  },
+  build: {
+    title: "Build specialists for your next project",
+    subtitle: "Carpenters, masons, and welders for installations, upgrades, and structural work.",
+  },
+  design: {
+    title: "Design and finishing artisans",
+    subtitle: "Painters, carpenters, and finish-focused artisans for interiors, surfaces, and custom details.",
+  },
+};
+
+const cityLinks: Array<[string, string]> = [
+  ["Nairobi", "Home repair specialists"],
+  ["Kiambu", "Carpenters and masons"],
+  ["Mombasa", "Cleaning and maintenance"],
+  ["Machakos", "Plumbers and electricians"],
+  ["Kajiado", "Welders and fabricators"],
+  ["Nakuru", "Painters and finishers"],
 ];
 
-export default function Home() {
-  const router = useRouter();
-  const [activeCategory, setActiveCategory] = useState("all");
-  const [artisans, setArtisans] = useState<LiveArtisan[]>([]);
-  const [artisansLoading, setArtisansLoading] = useState(true);
-  const [heroQuery, setHeroQuery] = useState("");
-  const [heroLocation, setHeroLocation] = useState("");
+const FALLBACK_GRADIENTS = [
+  "linear-gradient(135deg, #ecfdf5 0%, #a7f3d0 45%, #047857 100%)",
+  "linear-gradient(135deg, #f4f1e8 0%, #b89565 44%, #4b3524 100%)",
+  "linear-gradient(135deg, #fef3c7 0%, #fbbf24 44%, #065f46 100%)",
+  "linear-gradient(135deg, #eef2ff 0%, #a7f3d0 46%, #064e3b 100%)",
+];
 
-  const fetchArtisans = useCallback(() => {
-    setArtisansLoading(true);
-    const params = new URLSearchParams();
-    params.set("limit", "8");
-    params.set("sortBy", "rating");
-    if (activeCategory !== "all") params.set("profession", activeCategory);
+type RawArtisan = Record<string, unknown>;
 
-    fetch(`/api/search/artisans?${params}`)
-      .then((r) => r.ok ? r.json() : Promise.reject())
-      .then((data) => setArtisans(data.artisans?.slice(0, 8) || []))
-      .catch(() => setArtisans([]))
-      .finally(() => setArtisansLoading(false));
-  }, [activeCategory]);
+function asRecord(value: unknown): Record<string, unknown> {
+  return value && typeof value === "object" ? (value as Record<string, unknown>) : {};
+}
 
-  useEffect(() => { fetchArtisans(); }, [fetchArtisans]);
+function asString(value: unknown, fallback = ""): string {
+  return typeof value === "string" && value.trim() ? value : fallback;
+}
 
-  const handleHeroSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    const params = new URLSearchParams();
-    if (heroQuery.trim()) params.set("q", heroQuery.trim());
-    if (heroLocation.trim()) params.set("county", heroLocation.trim());
-    router.push(`/artisans${params.toString() ? "?" + params.toString() : ""}`);
+function asNumber(value: unknown, fallback = 0): number {
+  return typeof value === "number" && Number.isFinite(value) ? value : fallback;
+}
+
+function normalizeSpecializations(value: unknown): Array<{ name: string }> {
+  if (!Array.isArray(value)) return [];
+
+  return value
+    .map((item) => {
+      if (typeof item === "string") return { name: item };
+      const record = asRecord(item);
+      return { name: asString(record.name) };
+    })
+    .filter((item) => item.name);
+}
+
+function normalizeArtisan(raw: RawArtisan, index: number): ArtisanCardData {
+  const user = asRecord(raw.user);
+  const location = asRecord(raw.location);
+  const ratingRecord = asRecord(raw.rating);
+  const name = asString(raw.name, asString(user.name, "ChapaWorks artisan"));
+  const profession = asString(raw.profession, "Artisan");
+  const city = asString(raw.city, asString(location.city));
+  const county = asString(raw.county, asString(location.county, "Kenya"));
+  const ratingAverage = asNumber(
+    raw.averageRating,
+    asNumber(ratingRecord.average, asNumber(raw.ratingAverage, 0)),
+  );
+  const ratingTotal = asNumber(
+    raw.totalReviews,
+    asNumber(ratingRecord.total, asNumber(raw.reviewCount, asNumber(raw.reviewsCount, 0))),
+  );
+  const specializations = normalizeSpecializations(raw.specializations);
+
+  return {
+    id: asString(raw.id, `artisan-${index}`),
+    name,
+    profession,
+    profileImage: asString(raw.profileImage, asString(user.image)) || null,
+    portfolioThumbnail:
+      asString(raw.portfolioThumbnail, asString(raw.thumbnail, asString(raw.image))) || null,
+    location: { city, county },
+    hourlyRate: raw.hourlyRate === null ? null : asNumber(raw.hourlyRate, 0) || null,
+    isAvailable:
+      typeof raw.isAvailable === "boolean"
+        ? raw.isAvailable
+        : typeof raw.available === "boolean"
+          ? raw.available
+          : true,
+    isVerified:
+      typeof raw.isVerified === "boolean"
+        ? raw.isVerified
+        : raw.verificationStatus === "APPROVED" || raw.verified === true,
+    isPremium: raw.isPremium === true || raw.subscriptionTier === "PRO",
+    rating: { average: ratingAverage || 4.7, total: ratingTotal },
+    specializations: specializations.length ? specializations : [{ name: profession }],
+    gradient: asString(raw.gradient, FALLBACK_GRADIENTS[index % FALLBACK_GRADIENTS.length]),
   };
+}
 
+function extractArtisans(payload: unknown): RawArtisan[] {
+  if (Array.isArray(payload)) return payload as RawArtisan[];
+  const record = asRecord(payload);
+  if (Array.isArray(record.artisans)) return record.artisans as RawArtisan[];
+  if (Array.isArray(record.data)) return record.data as RawArtisan[];
+  return [];
+}
+
+export default function HomePage() {
+  const [activeTab, setActiveTab] = useState<ProductTabId>("repairs");
+  const [activeCategory, setActiveCategory] = useState("All");
+  const [showAllCards, setShowAllCards] = useState(false);
+  const [artisans, setArtisans] = useState<ArtisanCardData[]>(previewArtisans);
+  const [selectedPortfolioArtisan, setSelectedPortfolioArtisan] = useState<ArtisanCardData | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    setLoading(true);
+    fetch("/api/search/artisans?limit=12")
+      .then((res) => (res.ok ? res.json() : Promise.reject(new Error("Failed to load artisans"))))
+      .then((payload) => {
+        if (cancelled) return;
+        const nextArtisans = extractArtisans(payload).map(normalizeArtisan);
+        setArtisans(nextArtisans.length ? nextArtisans : previewArtisans);
+      })
+      .catch(() => {
+        if (!cancelled) setArtisans(previewArtisans);
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const filteredArtisans = useMemo(() => {
+    if (activeCategory !== "All") {
+      return artisans.filter((artisan) => artisan.profession === activeCategory);
+    }
+
+    const professions = TAB_PROFESSIONS[activeTab];
+    const matching = artisans.filter((artisan) => professions.includes(artisan.profession));
+    return matching.length ? matching : artisans;
+  }, [activeCategory, activeTab, artisans]);
+
+  const visibleArtisans = showAllCards ? artisans : filteredArtisans;
+  const content = HOME_TAB_COPY[activeTab];
+
+  const browseHref =
+    activeCategory !== "All" ? `/artisans?profession=${encodeURIComponent(activeCategory)}` : "/artisans";
 
   return (
-    <div className="min-h-screen bg-white text-[#222]">
-      <PublicNav />
+    <div className="min-h-screen bg-white pt-[132px] md:pt-[180px]">
+      <Header
+        activeTab={activeTab}
+        onTabChange={(tab) => {
+          setActiveTab(tab);
+          setActiveCategory("All");
+          setShowAllCards(false);
+        }}
+      />
+      <HeroBand activeTab={activeTab} />
+      <CategoryStrip
+        activeCategory={activeCategory}
+        onChange={(category) => {
+          setActiveCategory(category);
+          setShowAllCards(false);
+        }}
+      />
 
-      {/* Hero — Search-first */}
-      <section className="pt-10 pb-6 px-4 border-b border-[#ddd]">
-        <div className="max-w-2xl mx-auto text-center mb-6">
-          <h1 className="text-2xl md:text-3xl font-serif font-semibold text-[#222] mb-1">
-            Find a skilled artisan near you
-          </h1>
-          <p className="text-[#6a6a6a] text-sm">
-            Verified professionals across Kenya — hire with confidence.
-          </p>
-        </div>
-
-        {/* Segmented pill search bar — What / Where + Emerald search orb */}
-        <form
-          onSubmit={handleHeroSearch}
-          className="search-pill max-w-2xl mx-auto flex items-stretch"
-          style={{ height: 64 }}
-        >
-          {/* What segment */}
-          <div className="flex-1 flex flex-col justify-center px-5 min-w-0">
-            <span className="text-[10px] font-semibold text-[#222] uppercase tracking-[0.08em] leading-none mb-0.5">What</span>
-            <input
-              value={heroQuery}
-              onChange={(e) => setHeroQuery(e.target.value)}
-              placeholder="Profession or skill"
-              className="text-sm outline-none placeholder:text-[#929292] bg-transparent text-[#222] w-full"
-            />
+      <section className="mx-auto max-w-[1280px] px-5 py-8 md:px-10 md:py-10">
+        <div className="mb-6 flex items-end justify-between gap-4">
+          <div>
+            <h2 className="text-[22px] font-semibold leading-tight tracking-[-0.01em]" style={{ color: COLORS.ink }}>
+              {showAllCards
+                ? "All available artisans"
+                : activeCategory !== "All"
+                  ? `${activeCategory} artisans`
+                  : content.title}
+            </h2>
+            <p className="mt-1 text-[14px]" style={{ color: COLORS.muted }}>
+              {showAllCards
+                ? "Browse every featured artisan in the preview, then collapse back to the selected category."
+                : activeCategory !== "All"
+                  ? `Showing available ${activeCategory.toLowerCase()} professionals from the marketplace preview.`
+                  : content.subtitle}
+            </p>
           </div>
-          {/* Segment divider */}
-          <div className="w-px bg-[#ddd] self-stretch my-3 flex-shrink-0" />
-          {/* Where segment */}
-          <div className="flex flex-col justify-center px-5 flex-shrink-0">
-            <span className="text-[10px] font-semibold text-[#222] uppercase tracking-[0.08em] leading-none mb-0.5">Where</span>
-            <input
-              value={heroLocation}
-              onChange={(e) => setHeroLocation(e.target.value)}
-              placeholder="County"
-              className="w-28 text-sm outline-none placeholder:text-[#929292] bg-transparent text-[#222]"
-            />
-          </div>
-          {/* Emerald search orb */}
           <button
-            type="submit"
-            className="search-orb m-2"
-            aria-label="Search"
+            onClick={() => setShowAllCards((value) => !value)}
+            className="hidden cursor-pointer rounded-full border px-4 py-2 text-[14px] font-medium transition-colors hover:bg-[#f7f7f7] md:block"
+            style={{ borderColor: COLORS.hairline, color: COLORS.ink }}
           >
-            <Search className="w-5 h-5 text-white" />
+            {showAllCards ? "Show fewer" : `Show all ${activeTab === "repairs" ? "artisans" : activeTab}`}
           </button>
-        </form>
-      </section>
-
-      {/* Category strip */}
-      <div className="border-b border-[#ddd] sticky top-16 bg-white/95 backdrop-blur-sm z-30">
-        <div className="max-w-6xl mx-auto px-4">
-          <div className="flex gap-0 overflow-x-auto scrollbar-hide">
-            {categories.map((cat) => (
-              <button
-                key={cat.id}
-                onClick={() => setActiveCategory(cat.id)}
-                className={`flex-shrink-0 flex flex-col items-center gap-1 px-5 py-3 text-xs font-medium border-b-2 transition-colors whitespace-nowrap ${
-                  activeCategory === cat.id
-                    ? "border-[#222] text-[#222]"
-                    : "border-transparent text-[#6a6a6a] hover:border-[#ddd] hover:text-[#3f3f3f]"
-                }`}
-              >
-                {cat.name}
-              </button>
-            ))}
-          </div>
         </div>
-      </div>
 
-      {/* Artisan Grid */}
-      <main className="max-w-6xl mx-auto px-4 py-8">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {artisansLoading
-            ? Array.from({ length: 8 }).map((_, i) => (
-                <ArtisanCardSkeleton key={i} />
+        <div className="grid grid-cols-1 items-start gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          <AnimatePresence mode="popLayout" initial={false}>
+            {loading ? (
+              Array.from({ length: 8 }).map((_, index) => <ArtisanCardSkeleton key={index} />)
+            ) : visibleArtisans.length > 0 ? (
+              visibleArtisans.slice(0, 8).map((artisan) => (
+                <motion.div
+                  key={artisan.id}
+                  layout
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -8 }}
+                  transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
+                >
+                  <ArtisanPreviewCard artisan={artisan} onOpenPortfolio={setSelectedPortfolioArtisan} />
+                </motion.div>
               ))
-            : artisans.length > 0
-            ? artisans.map((artisan) => (
-                <ArtisanCard key={artisan.id} artisan={artisan} />
-              ))
-            : (
-              <div className="col-span-full text-center py-16">
-                <p className="text-[#6a6a6a] mb-3">No artisans found in this category yet.</p>
-                <Link href="/sign-up?role=artisan" className="text-emerald-700 font-medium hover:underline text-sm">
-                  Be the first artisan to join →
-                </Link>
+            ) : (
+              <div
+                className="col-span-full rounded-[24px] border px-5 py-12 text-center"
+                style={{ borderColor: COLORS.hairlineSoft, background: COLORS.surfaceSoft }}
+              >
+                <div
+                  className="mx-auto mb-4 grid h-12 w-12 place-items-center rounded-full bg-white"
+                  style={{ color: COLORS.primary }}
+                >
+                  <Search size={20} />
+                </div>
+                <h3 className="text-[20px] font-semibold leading-[1.2]" style={{ color: COLORS.ink }}>
+                  No artisans found yet
+                </h3>
+                <p className="mx-auto mt-2 max-w-[420px] text-[14px] leading-[1.43]" style={{ color: COLORS.muted }}>
+                  Try browsing all artisans or invite the first skilled artisan to join ChapaWorks.
+                </p>
+                <div className="mt-5 flex justify-center gap-2">
+                  <Link
+                    href="/artisans"
+                    className="rounded-lg border px-4 py-2 text-[14px] font-medium transition-colors hover:bg-white"
+                    style={{ borderColor: COLORS.hairline, color: COLORS.ink }}
+                  >
+                    Browse directory
+                  </Link>
+                  <Link
+                    href="/sign-up?role=artisan"
+                    className="rounded-lg px-4 py-2 text-[14px] font-medium text-white transition-colors hover:bg-emerald-800"
+                    style={{ background: COLORS.primary }}
+                  >
+                    Be the first artisan
+                  </Link>
+                </div>
               </div>
             )}
+          </AnimatePresence>
         </div>
+      </section>
 
-        {/* View all link */}
-        {!artisansLoading && artisans.length > 0 && (
-          <div className="mt-10 text-center">
+      <HowItWorksSection />
+      <ArtisanCtaBand />
+      <section className="mx-auto max-w-[1280px] px-5 py-12 md:px-10 md:py-16">
+        <h2 className="text-[22px] font-semibold" style={{ color: COLORS.ink }}>
+          Explore artisans by area
+        </h2>
+        <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-6">
+          {cityLinks.map(([city, type]) => (
             <Link
-              href={activeCategory !== "all" ? `/artisans?profession=${activeCategory}` : "/artisans"}
-              className="inline-flex items-center gap-2 text-[#222] font-medium underline hover:text-emerald-700 transition-colors text-sm"
+              key={city}
+              href={browseHref === "/artisans" ? `/artisans?county=${encodeURIComponent(city)}` : browseHref}
+              className="rounded-2xl p-3 text-left transition hover:bg-[#f7f7f7]"
             >
-              Show all {activeCategory !== "all" ? activeCategory.toLowerCase() + "s" : "artisans"}
-              <ArrowRight className="w-4 h-4" />
+              <span className="block text-[16px] font-semibold" style={{ color: COLORS.ink }}>
+                {city}
+              </span>
+              <span className="block text-[14px]" style={{ color: COLORS.muted }}>
+                {type}
+              </span>
             </Link>
-          </div>
-        )}
-      </main>
-
-      {/* How it works — compact strip */}
-      <section className="border-t border-[#ddd] py-14 px-4 bg-white" id="how-it-works">
-        <div className="max-w-4xl mx-auto">
-          <h2 className="text-xl font-serif font-semibold text-[#222] mb-8 text-center">
-            How ChapaWorks works
-          </h2>
-          <div className="grid sm:grid-cols-3 gap-8">
-            {[
-              { n: "1", icon: <Search className="w-5 h-5" />, title: "Browse & discover", desc: "Search verified artisans by profession, location, and rating. View portfolios and real client reviews." },
-              { n: "2", icon: <MessageCircle className="w-5 h-5" />, title: "Message & quote", desc: "Chat directly with artisans, describe your project, and receive a detailed quote before committing." },
-              { n: "3", icon: <Shield className="w-5 h-5" />, title: "Hire with confidence", desc: "Accept the quote, the artisan gets to work, and you pay in cash on completion. Satisfaction guaranteed." },
-            ].map((s) => (
-              <div key={s.n} className="flex flex-col items-start gap-3">
-                <div className="w-10 h-10 bg-[#f7f7f7] rounded-full flex items-center justify-center text-emerald-700">
-                  {s.icon}
-                </div>
-                <div>
-                  <h3 className="font-semibold text-[#222] text-sm mb-1">{s.title}</h3>
-                  <p className="text-[#6a6a6a] text-sm leading-relaxed">{s.desc}</p>
-                </div>
-              </div>
-            ))}
-          </div>
+          ))}
         </div>
       </section>
-
-      {/* Artisan CTA band */}
-      <section className="border-t border-[#ddd] py-10 px-4">
-        <div className="max-w-4xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-6">
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 bg-[#f7f7f7] rounded-full flex items-center justify-center text-emerald-700">
-              <Wrench className="w-5 h-5" />
-            </div>
-            <div>
-              <p className="font-semibold text-[#222] text-sm">Are you a skilled artisan?</p>
-              <p className="text-[#6a6a6a] text-sm">Join thousands of professionals growing their business on ChapaWorks.</p>
-            </div>
-          </div>
-          <Link
-            href="/for-artisans"
-            className="inline-flex items-center gap-2 border border-[#222] text-[#222] px-5 py-2.5 rounded-lg text-sm font-medium hover:bg-[#f7f7f7] transition-colors whitespace-nowrap flex-shrink-0"
-          >
-            Learn more <ChevronRight className="w-4 h-4" />
-          </Link>
-        </div>
-      </section>
-
-      {/* Footer */}
-      <footer className="border-t border-[#ddd] py-6 px-4">
-        <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
-          <Link href="/" className="flex items-center gap-2 text-emerald-700">
-            <ChapaWorksLogo size={20} />
-            <span className="font-serif font-bold text-[#222] text-sm">ChapaWorks</span>
-          </Link>
-          <nav className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2">
-            {[
-              { label: "Browse Artisans", href: "/artisans" },
-              { label: "How It Works", href: "/#how-it-works" },
-              { label: "Pricing", href: "/pricing" },
-              { label: "For Artisans", href: "/for-artisans" },
-              { label: "Sign In", href: "/sign-in" },
-            ].map((l) => (
-              <Link key={l.href} href={l.href} className="text-xs text-[#6a6a6a] hover:text-[#222] hover:underline transition-colors">
-                {l.label}
-              </Link>
-            ))}
-          </nav>
-          <p className="text-xs text-[#929292]">© {new Date().getFullYear()} ChapaWorks, Inc.</p>
-        </div>
-      </footer>
+      <Footer />
+      <PortfolioQuickView
+        artisan={selectedPortfolioArtisan}
+        onClose={() => setSelectedPortfolioArtisan(null)}
+      />
     </div>
   );
 }
-
