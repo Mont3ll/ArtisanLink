@@ -16521,11 +16521,11 @@ function AdminOperationsSection({
                   </div>
                 )}
 
-                {view === "effectiveArtisans" && (
+                {view === "artisans" && (
                   <div className="grid gap-6">
                     <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
                       <DashboardStatCard
-                        label="Verified effectiveArtisans"
+                        label="Verified artisans"
                         value={String(
                           effectiveArtisans.filter((artisan) => artisan.isVerified)
                             .length,
@@ -16534,7 +16534,7 @@ function AdminOperationsSection({
                         icon={BadgeCheck}
                       />
                       <DashboardStatCard
-                        label="Premium effectiveArtisans"
+                        label="Premium artisans"
                         value={String(
                           effectiveArtisans.filter((artisan) => artisan.isPremium)
                             .length,
@@ -16554,7 +16554,7 @@ function AdminOperationsSection({
                       <DashboardStatCard
                         label="Average rating"
                         value="4.8"
-                        helper="Across visible effectiveArtisans"
+                        helper="Across visible artisans"
                         icon={Star}
                       />
                     </div>

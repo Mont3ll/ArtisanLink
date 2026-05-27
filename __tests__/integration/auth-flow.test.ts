@@ -432,19 +432,19 @@ describe('GET /after-sign-in — Role-based dashboard routing', () => {
   it('admin → /admin-dashboard', async () => {
     vi.mocked(auth).mockResolvedValue({ userId: 'a', sessionClaims: { publicMetadata: { role: 'admin' } } } as never)
     const res = await afterSignInGET(new Request('http://localhost/after-sign-in'))
-    expect(res.headers.get('location')).toContain('/admin-dashboard')
+    expect(res.headers.get('location')).toMatch(/\/admin($|\/)/)
   })
 
   it('artisan → /artisan-dashboard', async () => {
     vi.mocked(auth).mockResolvedValue({ userId: 'b', sessionClaims: { publicMetadata: { role: 'artisan' } } } as never)
     const res = await afterSignInGET(new Request('http://localhost/after-sign-in'))
-    expect(res.headers.get('location')).toContain('/artisan-dashboard')
+    expect(res.headers.get('location')).toContain('/artisan/dashboard')
   })
 
   it('client → /client-dashboard', async () => {
     vi.mocked(auth).mockResolvedValue({ userId: 'c', sessionClaims: { publicMetadata: { role: 'client' } } } as never)
     const res = await afterSignInGET(new Request('http://localhost/after-sign-in'))
-    expect(res.headers.get('location')).toContain('/client-dashboard')
+    expect(res.headers.get('location')).toContain('/client/dashboard')
   })
 
   it('falls back to DB lookup when JWT has no role', async () => {
@@ -452,7 +452,7 @@ describe('GET /after-sign-in — Role-based dashboard routing', () => {
     mockClerkSignIn.users.getUser.mockResolvedValue({ publicMetadata: {} })
     vi.mocked(prisma.user.findUnique).mockResolvedValue({ role: 'ARTISAN' } as never)
     const res = await afterSignInGET(new Request('http://localhost/after-sign-in'))
-    expect(res.headers.get('location')).toContain('/artisan-dashboard')
+    expect(res.headers.get('location')).toContain('/artisan/dashboard')
   })
 
   it('redirects to /sign-in when unauthenticated', async () => {

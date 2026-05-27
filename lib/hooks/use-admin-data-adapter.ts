@@ -77,6 +77,7 @@ export interface SourceAdminArtisan {
   totalReviews: number
   portfolioItems: number
   hourlyRate: number
+  profileImage: string | null
 }
 
 export function mapAdminArtisanToSource(artisan: AdminArtisan): SourceAdminArtisan {
@@ -93,6 +94,7 @@ export function mapAdminArtisanToSource(artisan: AdminArtisan): SourceAdminArtis
     totalReviews: artisan.totalReviews,
     portfolioItems: artisan.portfolioItems,
     hourlyRate: 0,
+    profileImage: null,
   }
 }
 
