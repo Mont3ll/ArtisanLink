@@ -47,6 +47,7 @@ export default function SignInPage() {
                 <div className="mt-3 rounded-lg border px-4 py-3 text-[14px] leading-[1.43]" style={{ borderColor: COLORS.hairlineSoft, background: COLORS.surfaceSoft, color: COLORS.muted }}>CAPTCHA placeholder area</div>
                 <SignIn.Action submit asChild><PrimaryButton disabled={isGlobalLoading}><Clerk.Loading>{(loading: boolean) => loading ? <><Loader2 className="size-4 animate-spin" /> Continuing…</> : "Continue"}</Clerk.Loading></PrimaryButton></SignIn.Action>
                 <Link href="/admin-dashboard" className="mt-3 flex h-12 items-center justify-center rounded-lg border text-[16px] font-medium transition-colors hover:bg-[#f7f7f7]" style={{ borderColor: COLORS.hairline, color: COLORS.ink }}>Continue as admin preview</Link>
+                <Link href="/artisan/dashboard" className="mt-2 flex h-12 items-center justify-center rounded-lg border text-[16px] font-medium transition-colors hover:bg-[#f7f7f7]" style={{ borderColor: COLORS.hairline, color: COLORS.ink }}>Continue as artisan preview</Link>
                 <Link href="/client-dashboard" className="mt-2 flex h-12 items-center justify-center rounded-lg border text-[16px] font-medium transition-colors hover:bg-[#f7f7f7]" style={{ borderColor: COLORS.hairline, color: COLORS.ink }}>Continue as client preview</Link>
               </SignIn.Step>
 

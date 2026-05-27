@@ -8,6 +8,9 @@ const isProtectedRoute = createRouteMatcher([
   "/client-dashboard(.*)",
   "/artisan-dashboard(.*)",
   "/admin-dashboard(.*)",
+  "/artisan(.*)",
+  "/admin(.*)",
+  "/client(.*)",
 ]);
 
 // Public artisan browsing routes - accessible without login
@@ -53,27 +56,27 @@ export const proxy = clerkMiddleware(async (auth, req) => {
     }
   }
 
-  // Admin: admin dashboard only
+  // Admin: admin dashboard or new /admin/* routes
   if (role === "admin") {
-    if (!url.pathname.startsWith("/admin-dashboard")) {
+    if (!url.pathname.startsWith("/admin-dashboard") && !url.pathname.startsWith("/admin")) {
       url.pathname = "/admin-dashboard";
       return NextResponse.redirect(url);
     }
     return NextResponse.next();
   }
 
-  // Artisan: artisan dashboard only
+  // Artisan: artisan dashboard or new /artisan/* routes
   if (role === "artisan") {
-    if (!url.pathname.startsWith("/artisan-dashboard")) {
+    if (!url.pathname.startsWith("/artisan-dashboard") && !url.pathname.startsWith("/artisan")) {
       url.pathname = "/artisan-dashboard";
       return NextResponse.redirect(url);
     }
     return NextResponse.next();
   }
 
-  // Client: client dashboard only
+  // Client: client dashboard or new /client/* routes
   if (role === "client") {
-    if (!url.pathname.startsWith("/client-dashboard")) {
+    if (!url.pathname.startsWith("/client-dashboard") && !url.pathname.startsWith("/client")) {
       url.pathname = "/client-dashboard";
       return NextResponse.redirect(url);
     }
