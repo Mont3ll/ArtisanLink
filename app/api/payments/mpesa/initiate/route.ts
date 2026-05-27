@@ -13,6 +13,7 @@ import {
   SUBSCRIPTION_PLANS,
   type SubscriptionPlanType,
 } from '@/lib/mpesa'
+import { rateLimit, RATE_LIMITS } from '@/lib/rate-limit'
 
 const logger = createLogger('api/payments/mpesa/initiate')
 
@@ -33,6 +34,9 @@ const initiatePaymentSchema = z.object({
  * 5. Returns the checkout request ID for status tracking
  */
 export async function POST(request: Request) {
+  const _rl = rateLimit(request, 'payments/mpesa/initiate', RATE_LIMITS.STRICT)
+  if (!_rl.allowed) return _rl.response!
+
   try {
     // Check if M-Pesa is enabled
     if (!isMpesaEnabled()) {

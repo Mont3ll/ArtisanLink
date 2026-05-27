@@ -9,6 +9,7 @@ import { auth } from '@clerk/nextjs/server'
 import { prisma } from '@/lib/prisma'
 import { createLogger } from '@/lib/logger'
 import { z } from 'zod'
+import { rateLimit, RATE_LIMITS } from '@/lib/rate-limit'
 
 const logger = createLogger('api:artisan:verification:resubmit')
 
@@ -24,6 +25,9 @@ const resubmitSchema = z.object({
  * Resubmit documents for verification after rejection
  */
 export async function POST(request: NextRequest) {
+  const _rl = rateLimit(request, 'artisan/verification/resubmit', RATE_LIMITS.STRICT)
+  if (!_rl.allowed) return _rl.response!
+
   try {
     const { userId: clerkId } = await auth()
     if (!clerkId) {

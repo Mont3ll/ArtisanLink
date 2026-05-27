@@ -8,10 +8,14 @@ import {
   getVerificationApprovedEmail,
   getVerificationRejectedEmail,
 } from '@/lib/email'
+import { rateLimit, RATE_LIMITS } from '@/lib/rate-limit'
 
 const logger = createLogger('api:admin:verification:process')
 
 export async function POST(request: Request) {
+  const _rl = rateLimit(request, 'admin/verification/process', RATE_LIMITS.STRICT)
+  if (!_rl.allowed) return _rl.response!
+
   try {
     const { userId } = await auth()
     

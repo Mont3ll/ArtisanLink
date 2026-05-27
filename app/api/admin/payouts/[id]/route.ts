@@ -12,6 +12,7 @@ import { auth } from '@clerk/nextjs/server'
 import { prisma } from '@/lib/prisma'
 import { createLogger } from '@/lib/logger'
 import { getNextRetryTime } from '@/lib/mpesa/b2c'
+import { rateLimit, RATE_LIMITS } from '@/lib/rate-limit'
 
 const logger = createLogger('api/admin/payouts/[id]')
 
@@ -87,6 +88,8 @@ export async function GET(request: Request, { params }: RouteParams) {
  * PATCH - Update payout (retry, cancel, add notes)
  */
 export async function PATCH(request: Request, { params }: RouteParams) {
+  const _rl = rateLimit(request, 'admin/payouts/action', RATE_LIMITS.STRICT)
+  if (!_rl.allowed) return _rl.response!
   try {
     const { userId } = await auth()
     if (!userId) {

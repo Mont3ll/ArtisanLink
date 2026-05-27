@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { auth } from '@clerk/nextjs/server'
 import { prisma } from '@/lib/prisma'
 import { z } from 'zod'
+import { rateLimit, RATE_LIMITS } from '@/lib/rate-limit'
 
 // Validation schema for creating portfolio item
 const createPortfolioSchema = z.object({
@@ -96,6 +97,9 @@ export async function GET(request: Request) {
 
 // POST - Create new portfolio item
 export async function POST(request: Request) {
+  const _rl = rateLimit(request, 'artisan/portfolio/create', RATE_LIMITS.NORMAL)
+  if (!_rl.allowed) return _rl.response!
+
   try {
     const { userId } = await auth()
     

@@ -4,6 +4,7 @@ import { prisma } from '@/lib/prisma'
 import { z } from 'zod'
 import { createLogger } from '@/lib/logger'
 import { IdDocumentType } from '@/app/generated/prisma'
+import { rateLimit, RATE_LIMITS } from '@/lib/rate-limit'
 
 const logger = createLogger('api:artisan:profile')
 
@@ -133,6 +134,9 @@ export async function GET() {
 
 // PATCH - Update artisan profile
 export async function PATCH(request: Request) {
+  const _rl = rateLimit(request, 'artisan/profile/update', RATE_LIMITS.NORMAL)
+  if (!_rl.allowed) return _rl.response!
+
   try {
     const { userId } = await auth()
     

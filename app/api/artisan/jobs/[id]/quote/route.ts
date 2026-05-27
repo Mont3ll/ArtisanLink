@@ -11,6 +11,7 @@ import { prisma } from '@/lib/prisma'
 import { Prisma } from '@/app/generated/prisma'
 import { createLogger } from '@/lib/logger'
 import { DEPOSIT_CONFIG, calculateMaxDeposit } from '@/lib/constants/quote-categories'
+import { rateLimit, RATE_LIMITS } from '@/lib/rate-limit'
 
 const logger = createLogger('api:artisan:jobs:quote')
 
@@ -69,6 +70,8 @@ interface QuoteWithLineItems {
  * Create a quote for a job request with itemized line items
  */
 export async function POST(request: NextRequest, { params }: RouteParams) {
+  const _rl = rateLimit(request, 'artisan/jobs/quote', RATE_LIMITS.NORMAL)
+  if (!_rl.allowed) return _rl.response!
   try {
     const { userId: clerkId } = await auth()
     if (!clerkId) {

@@ -11,6 +11,7 @@ import { prisma } from '@/lib/prisma'
 import { createLogger } from '@/lib/logger'
 import { z } from 'zod'
 import { sendInviteEmail } from '@/lib/email'
+import { rateLimit, RATE_LIMITS } from '@/lib/rate-limit'
 
 const logger = createLogger('api/admin/invites')
 
@@ -61,6 +62,9 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
+  const _rl = rateLimit(request, 'admin/invites/send', RATE_LIMITS.STRICT)
+  if (!_rl.allowed) return _rl.response!
+
   try {
     const admin = await requireAdmin()
     if (!admin) {
