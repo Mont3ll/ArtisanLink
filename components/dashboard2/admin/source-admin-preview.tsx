@@ -3,6 +3,10 @@
 "use client";
 
 import { useOptionalDashboardRealData } from "@/components/dashboard2/context/dashboard-real-data-context";
+import {
+  useInitiatePayment,
+  usePaymentStatusPolling,
+} from "@/lib/hooks/use-artisan-subscription";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
   AnimatePresence,
@@ -8369,6 +8373,30 @@ function AddSkillModal({ onClose }: { onClose: () => void }) {
 }
 
 function UpdatePaymentMethodModal({ onClose }: { onClose: () => void }) {
+  const [phone, setPhone] = useState("+254 712 345 243");
+  const [plan, setPlan] = useState<"MONTHLY" | "ANNUAL">("MONTHLY");
+  const [checkoutId, setCheckoutId] = useState<string | null>(null);
+  const initiateMutation = useInitiatePayment();
+  const { paymentStatus } = usePaymentStatusPolling(checkoutId);
+
+  useEffect(() => {
+    if (paymentStatus?.status === "COMPLETED") {
+      const timer = window.setTimeout(onClose, 2000);
+      return () => window.clearTimeout(timer);
+    }
+  }, [paymentStatus?.status, onClose]);
+
+  const handleInitiate = async () => {
+    const cleanPhone = phone.replace(/\s/g, "");
+    if (!cleanPhone) return;
+    try {
+      const result = await initiateMutation.mutateAsync({ plan, phoneNumber: cleanPhone });
+      setCheckoutId(result.checkoutRequestId);
+    } catch {
+      // Error handled via initiateMutation.error
+    }
+  };
+
   return (
     <motion.div
       className="fixed inset-0 z-[90] flex items-center justify-center bg-black/35 p-3"
@@ -8448,7 +8476,8 @@ function UpdatePaymentMethodModal({ onClose }: { onClose: () => void }) {
               M-Pesa phone number
             </span>
             <input
-              defaultValue="+254 712 345 243"
+            value={phone}
+              onChange={(event) => setPhone(event.target.value)}
               className="h-12 rounded-lg border px-3 text-[14px] outline-none"
               style={{ borderColor: COLORS.hairline }}
             />
@@ -8492,6 +8521,22 @@ function UpdatePaymentMethodModal({ onClose }: { onClose: () => void }) {
           className="mt-5 flex justify-end gap-2 border-t pt-4"
           style={{ borderColor: COLORS.hairlineSoft }}
         >
+          {paymentStatus && (
+            <div
+              className="mr-auto rounded-[14px] border px-3 py-2 text-[13px]"
+              style={{
+                borderColor: paymentStatus.status === "COMPLETED" ? COLORS.primarySoft : paymentStatus.status === "FAILED" ? "#fecaca" : COLORS.hairlineSoft,
+                background: paymentStatus.status === "COMPLETED" ? COLORS.primaryTint : paymentStatus.status === "FAILED" ? "#fef2f2" : COLORS.surfaceSoft,
+                color: paymentStatus.status === "COMPLETED" ? COLORS.primaryActive : paymentStatus.status === "FAILED" ? "#b91c1c" : COLORS.body,
+              }}
+            >
+              {paymentStatus.status === "COMPLETED"
+                ? "✓ Payment successful! Activating…"
+                : paymentStatus.status === "FAILED"
+                  ? `Failed: ${paymentStatus.failureReason ?? "Please try again"}`
+                  : "⏳ Waiting for M-Pesa confirmation…"}
+            </div>
+          )}
           <button
             onClick={onClose}
             className="h-11 cursor-pointer rounded-lg border px-4 text-[14px] font-medium transition-colors hover:bg-[#f7f7f7]"
@@ -8500,11 +8545,12 @@ function UpdatePaymentMethodModal({ onClose }: { onClose: () => void }) {
             Cancel
           </button>
           <button
-            onClick={onClose}
-            className="h-11 cursor-pointer rounded-lg px-4 text-[14px] font-medium text-white transition-colors hover:bg-emerald-800"
+            onClick={checkoutId ? undefined : handleInitiate}
+            disabled={initiateMutation.isPending || (paymentStatus?.status === "PENDING" || paymentStatus?.status === "PROCESSING")}
+            className="h-11 cursor-pointer rounded-lg px-4 text-[14px] font-medium text-white transition-colors hover:bg-emerald-800 disabled:cursor-not-allowed disabled:opacity-50"
             style={{ background: COLORS.primary }}
           >
-            Save payment method
+            {initiateMutation.isPending ? "Sending STK Push…" : checkoutId ? "Waiting…" : "Pay with M-Pesa"}
           </button>
         </div>
       </motion.div>
@@ -10922,6 +10968,16 @@ function ArtisanDashboardCoreSection({
         (job as unknown as { client: string }).client ?? job.title
     : (job: (typeof artisanJobRows)[number]) => job.client;
 
+  // Real subscription overlay
+  const _sub = _verifCtx?.artisanSubscription ?? null;
+  const _subActive = _verifCtx?.artisanSubscriptionActive ?? false;
+  const _subPlanKey = (_sub?.plan ?? "MONTHLY") as "MONTHLY" | "ANNUAL";
+  const _subPlanNames: Record<string, string> = { MONTHLY: "Monthly Artisan", ANNUAL: "Annual Artisan" };
+  const _subPlanPrices: Record<string, string> = { MONTHLY: "KES 150", ANNUAL: "KES 1,500" };
+  const _subRenewDate = _sub?.endDate
+    ? new Date(_sub.endDate).toLocaleDateString("en-KE", { month: "short", day: "numeric", year: "numeric" })
+    : null;
+
   const newPortfolioProject: ArtisanPortfolioProject = {
     id: "portfolio-new",
     title: "Untitled portfolio project",
@@ -12666,15 +12722,8 @@ function ArtisanDashboardCoreSection({
                         className="mt-1 text-[22px] font-medium leading-[1.18] tracking-[-0.44px]"
                         style={{ color: COLORS.ink }}
                       >
-                        Premium Artisan
+                        {_sub ? _subPlanNames[_subPlanKey] ?? "Premium Artisan" : "Premium Artisan"}
                       </h4>
-                      <p
-                        className="mt-2 max-w-[620px] text-[14px] leading-[1.43]"
-                        style={{ color: COLORS.body }}
-                      >
-                        Priority placement, premium badge, larger portfolio
-                        capacity, analytics, and lower commission.
-                      </p>
                     </div>
                     <span
                       className="rounded-full border px-3 py-1.5 text-[12px] font-semibold"
@@ -12684,12 +12733,12 @@ function ArtisanDashboardCoreSection({
                         color: COLORS.primaryActive,
                       }}
                     >
-                      Renews Jun 01
+                      {_subRenewDate ? `Renews ${_subRenewDate}` : "Renews Jun 01"}
                     </span>
                   </div>
                   <div className="mt-5 grid gap-3 sm:grid-cols-3">
                     {[
-                      ["Monthly fee", "KES 150"],
+                      ["Monthly fee", _subPlanPrices[_subPlanKey] ?? "KES 150"],
                       ["Commission", "8%"],
                       ["Portfolio limit", "24 projects"],
                     ].map(([label, value]) => (
