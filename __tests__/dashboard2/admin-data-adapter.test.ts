@@ -72,7 +72,7 @@ describe('mapAdminArtisanToSource', () => {
     const result = mapAdminArtisanToSource(artisan)
     expect(result.isVerified).toBe(true)
     expect(result.isPremium).toBe(true)
-    expect(result.rating).toBe(4.8)
+    expect(result.rating).toEqual({ average: 4.8, total: 24 })
     expect(result.location.city).toBe('Westlands')
     expect(result.location.county).toBe('Nairobi')
   })

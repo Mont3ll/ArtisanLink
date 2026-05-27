@@ -33,12 +33,12 @@ async function fetchUnreadCount(): Promise<UnreadResponse> {
     }
     
     if (!response.ok) {
-      throw new Error('Failed to fetch unread count')
+      // Return default silently for server errors (500, etc.) — unread count is non-critical
+      return defaultUnreadResponse
     }
     
     return response.json()
-  } catch (error) {
-    console.error('[useUnreadMessages] Error fetching unread count:', error)
+  } catch {
     return defaultUnreadResponse
   }
 }

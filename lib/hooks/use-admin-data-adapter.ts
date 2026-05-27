@@ -73,9 +73,10 @@ export interface SourceAdminArtisan {
   isVerified: boolean
   isPremium: boolean
   isAvailable: boolean
-  rating: number
+  rating: { average: number; total: number }
   totalReviews: number
   portfolioItems: number
+  hourlyRate: number
 }
 
 export function mapAdminArtisanToSource(artisan: AdminArtisan): SourceAdminArtisan {
@@ -88,9 +89,10 @@ export function mapAdminArtisanToSource(artisan: AdminArtisan): SourceAdminArtis
     isVerified: artisan.status === 'VERIFIED',
     isPremium: artisan.subscriptionStatus === 'ACTIVE',
     isAvailable: artisan.isAvailable,
-    rating: artisan.rating,
+    rating: { average: artisan.rating, total: artisan.totalReviews },
     totalReviews: artisan.totalReviews,
     portfolioItems: artisan.portfolioItems,
+    hourlyRate: 0,
   }
 }
 

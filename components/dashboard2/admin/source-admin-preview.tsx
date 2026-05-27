@@ -111,7 +111,7 @@ const COLORS = {
 };
 
 const CHAPAWORKS_LOGO_SRC =
-  "data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBzdGFuZGFsb25lPSJubyI/Pgo8IURPQ1RZUEUgc3ZnIFBVQkxJQyAiLS8vVzNDLy9EVEQgU1ZHIDIwMDEwOTA0Ly9FTiIKICJodHRwOi8vd3d3LnczLm9yZy9UUi8yMDAxL1JFQy1TVkctMjAwMTA5MDQvRFREL3N2ZzEwLmR0ZCI+CjxzdmcgdmVyc2lvbj0iMS4wIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciCiB3aWR0aD0iNTEyLjAwMDAwMHB0IiBoZWlnaHQ9IjUxMi4wMDAwMDBwdCIgdmlld0JveD0iMCAwIDUxMi4wMDAwMDAgNTEyLjAwMDAwMCIKIHByZXNlcnZlQXNwZWN0UmF0aW89InhNaWRZTWlkIG1lZXQiPgoKPGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMC4wMDAwMDAsNTEyLjAwMDAwMCkgc2NhbGUoMC4xMDAwMDAsLTAuMTAwMDAwKSIKZmlsbD0iIzAwMDAwMCIgc3Ryb2tlPSJub25lIj4KPHBhdGggZD0iTTE0NTAgNDQ4MSBsLTExMDUgLTYzOCAwIC0xMjgzIDAgLTEyODMgMTEwNiAtNjM4IDExMDYgLTYzOSAxMTA2CjYzNyAxMTA2IDYzOCAwIDEyODUgMCAxMjg1IC0xMTAxIDYzNSBjLTYwNiAzNDkgLTExMDQgNjM2IC0xMTA3IDYzNyAtMyAxCi01MDMgLTI4NSAtMTExMSAtNjM2eiBtOTYwIDMwIGwwIC0xNjkgLTY2MCAtMzgxIC02NjAgLTM4MSAtMTUxIDg3IGMtMTI2IDcyCi0xNDcgODggLTEzMiA5NyAxMCA1IDM3MSAyMTQgODAzIDQ2MyA0MzIgMjQ5IDc4OCA0NTMgNzkzIDQ1MyA0CjAgNyAtNzYgNyAtMTY5eiBtMTA4MiAtMjc3IGM0MjUgLTI0NSA3ODYgLTQ1NCA4MDIgLTQ2NCBsMjggLTE3IC0xNDMgLTgzIGMtNzkgLTQ2IC0xNDcKLjg0IC0xNTAgLTg2IC0zIC0yIC0zMDAgMTY3IC02NjAgMzc0IGwtNjU0IDM3OCAtMyAxNzIgYy0xIDk1IDAgMTcyIDIgMTcyIDMKMCAzNTMgLTIwMSA3NzggLTQ0NnoiLz4KPHBhdGggZD0iTTE0MzIgMzUzOCBsLTU4MyAtMzM3IDAgLTY0MSAwIC02NDEgNTgzIC0zMzYgYzMyMCAtMTg1IDU4NiAtMzM3IDU5MQotMzM3IDQgMCA3IDMwMSA3IDY2OSAwIDM2OCAtMyA2NjkgLTcgNjY5IC01IDAgLTI3MSAtMTUyIC01OTEgLTMzNnoiLz4KPHBhdGggZD0iTTMwOTggMzIwMCBsMCAtNjcxIDU4NSAtMzM3IDU4NSAtMzM3IC0yIC02NjAgLTEgLTY2MCAtNTc3IDMzMyBjLTMxNyAxODMgLTU4MCAzMzQKLTI4MyAzMzUgLTQgMSAtNyAtMzAxIC03IC02NzF6Ii8+CjxwYXRoIGQ9Ik0xOTQ1IDE1NzYgYy0zMTkgLTE4NSAtNTgxIC0zMzcgLTU4MiAtMzM4IC0yIC0yIDAgLTEyNDIgMyAtMTI0NSAzIC0zCjExNjkgNjY4IDExNzggNjc2IDMgMyA1IDMwNyA0IDY3NCBsLTMgNjY5IC01ODAgLTMzNnoiLz4KPHBhdGggZD0iTTI2OTAgMTY1IGMwIC0zNjkgMyAtNjcxIDcgLTY3MSA1IC0xIDExNjYgNjY1IDExNzYgNjc0IDQgNCAzIDMwOCAtMSA2NzUKbC01OCA2NjUgLTU4MCAtMzMzIC01ODAgLTMzMiAwIC02NzR6Ii8+CjwvZz4KPC9zdmc+Cg==";
+  "data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBzdGFuZGFsb25lPSJubyI/Pgo8IURPQ1RZUEUgc3ZnIFBVQkxJQyAiLS8vVzNDLy9EVEQgU1ZHIDIwMDEwOTA0Ly9FTiIKICJodHRwOi8vd3d3LnczLm9yZy9UUi8yMDAxL1JFQy1TVkctMjAwMTA5MDQvRFREL3N2ZzEwLmR0ZCI+CjxzdmcgdmVyc2lvbj0iMS4wIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciCiB3aWR0aD0iNTEyLjAwMDAwMHB0IiBoZWlnaHQ9IjUxMi4wMDAwMDBwdCIgdmlld0JveD0iMCAwIDUxMi4wMDAwMDAgNTEyLjAwMDAwMCIKIHByZXNlcnZlQXNwZWN0UmF0aW89InhNaWRZTWlkIG1lZXQiPgoKPGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMC4wMDAwMDAsNTEyLjAwMDAwMCkgc2NhbGUoMC4xMDAwMDAsLTAuMTAwMDAwKSIKZmlsbD0iIzAwMDAwMCIgc3Ryb2tlPSJub25lIj4KPHBhdGggZD0iTTE0NTAgNDQ4MSBsLTExMDUgLTYzOCAwIC0xMjgzIDAgLTEyODMgMTEwNiAtNjM4IDExMDYgLTYzOSAxMTA2CjYzNyAxMTA2IDYzOCAwIDEyODUgMCAxMjg1IC0xMTAxIDYzNSBjLTYwNiAzNDkgLTExMDQgNjM2IC0xMTA3IDYzNyAtMyAxCi01MDMgLTI4NSAtMTExMSAtNjM2eiBtOTYwIDMwIGwwIC0xNjkgLTY2MCAtMzgxIC02NjAgLTM4MSAtMTUxIDg3IGMtMTI2IDcyCi0xNDcgODggLTEzMiA5NyAxMCA1IDM3MSAyMTQgODAzIDQ2MyA0MzIgMjQ5IDc4OCA0NTMgNzkzIDQ1MyA0IDAgNyAtNzYgNwotMTY5eiBtMTA4MiAtMjc3IGM0MjUgLTI0NSA3ODYgLTQ1NCA4MDIgLTQ2NCBsMjggLTE3IC0xNDMgLTgzIGMtNzkgLTQ2IC0xNDcKLTg0IC0xNTAgLTg2IC0zIC0yIC0zMDAgMTY3IC02NjAgMzc0IGwtNjU0IDM3OCAtMyAxNzIgYy0xIDk1IDAgMTcyIDIgMTcyIDMKMCAzNTMgLTIwMSA3NzggLTQ0NnogbS0zNjAgLTQ4NSBjMzE1IC0xODIgNTc2IC0zMzQgNTgwIC0zMzggNiAtNSAtMTExOSAtNjY0Ci0xMTUxIC02NzQgLTUgLTEgLTY1NyAzNzEgLTExMDggNjM0IGwtNjMgMzYgNTgzIDMzNiBjMzIwIDE4NSA1ODMgMzM3IDU4NAozMzcgMSAwIDI1OSAtMTQ5IDU3NSAtMzMxeiBtLTIzNDEgLTM0MyBsMTQ0IC04MyAzIC03NjEgMiAtNzYxIC04MiAtNDkgYy00NgotMjcgLTExMyAtNjUgLTE1MCAtODYgbC02OCAtMzggMCA5MzEgYzAgNTEyIDIgOTMxIDQgOTMxIDIgMCA2OCAtMzggMTQ3IC04NHoKbTM2NzcgLTEzMTAgbC0zIC00NjUgLTE0NyA4NiAtMTQ4IDg1IDAgNzU4IDAgNzU4IDE0OCA4NSAxNDcgODYgMyAtNDY1IGMxCi0yNTUgMSAtNjczIDAgLTkyOHogbS0yNjM4IDcxMSBsNTc1IC0zMzIgMyAtNjc0IGMyIC01MzcgMCAtNjcyIC0xMCAtNjY4IC03CjMgLTI2OSAxNTMgLTU4MyAzMzQgbC01NzAgMzMwIC0zIDY3MSBjLTEgMzcwIDEgNjcyIDUgNjcyIDUgMCAyNjcgLTE1MCA1ODMKLTMzM3ogbTIwNDAgLTMzOSBsLTEgLTY3MyAtNTIxIC0zMDAgYy0yODcgLTE2NSAtNTQ3IC0zMTUgLTU4MCAtMzMzIGwtNTggLTMzCjAgNjczIDAgNjczIDU3MyAzMzIgYzMxNCAxODIgNTc1IDMzMiA1ODAgMzMyIDQgMSA3IC0zMDIgNyAtNjcxeiBtLTIxMjAKLTEzMDkgbDY2MCAtMzgxIDAgLTE3MCBjMCAtMTU0IC0yIC0xNzAgLTE3IC0xNjQgLTEyIDUgLTE1ODggOTExIC0xNjAxIDkyMQotMiAxIDI4NiAxNzEgMjk1IDE3NCAyIDEgMzAwIC0xNzAgNjYzIC0zODB6IG0yNDI5IDI5MSBsMTQzIC04MyAtMjggLTE3IGMtNTkKLTM3IC0xNTc1IC05MTAgLTE1ODAgLTkxMCAtMiAwIC0zIDc3IC0yIDE3MiBsMyAxNzIgNjU0IDM3OCBjMzYwIDIwNyA2NTcgMzc2CjY2MCAzNzQgMyAtMiA3MSAtNDAgMTUwIC04NnoiLz4KPC9nPgo8L3N2Zz4K"
 
 const shadow =
   "0 0 0 1px rgba(0,0,0,0.02), 0 2px 6px rgba(0,0,0,0.04), 0 4px 8px rgba(0,0,0,0.10)";
@@ -594,7 +594,7 @@ function DashboardAppShell<View extends string>({
     <section id={id} className="h-screen w-full overflow-hidden bg-white">
       <div className="h-screen overflow-hidden bg-white">
         <div
-          className="grid h-screen transition-[grid-template-columns] duration-300 ease-out lg:grid-cols-[var(--dashboard-sidebar-width)_minmax(0,1fr)]"
+          className="grid h-screen transition-[grid-template-columns] duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] lg:grid-cols-[var(--dashboard-sidebar-width)_minmax(0,1fr)]"
           style={{
             ["--dashboard-sidebar-width" as string]: sidebarCollapsed
               ? "88px"
@@ -5002,8 +5002,8 @@ function DashboardSidebar<View extends string>({
       transition={dashboardSpring}
       className={
         collapsed
-          ? "sticky top-0 hidden h-screen min-h-0 overflow-hidden border-r bg-[#f7f7f7] p-3 lg:flex lg:flex-col"
-          : "sticky top-0 hidden h-screen min-h-0 overflow-hidden border-r bg-[#f7f7f7] p-4 lg:flex lg:flex-col"
+          ? "sticky top-0 hidden h-screen min-h-0 overflow-hidden border-r bg-[#f7f7f7] p-3 lg:flex lg:flex-col will-change-[width]"
+          : "sticky top-0 hidden h-screen min-h-0 overflow-hidden border-r bg-[#f7f7f7] p-4 lg:flex lg:flex-col will-change-[width]"
       }
       style={{ borderColor: COLORS.hairlineSoft }}
     >
@@ -5520,6 +5520,11 @@ function DashboardProfileButton({
   const handleProfileAction = (label: string) => {
     setOpen(false);
     if (typeof window === "undefined") return;
+    if (label === "Sign out") {
+      // Use window.location for sign-out to trigger Clerk's sign-out flow
+      window.location.href = "/sign-in";
+      return;
+    }
     window.location.hash = routeForAction(label);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
@@ -5666,7 +5671,7 @@ function QuickDetailSlideover({
         animate={{ x: 0, opacity: 1 }}
         exit={{ x: 44, opacity: 0 }}
         transition={{ type: "spring", stiffness: 330, damping: 33, mass: 0.72 }}
-        className="relative w-full max-w-[440px] overflow-auto rounded-[24px] border bg-white p-5"
+        className="relative w-full max-w-[440px] overflow-y-auto overflow-x-hidden rounded-[24px] border bg-white p-5"
         style={{ borderColor: COLORS.hairlineSoft, boxShadow: shadow }}
       >
         <div className="mb-5 flex items-start justify-between gap-3">
@@ -7571,6 +7576,7 @@ function DashboardDataList<Row>({
               onChange={(event) => setQuery(event.target.value)}
               placeholder="Search list"
               className="min-w-0 flex-1 bg-transparent text-[14px] outline-none placeholder:text-[#929292]"
+              style={{ color: COLORS.ink }}
             />
           </label>
           <div className="flex flex-wrap gap-2">
@@ -14871,7 +14877,7 @@ function StableSegmentedTabs<T extends string>({
       style={{
         borderColor: COLORS.hairlineSoft,
         background: COLORS.surfaceStrong,
-        gridTemplateColumns: `repeat(${options.length}, minmax(${isCompact ? "72px" : "92px"}, 1fr))`,
+        gridTemplateColumns: `repeat(${options.length}, minmax(${isCompact ? "60px" : "88px"}, 1fr))`,
         padding: isCompact ? 3 : 4,
       }}
     >
@@ -14883,7 +14889,7 @@ function StableSegmentedTabs<T extends string>({
             key={`${id}-${option.id}`}
             type="button"
             onClick={() => onChange(option.id)}
-            className={`${isCompact ? "h-8 min-w-[72px] px-2 text-[12px]" : "h-9 min-w-[92px] px-3 text-[13px]"} relative inline-flex items-center justify-center gap-1.5 overflow-hidden rounded-full text-center font-semibold leading-none transition-colors`}
+            className={`${isCompact ? "h-7 min-w-[60px] px-2 text-[12px]" : "h-8 min-w-[88px] px-3 text-[13px]"} relative inline-flex items-center justify-center gap-1.5 overflow-hidden rounded-full text-center font-semibold leading-none transition-colors`}
             style={{ color: active ? COLORS.ink : COLORS.muted }}
           >
             {active && (
@@ -15784,7 +15790,7 @@ function AdminOperationsSection({
     >
       <div className="h-screen overflow-hidden bg-white">
         <div
-          className="grid h-screen min-h-0 transition-[grid-template-columns] duration-300 ease-out lg:grid-cols-[var(--sidebar-width)_minmax(0,1fr)]"
+          className="grid h-screen min-h-0 transition-[grid-template-columns] duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] lg:grid-cols-[var(--sidebar-width)_minmax(0,1fr)]"
           style={{ ["--sidebar-width" as string]: sidebarCollapsed ? "88px" : "260px" }}
         >
           <DashboardSidebar
