@@ -1,5 +1,5 @@
-import SourceAdminPreview from "@/components/dashboard2/admin/source-admin-preview";
+import { AdminSettingsView } from "@/components/dashboard2/admin/admin-views";
 
-export default function AdminSourcePageSettings() {
-  return <SourceAdminPreview initialRoute="/admin/settings" />;
+export default function AdminSettingsPage() {
+  return <AdminSettingsView />;
 }

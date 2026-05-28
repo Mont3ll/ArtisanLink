@@ -1,5 +1,5 @@
-import SourceAdminPreview from "@/components/dashboard2/admin/source-admin-preview";
+import { ClientSavedView } from "@/components/dashboard2/client/client-views";
 
-export default function ClientSourcePageSaved() {
-  return <SourceAdminPreview initialRoute="/client/saved" />;
+export default function ClientSavedPage() {
+  return <ClientSavedView />;
 }

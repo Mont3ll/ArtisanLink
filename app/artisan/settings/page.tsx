@@ -1,5 +1,5 @@
-import SourceAdminPreview from "@/components/dashboard2/admin/source-admin-preview";
+import { ArtisanSettingsView } from "@/components/dashboard2/artisan/artisan-views";
 
-export default function ArtisanSourcePageSettings() {
-  return <SourceAdminPreview initialRoute="/artisan/settings" />;
+export default function Pageappsettingspagetsx() {
+  return <ArtisanSettingsView />;
 }

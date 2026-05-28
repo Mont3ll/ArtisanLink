@@ -8,8 +8,13 @@ import { CLIENT_NAV, type ClientDashboardView } from "./client-nav";
 import { COLORS, TRANSITIONS } from "@/lib/design-tokens";
 
 export function ClientDashboardLayout({ children }: { children: React.ReactNode }) {
-  const pathname = usePathname();
+  const rawPathname = usePathname();
   const router = useRouter();
+  // Normalize legacy /client-dashboard/* to /client/* for active detection
+  const pathname = rawPathname
+    .replace(/^\/client-dashboard\//, '/client/')
+    .replace(/^\/client-dashboard$/, '/client/dashboard');
+
   const activeItem = CLIENT_NAV.find((item) => pathname === item.href || pathname.startsWith(`${item.href}/`)) ?? CLIENT_NAV[0];
 
   return (

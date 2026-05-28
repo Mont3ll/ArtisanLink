@@ -1,5 +1,5 @@
-import SourceAdminPreview from "@/components/dashboard2/admin/source-admin-preview";
+import { AdminVerificationView } from "@/components/dashboard2/admin/admin-views";
 
-export default function AdminSourcePageVerification() {
-  return <SourceAdminPreview initialRoute="/admin/verification" />;
+export default function AdminVerificationPage() {
+  return <AdminVerificationView />;
 }

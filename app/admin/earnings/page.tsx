@@ -1,5 +1,5 @@
-import SourceAdminPreview from "@/components/dashboard2/admin/source-admin-preview";
+import { AdminEarningsView } from "@/components/dashboard2/admin/admin-views";
 
-export default function AdminSourcePageEarnings() {
-  return <SourceAdminPreview initialRoute="/admin/earnings" />;
+export default function AdminEarningsPage() {
+  return <AdminEarningsView />;
 }

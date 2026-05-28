@@ -1,5 +1,5 @@
-import SourceAdminPreview from "@/components/dashboard2/admin/source-admin-preview";
+import { ClientFindView } from "@/components/dashboard2/client/client-views";
 
-export default function ClientSourcePageFind() {
-  return <SourceAdminPreview initialRoute="/client/find" />;
+export default function ClientFindPage() {
+  return <ClientFindView />;
 }

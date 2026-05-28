@@ -1,5 +1,5 @@
-import SourceAdminPreview from "@/components/dashboard2/admin/source-admin-preview";
+import { AdminArtisansView } from "@/components/dashboard2/admin/admin-views";
 
-export default function AdminSourcePageArtisans() {
-  return <SourceAdminPreview initialRoute="/admin/artisans" />;
+export default function AdminArtisansPage() {
+  return <AdminArtisansView />;
 }

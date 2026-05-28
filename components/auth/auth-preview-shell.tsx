@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { CheckCircle2, Hammer } from "lucide-react";
 import { motion } from "framer-motion";
@@ -45,12 +46,7 @@ export function AuthPreviewShell({
             className="flex items-center gap-2 text-[15px] font-semibold tracking-[-0.02em] transition-opacity hover:opacity-75"
             style={{ color: COLORS.ink }}
           >
-            <span
-              className="grid h-8 w-8 place-items-center rounded-lg text-white"
-              style={{ background: "#059669" }}
-            >
-              <Hammer size={16} />
-            </span>
+            <Image src="/logo.svg" alt="ChapaWorks" width={32} height={32} className="object-contain" />
             ChapaWorks
           </Link>
           <Link

@@ -1,5 +1,5 @@
-import SourceAdminPreview from "@/components/dashboard2/admin/source-admin-preview";
+import { ArtisanMessagesView } from "@/components/dashboard2/artisan/artisan-views";
 
-export default function ArtisanSourcePageMessages() {
-  return <SourceAdminPreview initialRoute="/artisan/messages" />;
+export default function Pageappmessagespagetsx() {
+  return <ArtisanMessagesView />;
 }

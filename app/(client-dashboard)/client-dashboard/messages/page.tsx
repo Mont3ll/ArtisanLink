@@ -1,10 +1,5 @@
-import SourceAdminPreview from "@/components/dashboard2/admin/source-admin-preview";
-import { DashboardRealDataProvider } from "@/components/dashboard2/context/dashboard-real-data-context";
+import { ClientMessagesView } from "@/components/dashboard2/client/client-views";
 
-export default function ClientSourcePageMessages() {
-  return (
-    <DashboardRealDataProvider role="client">
-      <SourceAdminPreview initialRoute="/client/messages" />
-    </DashboardRealDataProvider>
-  );
+export default function ClientMessagesPage() {
+  return <ClientMessagesView />;
 }

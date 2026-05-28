@@ -1,10 +1,5 @@
-import SourceAdminPreview from "@/components/dashboard2/admin/source-admin-preview";
-import { DashboardRealDataProvider } from "@/components/dashboard2/context/dashboard-real-data-context";
+import { ArtisanSettingsView } from "@/components/dashboard2/artisan/artisan-views";
 
-export default function ArtisanSourcePageSettings() {
-  return (
-    <DashboardRealDataProvider role="artisan">
-      <SourceAdminPreview initialRoute="/artisan/settings" />
-    </DashboardRealDataProvider>
-  );
+export default function Pageappsettingspagetsx() {
+  return <ArtisanSettingsView />;
 }

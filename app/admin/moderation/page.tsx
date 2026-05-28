@@ -1,5 +1,5 @@
-import SourceAdminPreview from "@/components/dashboard2/admin/source-admin-preview";
+import { AdminModerationView } from "@/components/dashboard2/admin/admin-views";
 
-export default function AdminSourcePageModeration() {
-  return <SourceAdminPreview initialRoute="/admin/moderation" />;
+export default function AdminModerationPage() {
+  return <AdminModerationView />;
 }

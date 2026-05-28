@@ -1,5 +1,5 @@
-import SourceAdminPreview from "@/components/dashboard2/admin/source-admin-preview";
+import { ClientOverviewView } from "@/components/dashboard2/client/client-views";
 
-export default function ClientSourcePageAnalytics() {
-  return <SourceAdminPreview initialRoute="/client/dashboard" />;
+export default function ClientAnalyticsPage() {
+  return <ClientOverviewView />;
 }

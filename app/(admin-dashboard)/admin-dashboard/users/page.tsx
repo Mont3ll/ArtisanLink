@@ -1,5 +1,5 @@
-import SourceAdminPreview from "@/components/dashboard2/admin/source-admin-preview";
+import { AdminUsersView } from "@/components/dashboard2/admin/admin-views";
 
-export default function AdminSourcePageUsers() {
-  return <SourceAdminPreview initialRoute="/admin/users" />;
+export default function AdminUsersPage() {
+  return <AdminUsersView />;
 }

@@ -1,5 +1,5 @@
-import SourceAdminPreview from "@/components/dashboard2/admin/source-admin-preview";
+import { ArtisanPortfolioView } from "@/components/dashboard2/artisan/artisan-views";
 
-export default function ArtisanSourcePagePortfolio() {
-  return <SourceAdminPreview initialRoute="/artisan/portfolio" />;
+export default function Pageappportfoliopagetsx() {
+  return <ArtisanPortfolioView />;
 }

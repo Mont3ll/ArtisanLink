@@ -9,8 +9,12 @@ import { ARTISAN_NAV, type ArtisanDashboardView } from "./artisan-nav";
 import { COLORS, TRANSITIONS } from "@/lib/design-tokens";
 
 export function ArtisanDashboardLayout({ children }: { children: React.ReactNode }) {
-  const pathname = usePathname();
+  const rawPathname = usePathname();
   const router = useRouter();
+  // Normalize legacy /artisan-dashboard/* to /artisan/* for active detection
+  const pathname = rawPathname
+    .replace(/^\/artisan-dashboard\//, '/artisan/')
+    .replace(/^\/artisan-dashboard$/, '/artisan/dashboard');
 
   const activeItem =
     ARTISAN_NAV.find((item) => pathname === item.href || pathname.startsWith(`${item.href}/`)) ?? ARTISAN_NAV[0];

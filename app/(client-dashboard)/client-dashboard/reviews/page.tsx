@@ -1,10 +1,5 @@
-import SourceAdminPreview from "@/components/dashboard2/admin/source-admin-preview";
-import { DashboardRealDataProvider } from "@/components/dashboard2/context/dashboard-real-data-context";
+import { ClientReviewsView } from "@/components/dashboard2/client/client-views";
 
-export default function ClientSourcePageReviews() {
-  return (
-    <DashboardRealDataProvider role="client">
-      <SourceAdminPreview initialRoute="/client/reviews" />
-    </DashboardRealDataProvider>
-  );
+export default function ClientReviewsPage() {
+  return <ClientReviewsView />;
 }

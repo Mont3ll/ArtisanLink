@@ -11,7 +11,10 @@ import { COLORS, TRANSITIONS } from "@/lib/design-tokens";
 export function AdminDashboardLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
-  const normalizedPathname = pathname.replace(/^\/admin(?=\/|$)/, "/admin-dashboard");
+  // Normalize both /admin/* and /admin-dashboard/* for active detection
+  const normalizedPathname = pathname
+    .replace(/^\/admin-dashboard/, '/admin')
+    .replace(/^\/admin$/, '/admin');
   const sourceRouteMode = pathname === "/admin" || pathname.startsWith("/admin/");
   const activeItem = ADMIN_NAV.find((item) => normalizedPathname === item.href || normalizedPathname.startsWith(`${item.href}/`)) ?? ADMIN_NAV[0];
 
@@ -26,7 +29,7 @@ export function AdminDashboardLayout({ children }: { children: React.ReactNode }
       onSelect={(view) => {
         const target = ADMIN_NAV.find((item) => item.id === view);
         if (target) {
-          router.push(sourceRouteMode ? target.href.replace(/^\/admin-dashboard/, "/admin") : target.href);
+          router.push(target.href);
         }
       }}
       role="Admin"

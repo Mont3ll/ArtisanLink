@@ -20228,6 +20228,7 @@ export default function SourceAdminPreview({
   return (
     <div
       className="min-h-screen bg-white"
+      style={{ fontFamily: 'Inter, Circular, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif' }}
     >
       {!isDashboardRoute(route) && (
         <Header

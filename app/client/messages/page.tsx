@@ -1,5 +1,5 @@
-import SourceAdminPreview from "@/components/dashboard2/admin/source-admin-preview";
+import { ClientMessagesView } from "@/components/dashboard2/client/client-views";
 
-export default function ClientSourcePageMessages() {
-  return <SourceAdminPreview initialRoute="/client/messages" />;
+export default function ClientMessagesPage() {
+  return <ClientMessagesView />;
 }

@@ -1,5 +1,5 @@
-import SourceAdminPreview from "@/components/dashboard2/admin/source-admin-preview";
+import { ArtisanSubscriptionView } from "@/components/dashboard2/artisan/artisan-views";
 
-export default function ArtisanSourcePageSubscription() {
-  return <SourceAdminPreview initialRoute="/artisan/subscription" />;
+export default function Pageappsubscriptionpagetsx() {
+  return <ArtisanSubscriptionView />;
 }
