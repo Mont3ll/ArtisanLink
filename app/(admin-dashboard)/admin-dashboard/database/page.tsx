@@ -1,10 +1,5 @@
-import SourceAdminPreview from "@/components/dashboard2/admin/source-admin-preview";
-import { DashboardRealDataProvider } from "@/components/dashboard2/context/dashboard-real-data-context";
+import { redirect } from "next/navigation";
 
-export default function AdminDashDatabasePage() {
-  return (
-    <DashboardRealDataProvider role="admin">
-      <SourceAdminPreview initialRoute="/admin/database" />
-    </DashboardRealDataProvider>
-  );
+export default function AdminDatabaseRedir() {
+  redirect("/admin/database");
 }

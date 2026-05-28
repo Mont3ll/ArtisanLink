@@ -1,10 +1,5 @@
-import SourceAdminPreview from "@/components/dashboard2/admin/source-admin-preview";
-import { DashboardRealDataProvider } from "@/components/dashboard2/context/dashboard-real-data-context";
+import { redirect } from "next/navigation";
 
-export default function ArtisanDashReviews() {
-  return (
-    <DashboardRealDataProvider role="artisan">
-      <SourceAdminPreview initialRoute="/artisan/reviews" />
-    </DashboardRealDataProvider>
-  );
+export default function ArtisanReviewsRedir() {
+  redirect("/artisan/reviews");
 }
