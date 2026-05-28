@@ -295,7 +295,7 @@ export function AdminOverviewView() {
               <StatusChip status="ACTIVE" />
             </div>
             <div className="flex flex-wrap gap-2">
-              {[{ label: "Review queue", icon: FileCheck2, href: "/admin-dashboard/verification", primary: true }, { label: "Moderation", icon: Flag, href: "/admin-dashboard/moderation" }, { label: "Invites", icon: Send, href: "/admin-dashboard/invites" }, { label: "Health", icon: Gauge, href: "/admin-dashboard/monitoring" }].map(({ label, icon: Icon, href, primary }) => (
+              {[{ label: "Review queue", icon: FileCheck2, href: "/admin/verification", primary: true }, { label: "Moderation", icon: Flag, href: "/admin/moderation" }, { label: "Invites", icon: Send, href: "/admin/invites" }, { label: "Health", icon: Gauge, href: "/admin/monitoring" }].map(({ label, icon: Icon, href, primary }) => (
                 <button key={label} onClick={() => router.push(href)} className="group inline-flex h-9 min-w-fit items-center gap-2 rounded-full border px-3 text-left transition-transform hover:-translate-y-0.5" style={primary ? { borderColor: COLORS.primary, background: COLORS.primary, boxShadow: SHADOWS.soft } : { borderColor: COLORS.hairlineSoft, background: COLORS.canvas, color: COLORS.ink, boxShadow: SHADOWS.soft }}>
                   <Icon size={14} className="shrink-0" style={{ color: primary ? COLORS.canvas : COLORS.primary }} />
                   <span className="whitespace-nowrap text-[12px] font-semibold leading-none" style={{ color: primary ? COLORS.canvas : COLORS.ink }}>{label}</span>
@@ -327,7 +327,7 @@ export function AdminOverviewView() {
               <Activity size={18} style={{ color: COLORS.primary }} />
             </div>
             <div className="grid gap-2">
-              {[["Verification submitted", "Grace Wanjiku uploaded trade evidence.", "12m", "/admin-dashboard/verification"], ["Moderation flag opened", "Abusive message report assigned to safety.", "38m", "/admin-dashboard/moderation"], ["Subscription renewal failed", "Premium artisan renewal needs retry.", "2h", "/admin-dashboard/settings"], ["Search index refreshed", "Location coverage index completed.", "4h", "/admin-dashboard/locations"]].map(([title, body, time, href], i) => (
+              {[["Verification submitted", "Grace Wanjiku uploaded trade evidence.", "12m", "/admin/verification"], ["Moderation flag opened", "Abusive message report assigned to safety.", "38m", "/admin/moderation"], ["Subscription renewal failed", "Premium artisan renewal needs retry.", "2h", "/admin/settings"], ["Search index refreshed", "Location coverage index completed.", "4h", "/admin/locations"]].map(([title, body, time, href], i) => (
                 <button key={title as string} onClick={() => router.push(href as string)} className="grid cursor-pointer grid-cols-[10px_1fr_auto] gap-3 rounded-[14px] p-3 text-left transition-colors hover:bg-[#f7f7f7]">
                   <span className="mt-2 h-2.5 w-2.5 rounded-full" style={{ background: i === 0 ? COLORS.primary : COLORS.hairline }} />
                   <span className="min-w-0">
@@ -359,7 +359,7 @@ export function AdminOverviewView() {
                 </button>
               ))}
             </div>
-            <button onClick={() => router.push("/admin-dashboard/verification")} className="mt-3 w-full cursor-pointer rounded-lg border px-4 py-2.5 text-[14px] font-medium hover:bg-[#f7f7f7]" style={{ borderColor: COLORS.hairline, color: COLORS.ink }}>View full queue →</button>
+            <button onClick={() => router.push("/admin/verification")} className="mt-3 w-full cursor-pointer rounded-lg border px-4 py-2.5 text-[14px] font-medium hover:bg-[#f7f7f7]" style={{ borderColor: COLORS.hairline, color: COLORS.ink }}>View full queue →</button>
           </div>
         </aside>
       </div>
@@ -939,7 +939,7 @@ export function AdminDatabaseView() {
       eyebrow="Admin · Database"
       title="Database operations"
       body="Inspect data health, table growth, storage pressure, and operational readiness without leaving the redesigned admin shell."
-      actions={[{ label: "Refresh data", href: "/admin-dashboard/database" }, { label: "System health", href: "/admin-dashboard/system" }]}
+      actions={[{ label: "Refresh data", href: "/admin/database" }, { label: "System health", href: "/admin/system" }]}
       stats={[
         { label: "Tables tracked", value: 18, subtext: "Core marketplace entities", icon: Activity },
         { label: "Storage health", value: "96%", subtext: "Within safe operating range", icon: Gauge },
@@ -964,7 +964,7 @@ export function AdminEarningsView() {
       eyebrow="Admin · Earnings"
       title="Marketplace earnings"
       body="Track gross marketplace volume, platform commission, artisan net earnings, and daily revenue movement."
-      actions={[{ label: "Open analytics", href: "/admin-dashboard/analytics" }, { label: "Payouts", href: "/admin-dashboard/payouts" }]}
+      actions={[{ label: "Open analytics", href: "/admin/analytics" }, { label: "Payouts", href: "/admin/payouts" }]}
       stats={[
         { label: "Gross volume", value: "KES 1.84M", subtext: "+18% this month", icon: ReceiptText },
         { label: "Platform commission", value: "KES 184K", subtext: "Blended 8.1% rate", icon: BarChart3 },
@@ -989,7 +989,7 @@ export function AdminPayoutsView() {
       eyebrow="Admin · Payouts"
       title="Payout control center"
       body="Review artisan payout batches, failed transfers, retry actions, and manual review queues in the redesigned admin system."
-      actions={[{ label: "Review queue", href: "/admin-dashboard/payouts" }, { label: "Earnings", href: "/admin-dashboard/earnings" }]}
+      actions={[{ label: "Review queue", href: "/admin/payouts" }, { label: "Earnings", href: "/admin/earnings" }]}
       stats={[
         { label: "Pending payout", value: "KES 438K", subtext: "27 artisan payouts", icon: ReceiptText },
         { label: "Processing", value: 12, subtext: "Sent to provider", icon: Activity },
@@ -1014,7 +1014,7 @@ export function AdminReportsView() {
       eyebrow="Admin · Reports"
       title="Report generation"
       body="Generate operational exports for users, artisans, reviews, subscriptions, payments, and platform activity."
-      actions={[{ label: "Generate overview", href: "/admin-dashboard/reports" }, { label: "Analytics", href: "/admin-dashboard/analytics" }]}
+      actions={[{ label: "Generate overview", href: "/admin/reports" }, { label: "Analytics", href: "/admin/analytics" }]}
       stats={[
         { label: "Report types", value: 7, subtext: "Overview, users, artisans, reviews, subscriptions, payments, activity", icon: FileCheck2 },
         { label: "Records ready", value: "12.4K", subtext: "Across admin datasets", icon: Activity },
@@ -1039,7 +1039,7 @@ export function AdminSearchView() {
       eyebrow="Admin · Search"
       title="Global admin search"
       body="Search across users, artisans, jobs, settings, activity, and operational records with source-aligned quick actions."
-      actions={[{ label: "Search users", href: "/admin-dashboard/search" }, { label: "Browse artisans", href: "/admin-dashboard/artisans" }]}
+      actions={[{ label: "Search users", href: "/admin/search" }, { label: "Browse artisans", href: "/admin/artisans" }]}
       stats={[
         { label: "Search domains", value: 5, subtext: "Users, artisans, jobs, settings, activity", icon: Search },
         { label: "Verified artisans", value: 428, subtext: "Quick search preset", icon: BadgeCheck },
@@ -1064,7 +1064,7 @@ export function AdminSubscriptionsView() {
       eyebrow="Admin · Subscriptions"
       title="Subscription management"
       body="Monitor artisan plans, premium visibility, renewal state, subscription revenue, and churn risk."
-      actions={[{ label: "Review plans", href: "/admin-dashboard/subscriptions" }, { label: "Earnings", href: "/admin-dashboard/earnings" }]}
+      actions={[{ label: "Review plans", href: "/admin/subscriptions" }, { label: "Earnings", href: "/admin/earnings" }]}
       stats={[
         { label: "Active plans", value: 162, subtext: "Premium artisans", icon: CreditCard },
         { label: "MRR", value: "KES 243K", subtext: "+12% monthly", icon: BarChart3 },
@@ -1089,7 +1089,7 @@ export function AdminSystemView() {
       eyebrow="Admin · System"
       title="System health"
       body="Monitor platform infrastructure, job workers, API services, storage, and operational alerts in the source dashboard style."
-      actions={[{ label: "Refresh health", href: "/admin-dashboard/system" }, { label: "Monitoring", href: "/admin-dashboard/monitoring" }]}
+      actions={[{ label: "Refresh health", href: "/admin/system" }, { label: "Monitoring", href: "/admin/monitoring" }]}
       stats={[
         { label: "API health", value: "Healthy", subtext: "All critical routes responding", icon: Activity },
         { label: "Workers", value: "4/4", subtext: "Background jobs online", icon: Gauge },
@@ -1114,7 +1114,7 @@ export function AdminHelpView() {
       eyebrow="Admin · Help"
       title="Help and support"
       body="Provide administrators with documentation, escalation paths, tutorials, and support contact cards in the redesigned shell."
-      actions={[{ label: "Contact support", href: "/admin-dashboard/help" }, { label: "System health", href: "/admin-dashboard/system" }]}
+      actions={[{ label: "Contact support", href: "/admin/help" }, { label: "System health", href: "/admin/system" }]}
       stats={[
         { label: "Guides", value: 12, subtext: "Admin playbooks", icon: FileCheck2 },
         { label: "Tutorials", value: 8, subtext: "Workflow walkthroughs", icon: Sparkles },

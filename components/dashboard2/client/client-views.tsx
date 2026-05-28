@@ -54,7 +54,7 @@ export function ClientOverviewView() {
               <p className="text-[16px] font-semibold" style={{ color: COLORS.ink }}>Current jobs</p>
               <p className="text-[13px]" style={{ color: COLORS.muted }}>Review quotes and job progress.</p>
             </div>
-            <button onClick={() => router.push("/client-dashboard/jobs")} className="cursor-pointer text-[14px] font-medium underline-offset-4 hover:underline" style={{ color: COLORS.ink }}>View all</button>
+            <button onClick={() => router.push("/client/jobs")} className="cursor-pointer text-[14px] font-medium underline-offset-4 hover:underline" style={{ color: COLORS.ink }}>View all</button>
           </div>
           <div className="grid gap-2">
             {mockClientJobs.map((job) => (
@@ -76,12 +76,12 @@ export function ClientOverviewView() {
           <div className="rounded-[18px] border p-4" style={{ borderColor: COLORS.primarySoft, background: COLORS.primaryTint }}>
             <p className="text-[16px] font-semibold" style={{ color: COLORS.primaryActive }}>Find the right artisan faster</p>
             <p className="mt-2 text-[14px]" style={{ color: COLORS.body }}>Use saved artisans and recommended matches to start new job requests.</p>
-            <button onClick={() => router.push("/client-dashboard/find-artisans")} className="mt-4 cursor-pointer rounded-lg px-3 py-2 text-[14px] font-medium text-white hover:bg-emerald-800" style={{ background: COLORS.primary }}>Find artisans</button>
+            <button onClick={() => router.push("/client/find")} className="mt-4 cursor-pointer rounded-lg px-3 py-2 text-[14px] font-medium text-white hover:bg-emerald-800" style={{ background: COLORS.primary }}>Find artisans</button>
           </div>
           <div className="rounded-[18px] border bg-white p-4" style={{ borderColor: COLORS.hairlineSoft }}>
             <p className="text-[16px] font-semibold" style={{ color: COLORS.ink }}>Review prompt</p>
             <p className="mt-2 text-[13px]" style={{ color: COLORS.muted }}>You have 1 completed job awaiting a review.</p>
-            <button onClick={() => router.push("/client-dashboard/reviews")} className="mt-4 cursor-pointer text-[14px] font-medium underline-offset-4 hover:underline" style={{ color: COLORS.ink }}>Leave review</button>
+            <button onClick={() => router.push("/client/reviews")} className="mt-4 cursor-pointer text-[14px] font-medium underline-offset-4 hover:underline" style={{ color: COLORS.ink }}>Leave review</button>
           </div>
         </div>
       </div>

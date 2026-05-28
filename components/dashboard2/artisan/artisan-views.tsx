@@ -92,7 +92,7 @@ export function ArtisanJobsView() {
           options={[{ id: "all", label: "All" }, { id: "requested", label: "Requested" }, { id: "quoted", label: "Quoted" }, { id: "active", label: "Active" }]}
         />
         <button
-          onClick={() => router.push("/artisan-dashboard/jobs")}
+          onClick={() => router.push("/artisan/jobs")}
           className="inline-flex h-10 w-fit shrink-0 cursor-pointer items-center gap-2 rounded-lg px-3 text-[13px] font-medium text-white transition-colors hover:bg-emerald-800"
           style={{ background: COLORS.primary }}
         >
@@ -132,8 +132,8 @@ export function ArtisanJobsView() {
                 <div className="flex items-center gap-2">
                   <StatusChip status={job.status} />
                   <span className="text-[13px] font-semibold" style={{ color: COLORS.ink }}>{job.quote ?? "Not sent"}</span>
-                  <button onClick={() => router.push(`/artisan-dashboard/jobs`)} className="h-9 cursor-pointer rounded-lg border bg-white px-3 text-[13px] font-medium hover:bg-[#f7f7f7]" style={{ borderColor: COLORS.hairline, color: COLORS.ink }}>Quick view</button>
-                  <button onClick={() => router.push(`/artisan-dashboard/jobs`)} className="grid h-9 w-9 cursor-pointer place-items-center rounded-lg border bg-white hover:bg-[#f7f7f7]" style={{ borderColor: COLORS.hairline, color: COLORS.ink }} aria-label="View job detail"><Eye size={15} /></button>
+                  <button onClick={() => router.push(`/artisan/jobs`)} className="h-9 cursor-pointer rounded-lg border bg-white px-3 text-[13px] font-medium hover:bg-[#f7f7f7]" style={{ borderColor: COLORS.hairline, color: COLORS.ink }}>Quick view</button>
+                  <button onClick={() => router.push(`/artisan/jobs`)} className="grid h-9 w-9 cursor-pointer place-items-center rounded-lg border bg-white hover:bg-[#f7f7f7]" style={{ borderColor: COLORS.hairline, color: COLORS.ink }} aria-label="View job detail"><Eye size={15} /></button>
                 </div>
               </div>
             ))}
@@ -217,7 +217,7 @@ export function ArtisanPortfolioView() {
           <h2 className="mt-1 text-[22px] font-semibold tracking-[-0.04em]" style={{ color: COLORS.ink }}>Portfolio</h2>
           <p className="mt-2 text-[14px]" style={{ color: COLORS.muted }}>Publish project cards that help clients judge your style, quality, and specialties.</p>
         </div>
-        <button onClick={() => router.push("/artisan-dashboard/portfolio/new")} className="inline-flex h-10 cursor-pointer items-center gap-2 rounded-lg px-4 text-[14px] font-medium text-white hover:bg-emerald-800" style={{ background: COLORS.primary }}>
+        <button onClick={() => router.push("/artisan/portfolio/new")} className="inline-flex h-10 cursor-pointer items-center gap-2 rounded-lg px-4 text-[14px] font-medium text-white hover:bg-emerald-800" style={{ background: COLORS.primary }}>
           <Plus size={15} /> Add project
         </button>
       </div>
@@ -238,7 +238,7 @@ export function ArtisanPortfolioView() {
             </div>
           </article>
         ))}
-        <button onClick={() => router.push("/artisan-dashboard/portfolio/new")} className="flex aspect-[4/3] cursor-pointer flex-col items-center justify-center gap-2 rounded-[18px] border border-dashed transition-colors hover:bg-[#f7f7f7]" style={{ borderColor: COLORS.hairline }}>
+        <button onClick={() => router.push("/artisan/portfolio/new")} className="flex aspect-[4/3] cursor-pointer flex-col items-center justify-center gap-2 rounded-[18px] border border-dashed transition-colors hover:bg-[#f7f7f7]" style={{ borderColor: COLORS.hairline }}>
           <Plus size={24} style={{ color: COLORS.muted }} />
           <p className="text-[14px] font-medium" style={{ color: COLORS.muted }}>Add project</p>
         </button>
