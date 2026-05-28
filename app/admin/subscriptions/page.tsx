@@ -1,5 +1,10 @@
-import { AdminSubscriptionsView } from "@/components/dashboard2/admin/admin-views";
+import SourceAdminPreview from "@/components/dashboard2/admin/source-admin-preview";
+import { DashboardRealDataProvider } from "@/components/dashboard2/context/dashboard-real-data-context";
 
 export default function AdminSubscriptionsPage() {
-  return <AdminSubscriptionsView />;
+  return (
+    <DashboardRealDataProvider role="admin">
+      <SourceAdminPreview initialRoute="/admin/subscriptions" />
+    </DashboardRealDataProvider>
+  );
 }

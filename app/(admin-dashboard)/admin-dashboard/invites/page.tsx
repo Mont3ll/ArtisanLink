@@ -1,5 +1,10 @@
-import { AdminInvitesView } from "@/components/dashboard2/admin/admin-views";
+import SourceAdminPreview from "@/components/dashboard2/admin/source-admin-preview";
+import { DashboardRealDataProvider } from "@/components/dashboard2/context/dashboard-real-data-context";
 
-export default function AdminInvitesPage() {
-  return <AdminInvitesView />;
+export default function AdminDashInvitesPage() {
+  return (
+    <DashboardRealDataProvider role="admin">
+      <SourceAdminPreview initialRoute="/admin/invites" />
+    </DashboardRealDataProvider>
+  );
 }
