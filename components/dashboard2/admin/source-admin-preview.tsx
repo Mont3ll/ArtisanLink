@@ -9985,7 +9985,7 @@ function QuoteWorkflowBuilder({
 }: {
   selectedJob: ArtisanJob;
   mode: "create" | "revision";
-  onSubmit?: (total: number) => void;
+  onSubmit?: (total: number, lineItems: unknown[], depositPercent: number) => void;
 }) {
   const [category, setCategory] = useState<QuoteRootCategory>("Labor");
   const [selectedTemplateId, setSelectedTemplateId] = useState("");
@@ -10890,6 +10890,7 @@ function QuoteWorkflowBuilder({
                   onClick={() => {
                     setSubmitted(true);
                     setConfirmOpen(false);
+                    onSubmit?.(subtotal, items, depositPercent);
                   }}
                   className="h-11 cursor-pointer rounded-lg px-4 text-[14px] font-medium text-white transition-colors hover:bg-emerald-800"
                   style={{ background: COLORS.primary }}
@@ -14640,11 +14641,31 @@ function ClientDashboardCoreSection({
                       <div className="mt-4 flex gap-3">
                         <button
                           disabled={!reviewText.trim()}
-                          onClick={() => {
+                          onClick={async () => {
+                            // Optimistic local update
                             setReviewedJobIds((current) => [...current, activeReviewJob.id]);
                             setReviewingJob(null);
                             setReviewText("");
                             setReviewRating(5);
+                            // Real API call — get artisanProfileId from context or job
+                            const jobWithProfile = (effectiveClientJobs as unknown as Array<{id: string; artisanProfileId?: string | null}>).find((j) => j.id === activeReviewJob.id);
+                            const artisanProfileId = jobWithProfile?.artisanProfileId;
+                            if (artisanProfileId) {
+                              try {
+                                await fetch("/api/reviews", {
+                                  method: "POST",
+                                  headers: { "Content-Type": "application/json" },
+                                  body: JSON.stringify({
+                                    profileId: artisanProfileId,
+                                    rating: reviewRating,
+                                    comment: reviewText.trim() || undefined,
+                                    projectTitle: activeReviewJob.title,
+                                  }),
+                                });
+                              } catch {
+                                // Error is non-critical — local state already updated
+                              }
+                            }
                           }}
                           className="h-12 flex-1 cursor-pointer rounded-lg px-5 text-[16px] font-medium text-white transition-colors hover:bg-emerald-800 disabled:cursor-not-allowed disabled:opacity-50"
                           style={{ background: COLORS.primary }}
@@ -15524,6 +15545,10 @@ function AdminOperationsSection({
     string[]
   >([]);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [inviteEmail, setInviteEmail] = useState("");
+  const [inviteNote, setInviteNote] = useState("");
+  const [inviteSending, setInviteSending] = useState(false);
+  const [inviteSuccess, setInviteSuccess] = useState(false);
 
   // Real admin data from context — overlay pattern
   const _adminCtx = useOptionalDashboardRealData();
@@ -16909,6 +16934,8 @@ function AdminOperationsSection({
                       </div>
                       <div className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_220px_minmax(0,1fr)_auto] xl:items-start">
                         <input
+                          value={inviteEmail}
+                          onChange={(e) => setInviteEmail(e.target.value)}
                           placeholder="artisan@example.com"
                           className="h-12 min-w-0 rounded-lg border bg-white px-3 text-[14px] outline-none"
                           style={{ borderColor: COLORS.hairline }}
@@ -16924,15 +16951,41 @@ function AdminOperationsSection({
                           <option>Admin role</option>
                         </select>
                         <textarea
+                          value={inviteNote}
+                          onChange={(e) => setInviteNote(e.target.value)}
                           placeholder="Optional invite note"
                           className="min-h-12 min-w-0 rounded-lg border bg-white px-3 py-3 text-[14px] outline-none"
                           style={{ borderColor: COLORS.hairline }}
                         />
                         <button
-                          className="h-12 cursor-pointer rounded-lg px-4 text-[14px] font-medium text-white transition-colors hover:bg-emerald-800"
-                          style={{ background: COLORS.primary }}
+                          disabled={inviteSending || !inviteEmail.trim()}
+                          onClick={async () => {
+                            if (!inviteEmail.trim()) return;
+                            setInviteSending(true);
+                            setInviteSuccess(false);
+                            try {
+                              const res = await fetch("/api/admin/invites", {
+                                method: "POST",
+                                headers: { "Content-Type": "application/json" },
+                                body: JSON.stringify({
+                                  email: inviteEmail.trim(),
+                                  message: inviteNote.trim() || undefined,
+                                }),
+                              });
+                              if (res.ok) {
+                                setInviteEmail("");
+                                setInviteNote("");
+                                setInviteSuccess(true);
+                                setTimeout(() => setInviteSuccess(false), 3000);
+                              }
+                            } catch { /* silent */ } finally {
+                              setInviteSending(false);
+                            }
+                          }}
+                          className="h-12 cursor-pointer rounded-lg px-4 text-[14px] font-medium text-white transition-colors hover:bg-emerald-800 disabled:cursor-not-allowed disabled:opacity-50"
+                          style={{ background: inviteSuccess ? "#047857" : COLORS.primary }}
                         >
-                          Send invite
+                          {inviteSending ? "Sending…" : inviteSuccess ? "✓ Sent" : "Send invite"}
                         </button>
                       </div>
                     </div>

@@ -118,6 +118,7 @@ export async function GET(request: NextRequest) {
       updatedAt: job.updatedAt,
       artisan: {
         id: job.artisan.id,
+        profileId: job.artisan.profile?.id || null,
         name: `${job.artisan.firstName} ${job.artisan.lastName}`,
         email: job.artisan.email,
         profileImage: job.artisan.profile?.profileImage,

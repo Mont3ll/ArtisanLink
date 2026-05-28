@@ -19,6 +19,8 @@ export interface SourceClientJob {
   quote: string
   location: string
   description: string
+  /** Artisan's profile ID — needed for /api/reviews POST */
+  artisanProfileId: string | null
 }
 
 export function mapClientStatusToSource(status: string): SourceStatus {
@@ -50,6 +52,7 @@ export function mapRealClientJobToSource(job: RealClientJob): SourceClientJob {
     quote: job.latestQuote ? formatKes(job.latestQuote.amount) : 'Not sent',
     location: job.location ?? 'Kenya',
     description: job.description,
+    artisanProfileId: (job.artisan as { profileId?: string }).profileId ?? null,
   }
 }
 
