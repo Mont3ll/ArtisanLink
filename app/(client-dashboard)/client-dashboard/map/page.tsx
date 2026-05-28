@@ -1,5 +1,10 @@
-import { ClientFindView } from "@/components/dashboard2/client/client-views";
+import SourceAdminPreview from "@/components/dashboard2/admin/source-admin-preview";
+import { DashboardRealDataProvider } from "@/components/dashboard2/context/dashboard-real-data-context";
 
-export default function ClientMapPage() {
-  return <ClientFindView />;
+export default function ClientDashMap() {
+  return (
+    <DashboardRealDataProvider role="client">
+      <SourceAdminPreview initialRoute="/client/find" />
+    </DashboardRealDataProvider>
+  );
 }
