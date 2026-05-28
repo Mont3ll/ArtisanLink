@@ -212,12 +212,12 @@ export function BrowseDirectorySection({
         </div>
 
         <div
-          className="rounded-[28px] border bg-white p-4 md:p-5"
+          className="rounded-[28px] border bg-white p-3 md:p-4"
           style={{ borderColor: COLORS.hairlineSoft, boxShadow: SHADOWS.card }}
         >
-          <div className="grid gap-3 lg:grid-cols-[1.4fr_1fr_1fr_0.9fr_auto]">
+          <div className="grid grid-cols-1 gap-2 md:grid-cols-[1fr_0.8fr_0.8fr_0.7fr_auto_auto] md:items-center">
             <label
-              className="flex h-14 items-center gap-3 rounded-full border bg-white px-4"
+              className="flex h-10 items-center gap-3 rounded-full border bg-white px-4"
               style={{ borderColor: COLORS.hairline }}
             >
               <Search size={18} strokeWidth={2.5} style={{ color: COLORS.ink }} />
@@ -233,7 +233,7 @@ export function BrowseDirectorySection({
             <select
               value={profession}
               onChange={(event) => setProfession(event.target.value)}
-              className="h-14 cursor-pointer rounded-full border bg-white px-4 text-[14px] outline-none"
+              className="h-10 cursor-pointer rounded-full border bg-white px-4 text-[13px] outline-none"
               style={{ borderColor: COLORS.hairline, color: COLORS.ink }}
             >
               {professions.map((item) => (
@@ -244,7 +244,7 @@ export function BrowseDirectorySection({
             <select
               value={county}
               onChange={(event) => setCounty(event.target.value)}
-              className="h-14 cursor-pointer rounded-full border bg-white px-4 text-[14px] outline-none"
+              className="h-10 cursor-pointer rounded-full border bg-white px-4 text-[13px] outline-none"
               style={{ borderColor: COLORS.hairline, color: COLORS.ink }}
             >
               {counties.map((item) => (
@@ -255,7 +255,7 @@ export function BrowseDirectorySection({
             <select
               value={sortBy}
               onChange={(event) => setSortBy(event.target.value as SortBy)}
-              className="h-14 cursor-pointer rounded-full border bg-white px-4 text-[14px] outline-none"
+              className="h-10 cursor-pointer rounded-full border bg-white px-4 text-[13px] outline-none"
               style={{ borderColor: COLORS.hairline, color: COLORS.ink }}
             >
               <option value="rating">Sort: Rating</option>
@@ -267,7 +267,7 @@ export function BrowseDirectorySection({
             <button
               type="button"
               onClick={() => setAvailableOnly((value) => !value)}
-              className="flex h-14 cursor-pointer items-center justify-center gap-2 rounded-full border px-4 text-[14px] font-medium transition-colors hover:bg-[#f7f7f7]"
+              className="flex h-10 cursor-pointer items-center justify-center gap-2 rounded-full border px-3 text-[13px] font-medium transition-colors hover:bg-[#f7f7f7]"
               style={{
                 borderColor: availableOnly ? COLORS.ink : COLORS.hairline,
                 color: COLORS.ink,
@@ -280,7 +280,7 @@ export function BrowseDirectorySection({
             <button
               type="button"
               onClick={() => setVerifiedOnly((value) => !value)}
-              className="flex h-14 cursor-pointer items-center justify-center gap-2 rounded-full border px-4 text-[14px] font-medium transition-colors hover:bg-[#f7f7f7]"
+              className="flex h-10 cursor-pointer items-center justify-center gap-2 rounded-full border px-3 text-[13px] font-medium transition-colors hover:bg-[#f7f7f7]"
               style={{
                 borderColor: verifiedOnly ? COLORS.ink : COLORS.hairline,
                 color: COLORS.ink,

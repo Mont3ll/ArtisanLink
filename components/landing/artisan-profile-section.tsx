@@ -1,7 +1,11 @@
 "use client";
 
+import { useAuth } from "@clerk/nextjs";
+
+import { useState } from "react";
+
 import Link from "next/link";
-import { motion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import {
   BadgeCheck,
   Bookmark,
@@ -11,6 +15,7 @@ import {
   MapPin,
   MessageCircle,
   Star,
+  X,
 } from "lucide-react";
 
 import { COLORS, SHADOWS, TRANSITIONS } from "@/lib/design-tokens";
@@ -59,6 +64,11 @@ function initials(name: string) {
 
 export function ArtisanProfileSection({ artisan }: { artisan: FullArtisanProfile }) {
   const locationStr = [artisan.location.city, artisan.location.county].filter(Boolean).join(", ") || "Kenya";
+  const [modalItem, setModalItem] = useState<typeof artisan.portfolio[number] | null>(null);
+  const { isSignedIn } = useAuth();
+  const hirePath = isSignedIn
+    ? `/client/messages?artisan=${artisan.id}&name=${encodeURIComponent(artisan.name)}&profession=${encodeURIComponent(artisan.profession || "")}`
+    : `/sign-in?redirect=/artisans/${artisan.id}`;
   const profileBio = artisan.bio || `${artisan.name} is a verified ${artisan.profession?.toLowerCase()} focused on clean workmanship, responsive communication, and practical project scoping. This profile preview shows how public artisan pages combine trust signals, portfolio work, skills, and hiring calls to action.`;
   const portfolioFrames = [
     artisan.gradient,
@@ -121,10 +131,17 @@ export function ArtisanProfileSection({ artisan }: { artisan: FullArtisanProfile
                 {portfolioFrames.map((frame, index) => {
                   const item = artisan.portfolio[index];
                   return (
-                    <div key={index} className="group relative aspect-[4/3] overflow-hidden rounded-[14px] text-left" style={{ background: frame }}>
+                    <button
+                      key={index}
+                      type="button"
+                      onClick={() => item && setModalItem(item)}
+                      className="group relative aspect-[4/3] w-full cursor-pointer overflow-hidden rounded-[14px] text-left"
+                      style={{ background: frame }}
+                    >
                       {item?.imageUrl ? <img src={item.imageUrl} alt={item.title} className="absolute inset-0 h-full w-full object-cover transition-transform duration-300 group-hover:scale-105" /> : <div className="absolute inset-0 transition-transform duration-300 group-hover:scale-105" style={{ background: frame }} />}
                       <div className="absolute bottom-3 left-3 rounded-full bg-white px-3 py-1 text-[11px] font-semibold shadow-sm" style={{ color: COLORS.ink }}>{item?.title || `Project ${index + 1}`}</div>
-                    </div>
+                      {item && <div className="absolute inset-0 flex items-center justify-center bg-black/0 transition-colors group-hover:bg-black/20"><span className="scale-75 rounded-full bg-white/90 px-3 py-1.5 text-[12px] font-semibold opacity-0 transition-all group-hover:scale-100 group-hover:opacity-100" style={{ color: COLORS.ink }}>View details</span></div>}
+                    </button>
                   );
                 })}
               </div>
@@ -141,17 +158,86 @@ export function ArtisanProfileSection({ artisan }: { artisan: FullArtisanProfile
                 <p className="flex items-center gap-2"><MapPin size={16} style={{ color: COLORS.muted }} /> {locationStr}</p>
                 <p className="flex items-center gap-2"><BriefcaseBusiness size={16} style={{ color: COLORS.muted }} /> {artisan.profession}</p>
                 <p className="flex items-center gap-2"><CalendarDays size={16} style={{ color: COLORS.muted }} /> {artisan.experience || 4} years experience</p>
-                <p className="flex items-center gap-2"><Globe2 size={16} style={{ color: COLORS.muted }} /> chapaworks.co.ke/profile/{artisan.id}</p>
+                <a
+                  href={`/artisans/${artisan.id}`}
+                  className="flex items-center gap-2 hover:underline underline-offset-4"
+                  style={{ color: COLORS.body }}
+                >
+                  <Globe2 size={16} style={{ color: COLORS.muted }} />
+                  View public profile →
+                </a>
               </div>
             </div>
             <div className="rounded-[14px] p-5 text-white" style={{ background: COLORS.primary }}>
               <h3 className="text-[16px] font-semibold leading-[1.25]">Ready to hire?</h3>
-              <p className="mt-2 text-[14px] leading-[1.43] text-white/85">Sign in to save this artisan, start a conversation, and request a quote.</p>
-              <Link href="/sign-in" className="mt-4 flex h-11 w-full items-center justify-center rounded-lg bg-white px-4 text-[14px] font-medium transition-transform hover:scale-[1.01]" style={{ color: COLORS.primaryActive }}>Sign in to message</Link>
+              <p className="mt-2 text-[14px] leading-[1.43] text-white/85">
+                {isSignedIn
+                  ? `Start a conversation with ${artisan.name} and request a quote.`
+                  : "Sign in to save this artisan, start a conversation, and request a quote."}
+              </p>
+              <Link
+                href={hirePath}
+                className="mt-4 flex h-11 w-full items-center justify-center gap-2 rounded-lg bg-white px-4 text-[14px] font-medium transition-transform hover:scale-[1.01]"
+                style={{ color: COLORS.primaryActive }}
+              >
+                <MessageCircle size={16} />
+                {isSignedIn ? `Message ${artisan.name.split(" ")[0]}` : "Sign in to message"}
+              </Link>
             </div>
           </aside>
         </div>
       </motion.div>
+          <AnimatePresence>
+        {modalItem && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm"
+            onClick={() => setModalItem(null)}
+          >
+            <motion.div
+              initial={{ opacity: 0, y: 16, scale: 0.97 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 10, scale: 0.97 }}
+              transition={{ type: "spring", stiffness: 340, damping: 32 }}
+              className="relative w-full max-w-[680px] overflow-hidden rounded-[24px] bg-white shadow-2xl"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {modalItem.imageUrl && (
+                <div className="relative aspect-video w-full bg-[#f7f7f7]">
+                  <img src={modalItem.imageUrl} alt={modalItem.title} className="h-full w-full object-cover" />
+                </div>
+              )}
+              <div className="p-5">
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <h3 className="text-[20px] font-semibold leading-[1.2] tracking-[-0.02em]" style={{ color: COLORS.ink }}>{modalItem.title}</h3>
+                    {modalItem.category && <p className="mt-1 text-[13px]" style={{ color: COLORS.muted }}>{modalItem.category}</p>}
+                  </div>
+                  <button
+                    onClick={() => setModalItem(null)}
+                    className="grid h-9 w-9 shrink-0 cursor-pointer place-items-center rounded-full transition-colors hover:bg-[#f7f7f7]"
+                    aria-label="Close"
+                  >
+                    <X size={18} />
+                  </button>
+                </div>
+                {modalItem.description && (
+                  <p className="mt-3 text-[14px] leading-[1.5]" style={{ color: COLORS.body }}>{modalItem.description}</p>
+                )}
+                {modalItem.tags && modalItem.tags.length > 0 && (
+                  <div className="mt-4 flex flex-wrap gap-1.5">
+                    {modalItem.tags.map((tag) => (
+                      <span key={tag} className="rounded-full border px-2.5 py-1 text-[12px]" style={{ borderColor: COLORS.hairlineSoft, background: COLORS.surfaceSoft, color: COLORS.muted }}>{tag}</span>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </section>
   );
 }
