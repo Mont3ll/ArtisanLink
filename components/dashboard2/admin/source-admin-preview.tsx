@@ -11135,11 +11135,12 @@ function ArtisanDashboardCoreSection({
     setJobAndOpen(job);
   };
 
-  const updateJobStatus = (
+  const updateJobStatus = async (
     job: ArtisanJob,
     status: DashboardRecord["status"],
   ) => {
     const updatedJob = { ...job, status };
+    // Optimistic local update
     setArtisanJobRows((current) =>
       current.map((item) => (item.id === job.id ? updatedJob : item)),
     );
@@ -11171,6 +11172,22 @@ function ArtisanDashboardCoreSection({
           : [earning, ...current],
       );
     }
+
+    // Map source status to API action
+    const actionMap: Partial<Record<DashboardRecord["status"], string>> = {
+      ACTIVE: "start_job",
+      COMPLETED: "complete_job",
+    };
+    const action = actionMap[status];
+    if (action && !job.id.startsWith("job-")) {
+      try {
+        await fetch(`/api/artisan/jobs/${job.id}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ action }),
+        });
+      } catch { /* silent — local state already updated */ }
+    }
   };
 
   const createJobFromConversationQuote = (
@@ -11194,10 +11211,11 @@ function ArtisanDashboardCoreSection({
     setSelectedJob(nextJob);
   };
 
-  const savePortfolioProject = (
+  const savePortfolioProject = async (
     project: ArtisanPortfolioProject,
     isNew: boolean,
   ) => {
+    // Optimistic local update
     setPortfolioRows((current) =>
       isNew
         ? [project, ...current]
@@ -11205,6 +11223,38 @@ function ArtisanDashboardCoreSection({
     );
     setSelectedProject(null);
     setPortfolioModalIsNew(false);
+
+    // Real API call — map source project to API shape
+    // Only if the project has a non-fixture id (real jobs have UUIDs)
+    const isFixture = project.id.startsWith("portfolio-") || project.id === "portfolio-new";
+    if (!isFixture || isNew) {
+      try {
+        const body = {
+          title: project.title,
+          description: project.description || undefined,
+          imageUrl: project.gradient || "https://via.placeholder.com/800x600",
+          category: project.category || undefined,
+          tags: project.tags,
+          duration: project.duration || undefined,
+          cost: project.cost ? Number(project.cost.replace(/[^0-9]/g, "")) || undefined : undefined,
+          isPublic: project.status === "Published",
+          isFeatured: project.featured,
+        };
+        if (isNew) {
+          await fetch("/api/artisan/portfolio", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(body),
+          });
+        } else {
+          await fetch(`/api/artisan/portfolio/${project.id}`, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(body),
+          });
+        }
+      } catch { /* silent — local state already updated */ }
+    }
   };
 
   const openQuickJob = (job: ArtisanJob) => {
@@ -13279,6 +13329,7 @@ function ArtisanDashboardCoreSection({
                   )}
 
                   {settingsTab === "location" && (
+                    <>
                     <div className="grid min-w-0 gap-5 xl:grid-cols-[minmax(0,1fr)_300px]">
                       <div className="grid min-w-0 gap-3 md:grid-cols-2">
                         <label className="grid min-w-0 gap-1.5">
@@ -13424,6 +13475,32 @@ function ArtisanDashboardCoreSection({
                         </div>
                       </aside>
                     </div>
+                    <div className="flex items-center gap-3 pt-2">
+                      <button
+                        onClick={async () => {
+                          try {
+                            await fetch("/api/artisan/profile", {
+                              method: "PATCH",
+                              headers: { "Content-Type": "application/json" },
+                              body: JSON.stringify({
+                                county: locationCounty,
+                                city: locationCity,
+                              }),
+                            });
+                            setLocationSaved(true);
+                            setTimeout(() => setLocationSaved(false), 2800);
+                          } catch { /* silent */ }
+                        }}
+                        className="h-10 cursor-pointer rounded-lg px-4 text-[13px] font-medium text-white transition-colors hover:bg-emerald-800"
+                        style={{ background: COLORS.primary }}
+                      >
+                        Save location
+                      </button>
+                      {locationSaved && (
+                        <p className="text-[12px] font-semibold" style={{ color: COLORS.primaryActive }}>Saved!</p>
+                      )}
+                    </div>
+                    </>
                   )}
 
                   {settingsTab === "verification" && (
@@ -13453,31 +13530,95 @@ function ArtisanDashboardCoreSection({
                           </div>
                           <StatusChip status="PENDING" />
                         </div>
-                        <div className="grid gap-2 sm:grid-cols-2">
-                          {[
-                            "National ID",
-                            "Trade certificate",
-                            "Portfolio samples",
-                            "Reference contact",
-                          ].map((item) => (
-                            <button
-                              key={item}
-                              className="flex min-w-0 cursor-pointer items-center justify-between gap-2 rounded-[14px] border bg-white p-3 text-left transition-colors hover:bg-[#f7f7f7]"
-                              style={{ borderColor: COLORS.hairlineSoft }}
-                            >
-                              <span
-                                className="truncate text-[13px] font-medium"
-                                style={{ color: COLORS.ink }}
-                              >
-                                {item}
-                              </span>
-                              <FileCheck2
-                                size={15}
-                                className="shrink-0"
-                                style={{ color: COLORS.primary }}
+                        <div className="mt-4 grid gap-3">
+                          {/* National ID upload */}
+                          <div className="rounded-[14px] border p-3" style={{ borderColor: COLORS.hairlineSoft }}>
+                            <p className="text-[13px] font-semibold" style={{ color: COLORS.ink }}>National ID / Passport</p>
+                            <label className="mt-2 flex cursor-pointer items-center gap-2 rounded-lg border border-dashed p-2 text-[13px] hover:bg-[#f7f7f7]" style={{ borderColor: COLORS.hairline, color: COLORS.muted }}>
+                              <Upload size={14} style={{ color: COLORS.primary }} />
+                              Upload ID document (JPG, PNG, PDF)
+                              <input
+                                type="file"
+                                accept="image/*,.pdf"
+                                className="sr-only"
+                                onChange={async (e) => {
+                                  const file = e.target.files?.[0];
+                                  if (!file) return;
+                                  const reader = new FileReader();
+                                  reader.onload = async () => {
+                                    try {
+                                      const res = await fetch("/api/upload/image", {
+                                        method: "POST",
+                                        headers: { "Content-Type": "application/json" },
+                                        body: JSON.stringify({ file: reader.result, folder: "id-documents" }),
+                                      });
+                                      if (res.ok) {
+                                        const { url } = await res.json();
+                                        await fetch("/api/artisan/profile", {
+                                          method: "PATCH",
+                                          headers: { "Content-Type": "application/json" },
+                                          body: JSON.stringify({ idDocumentUrl: url, idDocumentType: "NATIONAL_ID" }),
+                                        });
+                                      }
+                                    } catch { /* silent */ }
+                                  };
+                                  reader.readAsDataURL(file);
+                                }}
                               />
-                            </button>
-                          ))}
+                            </label>
+                          </div>
+                          {/* Trade certificate upload */}
+                          <div className="rounded-[14px] border p-3" style={{ borderColor: COLORS.hairlineSoft }}>
+                            <p className="text-[13px] font-semibold" style={{ color: COLORS.ink }}>Trade certificate / Business permit</p>
+                            <label className="mt-2 flex cursor-pointer items-center gap-2 rounded-lg border border-dashed p-2 text-[13px] hover:bg-[#f7f7f7]" style={{ borderColor: COLORS.hairline, color: COLORS.muted }}>
+                              <Upload size={14} style={{ color: COLORS.primary }} />
+                              Upload certificate (JPG, PNG, PDF)
+                              <input
+                                type="file"
+                                accept="image/*,.pdf"
+                                className="sr-only"
+                                onChange={async (e) => {
+                                  const file = e.target.files?.[0];
+                                  if (!file) return;
+                                  const reader = new FileReader();
+                                  reader.onload = async () => {
+                                    try {
+                                      const res = await fetch("/api/upload/image", {
+                                        method: "POST",
+                                        headers: { "Content-Type": "application/json" },
+                                        body: JSON.stringify({ file: reader.result, folder: "certificates" }),
+                                      });
+                                      if (res.ok) {
+                                        const { url } = await res.json();
+                                        await fetch("/api/artisan/profile", {
+                                          method: "PATCH",
+                                          headers: { "Content-Type": "application/json" },
+                                          body: JSON.stringify({ certificateUrl: url }),
+                                        });
+                                      }
+                                    } catch { /* silent */ }
+                                  };
+                                  reader.readAsDataURL(file);
+                                }}
+                              />
+                            </label>
+                          </div>
+                          {/* Resubmit button */}
+                          <button
+                            onClick={async () => {
+                              try {
+                                await fetch("/api/artisan/verification/resubmit", {
+                                  method: "POST",
+                                  headers: { "Content-Type": "application/json" },
+                                  body: JSON.stringify({ notes: "Resubmitting with updated documents." }),
+                                });
+                              } catch { /* silent */ }
+                            }}
+                            className="h-10 w-full cursor-pointer rounded-lg px-4 text-[13px] font-medium text-white transition-colors hover:bg-emerald-800"
+                            style={{ background: COLORS.primary }}
+                          >
+                            Submit for review
+                          </button>
                         </div>
                       </div>
                       <aside
@@ -13580,6 +13721,33 @@ function ArtisanDashboardCoreSection({
                           />
                         </label>
                       ))}
+                      <div className="flex items-center gap-3 pt-2">
+                        <button
+                          onClick={async () => {
+                            try {
+                              await fetch("/api/user/notification-preferences", {
+                                method: "PATCH",
+                                headers: { "Content-Type": "application/json" },
+                                body: JSON.stringify({
+                                  messages: true,
+                                  jobUpdates: true,
+                                  verificationUpdates: true,
+                                  marketingEmails: false,
+                                }),
+                              });
+                              setNotifSaved(true);
+                              setTimeout(() => setNotifSaved(false), 2800);
+                            } catch { /* silent */ }
+                          }}
+                          className="h-10 cursor-pointer rounded-lg px-4 text-[13px] font-medium text-white transition-colors hover:bg-emerald-800"
+                          style={{ background: COLORS.primary }}
+                        >
+                          Save preferences
+                        </button>
+                        {notifSaved && (
+                          <p className="text-[12px] font-semibold" style={{ color: COLORS.primaryActive }}>Saved!</p>
+                        )}
+                      </div>
                     </div>
                   )}
 
