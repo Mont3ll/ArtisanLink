@@ -116,7 +116,8 @@ export function ArtisanProfileSection({ artisan }: { artisan: FullArtisanProfile
             </div>
           </div>
           <div className="flex flex-wrap gap-2">
-            <Link href="/sign-in" className="flex h-11 items-centype="button"
+            <button
+                type="button"
                 onClick={() => {
                   if (isSignedIn) {
                     toggleSave.mutate({ profileId: artisanProfileId, isSaved });
