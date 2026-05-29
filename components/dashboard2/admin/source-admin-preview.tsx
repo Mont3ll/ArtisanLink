@@ -6793,16 +6793,28 @@ function DashboardMessagesPane<Job extends MessageThreadJob>({
     Array<{ role: "artisan" | "client"; text: string; key: string }>
   >([]);
 
-  const sendMessage = () => {
+  const sendMessage = async () => {
     const trimmed = draft.trim();
     if (!trimmed && attachments.length === 0) return;
     const text = trimmed || (attachments.map((a) => a.name).join(", "));
+    // Optimistic local update
     setSentMessages((current) => [
       ...current,
       { role: role, text, key: `msg-${Date.now()}` },
     ]);
     setDraft("");
     setAttachments([]);
+    // Real API send — get conversationId from the selected job (SourceConversationThread)
+    const convId = (selectedJob as unknown as { conversationId?: string }).conversationId;
+    if (convId) {
+      try {
+        await fetch(`/api/conversations/${convId}/messages`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ content: text }),
+        });
+      } catch { /* silent — optimistic message already shown */ }
+    }
   };
 
   const upsertQuote = (state: ConversationQuoteState, amountDelta = 0) => {
@@ -7771,6 +7783,7 @@ function PortfolioProjectModal({
   initialMode?: "detail" | "edit";
   isNew?: boolean;
 }) {
+  const [projectState, setProject] = useState({ ...project });
   const [mode, setMode] = useState<"detail" | "edit">(initialMode);
   const formRef = useRef<HTMLDivElement | null>(null);
 
@@ -7786,6 +7799,7 @@ function PortfolioProjectModal({
       )?.value?.trim() || fallback;
     const savedProject: ArtisanPortfolioProject = {
       ...project,
+      ...projectState,
       id: isNew ? `portfolio-${Date.now()}` : project.id,
       title: value("title", project.title),
       category: value("category", project.category),
@@ -8084,15 +8098,52 @@ function PortfolioProjectModal({
                   className="text-[14px] font-semibold"
                   style={{ color: COLORS.ink }}
                 >
-                  Media update
+                  Project photo
                 </p>
-                <p
-                  className="mt-1 text-[13px] leading-[1.23]"
-                  style={{ color: COLORS.muted }}
-                >
-                  Photo upload, reorder, cover-image selection, and remove
-                  actions would live here.
-                </p>
+                {project.imageUrl ? (
+                  <div className="relative mt-2 aspect-[4/3] overflow-hidden rounded-[14px]">
+                    <img src={project.imageUrl} alt={project.title} className="h-full w-full object-cover" />
+                    <button
+                      type="button"
+                      onClick={() => setProject((prev) => ({ ...prev, imageUrl: null }))}
+                      className="absolute right-2 top-2 grid h-8 w-8 cursor-pointer place-items-center rounded-full bg-white/90 transition-colors hover:bg-white"
+                      style={{ color: COLORS.ink }}
+                      aria-label="Remove photo"
+                    >
+                      <X size={14} />
+                    </button>
+                  </div>
+                ) : (
+                  <label className="mt-2 flex cursor-pointer flex-col items-center justify-center gap-2 rounded-[14px] border border-dashed py-8 text-center hover:bg-[#f7f7f7]" style={{ borderColor: COLORS.hairline }}>
+                    <Upload size={20} style={{ color: COLORS.muted }} />
+                    <span className="text-[13px]" style={{ color: COLORS.muted }}>Click to upload a photo</span>
+                    <span className="text-[12px]" style={{ color: COLORS.mutedSoft }}>JPG, PNG, WebP up to 10MB</span>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="sr-only"
+                      onChange={async (e) => {
+                        const file = e.target.files?.[0];
+                        if (!file) return;
+                        const reader = new FileReader();
+                        reader.onload = async () => {
+                          try {
+                            const res = await fetch("/api/upload/image", {
+                              method: "POST",
+                              headers: { "Content-Type": "application/json" },
+                              body: JSON.stringify({ file: reader.result, folder: "portfolio" }),
+                            });
+                            if (res.ok) {
+                              const { url } = await res.json();
+                              setProject((prev) => ({ ...prev, imageUrl: url }));
+                            }
+                          } catch { /* silent */ }
+                        };
+                        reader.readAsDataURL(file);
+                      }}
+                    />
+                  </label>
+                )}
               </div>
               <div
                 className="flex justify-end gap-2 border-t pt-4"
@@ -9560,6 +9611,7 @@ type ArtisanPortfolioProject = {
   description: string;
   tags: string[];
   gradient: string;
+  imageUrl?: string | null;
 };
 
 const artisanPortfolioProjects: ArtisanPortfolioProject[] = [
@@ -11232,7 +11284,7 @@ function ArtisanDashboardCoreSection({
         const body = {
           title: project.title,
           description: project.description || undefined,
-          imageUrl: project.gradient || "https://via.placeholder.com/800x600",
+          imageUrl: project.imageUrl || project.gradient || "https://via.placeholder.com/800x600",
           category: project.category || undefined,
           tags: project.tags,
           duration: project.duration || undefined,
@@ -15731,6 +15783,14 @@ function AdminOperationsSection({
       ? (_adminCtx!.adminArtisans as unknown as typeof artisans)
       : artisans;
 
+  const effectiveUserRows = hasRealAdminData && (_adminCtx!.adminUsers?.length ?? 0) > 0
+    ? (_adminCtx!.adminUsers as unknown as typeof userRows)
+    : userRows;
+
+  const effectiveModerationRows = hasRealAdminData && (_adminCtx!.adminModerationRows?.length ?? 0) > 0
+    ? (_adminCtx!.adminModerationRows as unknown as typeof moderationRows)
+    : moderationRows;
+
   const openBulkAction = (
     action: AdminBulkAction,
     noun: string,
@@ -16934,19 +16994,19 @@ function AdminOperationsSection({
                     <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
                       <DashboardStatCard
                         label="Total users"
-                        value="2,418"
+                        value={hasRealAdminData && _adminCtx?.adminStats ? String((effectiveUserRows.length || 0)) : "2,418"}
                         helper="Client and artisan accounts"
                         icon={UserRound}
                       />
                       <DashboardStatCard
                         label="Clients"
-                        value="1,746"
+                        value={String(effectiveUserRows.filter((u) => u.role === "Client").length || (hasRealAdminData ? 0 : 1746))}
                         helper="Active requesters"
                         icon={UserRound}
                       />
                       <DashboardStatCard
                         label="Artisans"
-                        value="672"
+                        value={String(effectiveUserRows.filter((u) => u.role === "Artisan").length || (hasRealAdminData ? 0 : 672))}
                         helper="Marketplace supply"
                         icon={Hammer}
                       />
@@ -16960,7 +17020,7 @@ function AdminOperationsSection({
                     <DashboardDataList
                       title="User account management"
                       subtitle="Search users by name, email, role, risk, and status. Row click opens an at-a-glance admin detail panel."
-                      rows={userRows}
+                      rows={effectiveUserRows}
                       rowKey={(user) => user.id}
                       getSearchText={(user) =>
                         `${user.name} ${user.email} ${user.role} ${user.status} ${user.meta} ${user.risk}`
@@ -17436,7 +17496,7 @@ function AdminOperationsSection({
                     <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
                       <DashboardStatCard
                         label="Open flags"
-                        value={String(moderationRows.length)}
+                        value={String(effectiveModerationRows.length)}
                         helper="Needs triage"
                         icon={Flag}
                       />
@@ -17473,7 +17533,7 @@ function AdminOperationsSection({
                     <DashboardDataList
                       title="Moderation queue"
                       subtitle="Flagged accounts, reports, listing-quality issues, and automated risk signals. Click a row for quick context, or Inspect for the full moderation workflow."
-                      rows={moderationRows}
+                      rows={effectiveModerationRows}
                       rowKey={(row) => row.id}
                       getSearchText={(row) =>
                         `${row.title} ${row.body} ${row.status} ${row.severity} ${row.target} ${row.source} ${row.owner}`

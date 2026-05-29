@@ -14,7 +14,10 @@ import { useAdminVerification } from './use-admin-verification'
 import type { PendingArtisan } from './use-admin-verification'
 import { useAdminArtisans } from './use-admin-artisans'
 import type { AdminArtisan } from './use-admin-artisans'
-import { useUsers } from './use-users'
+import { useUsers, useUserStats } from './use-users'
+import type { User } from './use-users'
+import { useAdminModeration } from './use-admin-moderation'
+import type { ModerationItem } from './use-admin-moderation'
 
 // ─── Helper ──────────────────────────────────────────────────────────────────
 
@@ -152,6 +155,64 @@ export function mapAdminStatsToSource(stats: {
 
 // ─── Aggregate Hook ───────────────────────────────────────────────────────────
 
+export interface SourceUserRow {
+  id: string
+  name: string
+  role: string
+  status: string
+  meta: string
+  email: string
+  risk: 'Low' | 'Medium' | 'High'
+}
+
+export interface SourceModerationRow {
+  id: string
+  title: string
+  body: string
+  status: 'PENDING' | 'REVIEW' | 'ACTIVE' | 'COMPLETED' | 'QUOTED' | 'VERIFIED'
+  severity: 'Low' | 'Medium' | 'High'
+  target: string
+  source: string
+  owner: string
+}
+
+export function mapUserToRow(user: User): SourceUserRow {
+  const name = `${user.firstName ?? ''} ${user.lastName ?? ''}`.trim() || user.email
+  const profile = user.profile as { profession?: string; city?: string } | undefined
+  return {
+    id: user.id,
+    name,
+    role: user.role === 'ARTISAN' ? 'Artisan' : user.role === 'ADMIN' ? 'Admin' : 'Client',
+    status: user.status,
+    meta: profile?.profession
+      ? `${profile.profession}${profile.city ? ' · ' + profile.city : ''}`
+      : profile?.city || 'Kenya',
+    email: user.email,
+    risk: (user.status === 'SUSPENDED' || user.status === 'BANNED') ? 'High' : 'Low',
+  }
+}
+
+export function mapModerationItemToRow(item: ModerationItem): SourceModerationRow {
+  const content = item.content as Record<string, unknown>
+  const body = (content?.comment as string)
+    || ((content?.artisan as { name?: string })?.name ? `Artisan: ${(content.artisan as { name: string }).name}` : '')
+    || (item.targetUser ? `User: ${item.targetUser.name}` : 'Reported item')
+  const statusMap: Record<string, SourceModerationRow['status']> = {
+    pending: 'PENDING', approved: 'ACTIVE', hidden: 'REVIEW', suspended: 'REVIEW',
+  }
+  return {
+    id: item.id,
+    title: item.type === 'review' ? 'Review flag' : 'User report',
+    body: body || 'Reported content',
+    status: statusMap[item.status.toLowerCase()] ?? 'REVIEW',
+    severity: item.status.toLowerCase() === 'suspended' ? 'High' : item.type === 'review' ? 'Low' : 'Medium',
+    target: item.type === 'review' ? 'Review' : 'User account',
+    source: item.targetUser ? `${item.targetUser.role} report` : 'System flag',
+    owner: 'Trust queue',
+  }
+}
+
+
 export function useAdminDataAdapter() {
   // useAdminVerification returns fields directly (not data.*)
   const {
@@ -177,11 +238,21 @@ export function useAdminDataAdapter() {
     ? mapAdminStatsToSource(statsData as unknown as Parameters<typeof mapAdminStatsToSource>[0])
     : null
 
+  const { data: userStatsData } = useUserStats()
+  const { data: moderationData, isLoading: modLoading } = useAdminModeration()
+  const users: SourceUserRow[] = (usersData as User[] ?? []).map(mapUserToRow)
+  const userStats = userStatsData ?? null
+  const moderationRows: SourceModerationRow[] = (moderationData?.items ?? []).map(mapModerationItemToRow)
+  const moderationStats = moderationData?.stats ?? null
+
   return {
     verificationQueue,
     adminArtisans,
-    users: usersData ?? [],
+    users,
+    userStats,
+    moderationRows,
+    moderationStats,
     stats,
-    isLoading: verLoading || artLoading || statsLoading || usersLoading,
+    isLoading: verLoading || artLoading || statsLoading || usersLoading || modLoading,
   }
 }
