@@ -112,7 +112,7 @@ export function ArtisanProfileSection({ artisan }: { artisan: FullArtisanProfile
           </div>
           <div className="flex flex-wrap gap-2">
             <Link href="/sign-in" className="flex h-11 items-center gap-2 rounded-lg border px-4 text-[14px] font-medium transition-colors hover:bg-[#f7f7f7]" style={{ borderColor: COLORS.ink, color: COLORS.ink }}><Bookmark size={16} />Save</Link>
-            <Link href={`/sign-in?redirect_url=/artisans/${artisan.id}`} className="flex h-11 items-center gap-2 rounded-lg px-4 text-[14px] font-medium text-white transition-colors hover:bg-emerald-800" style={{ background: COLORS.primary }}><MessageCircle size={16} />Message</Link>
+            <Link href={isSignedIn ? `/client/messages?artisan=${artisan.id}&name=${encodeURIComponent(artisan.name)}&profession=${encodeURIComponent(artisan.profession || "")}` : `/sign-in?redirect_url=/artisans/${artisan.id}`} className="flex h-11 items-center gap-2 rounded-lg px-4 text-[14px] font-medium text-white transition-colors hover:bg-emerald-800" style={{ background: COLORS.primary }}><MessageCircle size={16} />{isSignedIn ? "Message" : "Message"}</Link>
           </div>
         </div>
 
