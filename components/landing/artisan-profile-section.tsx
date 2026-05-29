@@ -1,6 +1,7 @@
 "use client";
 
 import { useAuth } from "@clerk/nextjs";
+import { useSavedArtisanIds, useToggleSaveArtisan } from "@/lib/hooks/use-artisan-search";
 
 import { useState } from "react";
 
@@ -66,8 +67,12 @@ export function ArtisanProfileSection({ artisan }: { artisan: FullArtisanProfile
   const locationStr = [artisan.location.city, artisan.location.county].filter(Boolean).join(", ") || "Kenya";
   const [modalItem, setModalItem] = useState<typeof artisan.portfolio[number] | null>(null);
   const { isSignedIn } = useAuth();
+  const { data: savedIds } = useSavedArtisanIds();
+  const toggleSave = useToggleSaveArtisan();
+  const artisanProfileId = artisan.profileId ?? artisan.id;
+  const isSaved = savedIds?.has(artisanProfileId) ?? false;
   const hirePath = isSignedIn
-    ? `/client/messages?artisan=${artisan.id}&name=${encodeURIComponent(artisan.name)}&profession=${encodeURIComponent(artisan.profession || "")}`
+    ? `/client/messages?artisan=${artisan.id}&name=${encodeURIComponent(artisan.name)}&profession=${encodeURIComponent(artisan.profession || "")}&new=1`
     : `/sign-in?redirect=/artisans/${artisan.id}`;
   const profileBio = artisan.bio || `${artisan.name} is a verified ${artisan.profession?.toLowerCase()} focused on clean workmanship, responsive communication, and practical project scoping. This profile preview shows how public artisan pages combine trust signals, portfolio work, skills, and hiring calls to action.`;
   const portfolioFrames = [
@@ -111,7 +116,20 @@ export function ArtisanProfileSection({ artisan }: { artisan: FullArtisanProfile
             </div>
           </div>
           <div className="flex flex-wrap gap-2">
-            <Link href="/sign-in" className="flex h-11 items-center gap-2 rounded-lg border px-4 text-[14px] font-medium transition-colors hover:bg-[#f7f7f7]" style={{ borderColor: COLORS.ink, color: COLORS.ink }}><Bookmark size={16} />Save</Link>
+            <Link href="/sign-in" className="flex h-11 items-centype="button"
+                onClick={() => {
+                  if (isSignedIn) {
+                    toggleSave.mutate({ profileId: artisanProfileId, isSaved });
+                  } else {
+                    window.location.href = `/sign-in?redirect=/artisans/${artisan.id}`;
+                  }
+                }}
+                className="flex h-11 items-center gap-2 rounded-lg border px-4 text-[14px] font-medium transition-colors hover:bg-[#f7f7f7]"
+                style={{ borderColor: isSaved ? COLORS.primary : COLORS.ink, color: isSaved ? COLORS.primary : COLORS.ink, background: isSaved ? COLORS.primaryTint : COLORS.canvas }}
+              >
+                <Bookmark size={16} />
+                {isSaved ? "Saved" : "Save"}
+              </button>
             <Link href={isSignedIn ? `/client/messages?artisan=${artisan.id}&name=${encodeURIComponent(artisan.name)}&profession=${encodeURIComponent(artisan.profession || "")}` : `/sign-in?redirect_url=/artisans/${artisan.id}`} className="flex h-11 items-center gap-2 rounded-lg px-4 text-[14px] font-medium text-white transition-colors hover:bg-emerald-800" style={{ background: COLORS.primary }}><MessageCircle size={16} />{isSignedIn ? "Message" : "Message"}</Link>
           </div>
         </div>

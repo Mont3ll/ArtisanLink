@@ -103,6 +103,7 @@ function normalizeArtisan(raw: RawArtisan, index: number): ArtisanCardData {
 
   return {
     id: asString(raw.id, `artisan-${index}`),
+    profileId: asString(raw.profileId, asString(raw.profile_id)),
     name,
     profession,
     profileImage: asString(raw.profileImage, asString(user.image)) || null,

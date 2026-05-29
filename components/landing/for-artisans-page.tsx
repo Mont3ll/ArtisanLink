@@ -85,7 +85,7 @@ export function ForArtisansPage() {
                 Start artisan profile
                 <ArrowRight size={18} />
               </Link>
-              <Link href="/artisan-dashboard" className="flex h-12 items-center justify-center gap-2 rounded-lg border px-5 text-[16px] font-medium transition-colors hover:bg-[#f7f7f7]" style={{ borderColor: COLORS.ink, color: COLORS.ink }}>
+              <Link href="/artisan/dashboard" className="flex h-12 items-center justify-center gap-2 rounded-lg border px-5 text-[16px] font-medium transition-colors hover:bg-[#f7f7f7]" style={{ borderColor: COLORS.ink, color: COLORS.ink }}>
                 Preview workspace
               </Link>
             </div>
@@ -194,7 +194,7 @@ export function ForArtisansPage() {
               <p className="mb-2 text-[14px] font-medium" style={{ color: COLORS.muted }}>Inside your workspace</p>
               <h2 className="text-[22px] font-medium leading-[1.18] tracking-[-0.44px]" style={{ color: COLORS.ink }}>Everything you manage after listing your craft.</h2>
             </div>
-            <Link href="/artisan-dashboard" className="h-10 w-fit rounded-lg border px-4 py-2 text-[14px] font-medium transition-colors hover:bg-[#f7f7f7]" style={{ borderColor: COLORS.hairline, color: COLORS.ink }}>
+            <Link href="/artisan/dashboard" className="h-10 w-fit rounded-lg border px-4 py-2 text-[14px] font-medium transition-colors hover:bg-[#f7f7f7]" style={{ borderColor: COLORS.hairline, color: COLORS.ink }}>
               Open dashboard preview
             </Link>
           </div>

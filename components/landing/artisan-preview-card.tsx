@@ -1,12 +1,16 @@
 "use client";
 
-import { BadgeCheck, Eye, Images, MessageCircle, Star } from "lucide-react";
+import { BadgeCheck, Bookmark, BookmarkCheck, Eye, Images, MessageCircle, Star } from "lucide-react";
+import { useAuth } from "@clerk/nextjs";
+import { useSavedArtisanIds, useToggleSaveArtisan } from "@/lib/hooks/use-artisan-search";
 import { useRouter } from "next/navigation";
 
 import { COLORS } from "@/lib/design-tokens";
 
 export type ArtisanCardData = {
   id: string;
+  /** Artisan's profile ID (different from user ID). Used for save/unsave. */
+  profileId?: string;
   name: string;
   profession: string;
   profileImage: string | null;
@@ -63,6 +67,11 @@ export function ArtisanPreviewCard({
   onOpenPortfolio?: (artisan: ArtisanCardData) => void;
 }) {
   const router = useRouter();
+  const { isSignedIn } = useAuth();
+  const { data: savedIds } = useSavedArtisanIds();
+  const toggleSave = useToggleSaveArtisan();
+  const profileId = artisan.profileId ?? artisan.id;
+  const isSaved = savedIds?.has(profileId) ?? false;
   const abbr = getInitials(artisan.name);
   const locationStr =
     [artisan.location.city, artisan.location.county].filter(Boolean).join(", ") || "Kenya";
@@ -237,14 +246,31 @@ export function ArtisanPreviewCard({
           <Eye className="h-4 w-4" />
           View Profile
         </button>
+        {isSignedIn ? (
+          <button
+            type="button"
+            onClick={() => toggleSave.mutate({ profileId, isSaved })}
+            className="flex min-h-10 cursor-pointer items-center justify-center gap-1.5 rounded-lg border px-3 py-2 text-[14px] font-medium leading-[1.29] transition-colors hover:border-emerald-600"
+            style={{ borderColor: isSaved ? COLORS.primary : COLORS.hairline, color: isSaved ? COLORS.primary : COLORS.body, background: isSaved ? COLORS.primaryTint : COLORS.canvas }}
+            aria-label={isSaved ? "Unsave artisan" : "Save artisan"}
+          >
+            {isSaved ? <BookmarkCheck className="h-4 w-4" /> : <Bookmark className="h-4 w-4" />}
+          </button>
+        ) : null}
         <button
           type="button"
-          onClick={() => router.push(`/sign-in?redirect_url=/artisans/${artisan.id}`)}
+          onClick={() => {
+            if (isSignedIn) {
+              router.push(`/client/messages?artisan=${artisan.id}&name=${encodeURIComponent(artisan.name)}&profession=${encodeURIComponent(artisan.profession || "")}`);
+            } else {
+              router.push(`/sign-in?redirect_url=/artisans/${artisan.id}`);
+            }
+          }}
           className="flex min-h-10 flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-lg px-3 py-2 text-[14px] font-medium leading-[1.29] text-white transition-colors hover:bg-emerald-800"
           style={{ background: COLORS.primary }}
         >
           <MessageCircle className="h-4 w-4" />
-          Message
+          {isSignedIn ? "Message" : "Message"}
         </button>
       </div>
     </article>
