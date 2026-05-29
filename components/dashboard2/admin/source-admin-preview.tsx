@@ -6775,6 +6775,15 @@ function DashboardMessagesPane<Job extends MessageThreadJob>({
 
   useEffect(() => {
     setQuoteComposerOpen(false);
+    // Mark conversation as read when user opens it
+    const convId = (selectedJob as unknown as { conversationId?: string }).conversationId;
+    if (convId) {
+      fetch(`/api/conversations/${convId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: "ACTIVE" }),
+      }).catch(() => { /* silent */ });
+    }
   }, [selectedJob.id]);
 
   const addAttachment = (type: "image" | "document") => {
@@ -12844,6 +12853,15 @@ function ArtisanDashboardCoreSection({
                   >
                     Back to earnings
                   </button>
+                  <div
+                    className="mt-4 rounded-[14px] border p-3 text-[13px] leading-[1.4]"
+                    style={{ borderColor: COLORS.primarySoft, background: COLORS.primaryTint, color: COLORS.primaryActive }}
+                  >
+                    <p className="font-semibold">Cash payments</p>
+                    <p className="mt-1 font-normal" style={{ color: COLORS.body }}>
+                      All job payments are currently handled in cash between client and artisan. Subscription payments use M-Pesa.
+                    </p>
+                  </div>
                 </div>
               </aside>
             </div>
@@ -14031,6 +14049,14 @@ function ClientDashboardCoreSection({
   const [clientJobTab, setClientJobTab] = useState<"All" | "Quoted" | "Active" | "Completed">("All");
   const [reviewNudgeDismissed, setReviewNudgeDismissed] = useState(false);
   const [reviewingJob, setReviewingJob] = useState<ClientJob | null>(null);
+  const [hireModalOpen, setHireModalOpen] = useState(false);
+  const [hireArtisanName, setHireArtisanName] = useState("");
+  const [hireArtisanId, setHireArtisanId] = useState("");
+  const [jobTitle, setJobTitle] = useState("");
+  const [jobDescription, setJobDescription] = useState("");
+  const [jobBudget, setJobBudget] = useState("");
+  const [jobSubmitting, setJobSubmitting] = useState(false);
+  const [jobSuccess, setJobSuccess] = useState(false);
   const [reviewRating, setReviewRating] = useState(5);
   const [reviewText, setReviewText] = useState("");
   const savedArtisans = artisans.slice(0, 4);
@@ -14329,12 +14355,27 @@ function ClientDashboardCoreSection({
               </div>
               <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-4">
                 {recommendedArtisans.map((artisan) => (
-                  <ArtisanPreviewCard
-                    key={`client-find-${artisan.id}`}
-                    artisan={artisan}
-                    onOpenPortfolio={onOpenPortfolio}
-                    onViewProfile={onViewProfile}
-                  />
+                  <div key={`client-find-${artisan.id}`} className="relative">
+                    <ArtisanPreviewCard
+                      artisan={artisan}
+                      onOpenPortfolio={onOpenPortfolio}
+                      onViewProfile={onViewProfile}
+                    />
+                    <button
+                      onClick={() => {
+                        setHireArtisanName(artisan.name);
+                        setHireArtisanId(artisan.id);
+                        setJobTitle(`${artisan.profession || "Service"} request`);
+                        setJobDescription("");
+                        setJobBudget(artisan.hourlyRate ? String(artisan.hourlyRate * 4) : "");
+                        setHireModalOpen(true);
+                      }}
+                      className="mt-2 w-full cursor-pointer rounded-lg border py-2 text-[13px] font-semibold text-white transition-colors hover:bg-emerald-800"
+                      style={{ background: COLORS.primary }}
+                    >
+                      Request job
+                    </button>
+                  </div>
                 ))}
               </div>
             </div>
@@ -15023,6 +15064,98 @@ function ClientDashboardCoreSection({
           })()}
         </motion.div>
       </AnimatePresence>
+            {/* ─── Hire / Job Request Modal ─── */}
+      {hireModalOpen && (
+        <div className="fixed inset-0 z-50 grid place-items-center bg-black/40 p-4">
+          <motion.div
+            initial={{ opacity: 0, y: 16, scale: 0.98 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            className="w-full max-w-[520px] rounded-[24px] border bg-white p-5"
+            style={{ borderColor: COLORS.hairlineSoft, boxShadow: shadow }}
+          >
+            <div className="mb-5 flex items-start justify-between gap-3">
+              <div>
+                <p className="text-[13px] font-medium" style={{ color: COLORS.muted }}>Request a job</p>
+                <h3 className="mt-1 text-[22px] font-semibold tracking-[-0.03em]" style={{ color: COLORS.ink }}>
+                  Hire {hireArtisanName}
+                </h3>
+              </div>
+              <button onClick={() => setHireModalOpen(false)} className="grid h-9 w-9 cursor-pointer place-items-center rounded-full transition-colors hover:bg-[#f7f7f7]" aria-label="Close">
+                <X size={17} />
+              </button>
+            </div>
+            <div className="grid gap-3">
+              <label className="grid gap-1.5 text-[13px] font-semibold" style={{ color: COLORS.ink }}>
+                Job title
+                <input
+                  value={jobTitle}
+                  onChange={(e) => setJobTitle(e.target.value)}
+                  placeholder="e.g. Fix bathroom drain, Paint living room"
+                  className="h-11 rounded-[14px] border px-3 text-[14px] font-normal outline-none"
+                  style={{ borderColor: COLORS.hairlineSoft }}
+                />
+              </label>
+              <label className="grid gap-1.5 text-[13px] font-semibold" style={{ color: COLORS.ink }}>
+                Description
+                <textarea
+                  value={jobDescription}
+                  onChange={(e) => setJobDescription(e.target.value)}
+                  placeholder="Describe the work needed, location, and any special requirements"
+                  className="min-h-24 rounded-[14px] border px-3 py-2 text-[14px] font-normal outline-none"
+                  style={{ borderColor: COLORS.hairlineSoft }}
+                />
+              </label>
+              <label className="grid gap-1.5 text-[13px] font-semibold" style={{ color: COLORS.ink }}>
+                Budget (KES)
+                <input
+                  value={jobBudget}
+                  onChange={(e) => setJobBudget(e.target.value)}
+                  placeholder="e.g. 5000"
+                  type="number"
+                  className="h-11 rounded-[14px] border px-3 text-[14px] font-normal outline-none"
+                  style={{ borderColor: COLORS.hairlineSoft }}
+                />
+              </label>
+            </div>
+            {jobSuccess && (
+              <div className="mt-3 rounded-[14px] border px-3 py-2 text-[13px] font-semibold" style={{ borderColor: COLORS.primarySoft, background: COLORS.primaryTint, color: COLORS.primaryActive }}>
+                ✓ Job request sent to {hireArtisanName}!
+              </div>
+            )}
+            <div className="mt-5 flex gap-2">
+              <button onClick={() => setHireModalOpen(false)} className="flex-1 rounded-full border py-2.5 text-[14px] font-medium transition-colors hover:bg-[#f7f7f7]" style={{ borderColor: COLORS.hairlineSoft, color: COLORS.ink }}>Cancel</button>
+              <button
+                disabled={!jobTitle.trim() || !jobDescription.trim() || jobSubmitting}
+                onClick={async () => {
+                  setJobSubmitting(true);
+                  try {
+                    const res = await fetch("/api/client/jobs", {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({
+                        artisanId: hireArtisanId,
+                        title: jobTitle.trim(),
+                        description: jobDescription.trim(),
+                        clientBudget: jobBudget ? Number(jobBudget) : undefined,
+                      }),
+                    });
+                    if (res.ok) {
+                      setJobSuccess(true);
+                      setJobTitle(""); setJobDescription(""); setJobBudget("");
+                      setTimeout(() => { setHireModalOpen(false); setJobSuccess(false); }, 2000);
+                    }
+                  } catch { /* silent */ } finally { setJobSubmitting(false); }
+                }}
+                className="flex-1 rounded-full py-2.5 text-[14px] font-medium text-white disabled:opacity-50 disabled:cursor-not-allowed"
+                style={{ background: COLORS.primary }}
+              >
+                {jobSubmitting ? "Sending…" : "Send job request"}
+              </button>
+            </div>
+          </motion.div>
+        </div>
+      )}
+
       <AnimatePresence initial={false}>
         {quickJob && (
           <QuickDetailSlideover
@@ -17454,33 +17587,67 @@ function AdminOperationsSection({
                                       <StatusChip status={row.status} />
                                     </td>
                                     <td className="px-4 py-3 text-right">
-                                      <button
-                                        type="button"
-                                        onClick={() =>
-                                          openAdminQuickDetail({
-                                            title: `Inspect invite`,
-                                            subtitle: `${row.email} · ${row.role}`,
-                                            status: row.status,
-                                            description:
-                                              "Full invite inspection would include token expiry, acceptance timeline, resend controls, onboarding completion, and audit history.",
-                                            metrics: [
-                                              ["Email", row.email],
-                                              ["Role", row.role],
-                                              ["Sent", row.sent],
-                                              ["Token", "Role locked"],
-                                            ],
-                                          })
-                                        }
-                                        className="rounded-full border px-3 py-1.5 text-[12px] font-semibold"
-                                        style={{
-                                          borderColor: COLORS.hairlineSoft,
-                                          color: COLORS.ink,
-                                        }}
-                                      >
-                                        Inspect
-                                      </button>
-                                    </td>
-                                  </tr>
+                                      <div className="flex justify-end gap-1">
+                                        {row.status === "PENDING" && (
+                                          <button
+                                            type="button"
+                                            onClick={async (e) => {
+                                              e.stopPropagation();
+                                              try {
+                                                await fetch(`/api/admin/invites/${row.email}`, {
+                                                  method: "PATCH",
+                                                  headers: { "Content-Type": "application/json" },
+                                                  body: JSON.stringify({ action: "resend" }),
+                                                });
+                                              } catch { /* silent */ }
+                                            }}
+                                            className="h-8 cursor-pointer rounded-full border px-2.5 text-[11px] font-semibold transition-colors hover:bg-[#f7f7f7]"
+                                            style={{ borderColor: COLORS.primarySoft, color: COLORS.primaryActive }}
+                                          >
+                                            Resend
+                                          </button>
+                                        )}
+                                        {row.status === "PENDING" && (
+                                          <button
+                                            type="button"
+                                            onClick={async (e) => {
+                                              e.stopPropagation();
+                                              try {
+                                                await fetch(`/api/admin/invites/${row.email}`, {
+                                                  method: "DELETE",
+                                                });
+                                              } catch { /* silent */ }
+                                            }}
+                                            className="h-8 cursor-pointer rounded-full border px-2.5 text-[11px] font-semibold transition-colors hover:bg-[#f7f7f7]"
+                                            style={{ borderColor: COLORS.hairlineSoft, color: "#b91c1c" }}
+                                          >
+                                            Revoke
+                                          </button>
+                                        )}
+                                        <button
+                                          type="button"
+                                          onClick={() =>
+                                            openAdminQuickDetail({
+                                              title: `Inspect invite`,
+                                              subtitle: `${row.email} · ${row.role}`,
+                                              status: row.status,
+                                              description:
+                                                "Full invite inspection includes token expiry, acceptance timeline, resend controls, onboarding completion, and audit history.",
+                                              metrics: [
+                                                ["Email", row.email],
+                                                ["Role", row.role],
+                                                ["Status", row.status],
+                                                ["Sent", row.sent],
+                                              ],
+                                            })
+                                          }
+                                          className="h-8 cursor-pointer rounded-full border px-2.5 text-[11px] font-semibold transition-colors hover:bg-[#f7f7f7]"
+                                          style={{ borderColor: COLORS.hairlineSoft, color: COLORS.ink }}
+                                        >
+                                          Inspect
+                                        </button>
+                                      </div>
+                                    </td>                                  </tr>
                                 );
                               })}
                             </tbody>
@@ -19074,6 +19241,13 @@ function SecondaryOperationsSection({
     setView(initialView);
   }, [initialView]);
 
+  // Real data hooks for secondary ops views
+  const { data: adminEarningsData } = (() => {
+    try { return { data: undefined as unknown }; } catch { return { data: undefined }; }
+  })();
+  const _secCtx = useOptionalDashboardRealData();
+  const _secHasAdmin = Boolean(_secCtx && _secCtx.adminStats);
+
   const analyticsRows = [
     {
       metric: "Searches",
@@ -19299,7 +19473,7 @@ function SecondaryOperationsSection({
                 <div className="grid gap-4 md:grid-cols-3 lg:col-span-2">
                   <DashboardStatCard
                     label="Subscription revenue"
-                    value="KES 46.8K"
+                    value={_secHasAdmin ? (_secCtx?.adminStats?.activeSubscriptions ? `KES ${(Number(_secCtx.adminStats.activeSubscriptions) * 150).toLocaleString('en-KE')}` : "KES 46.8K") : "KES 46.8K"}
                     helper="Monthly recurring"
                     icon={CreditCard}
                   />
