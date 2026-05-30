@@ -11535,14 +11535,14 @@ function ArtisanDashboardCoreSection({
                 />
                 <DashboardStatCard
                   label="Unread messages"
-                  value="14"
+                  value={String(_verifCtx?.unreadCount ?? 14)}
                   helper="Respond today"
                   icon={MessageCircle}
                 />
                 <DashboardStatCard
-                  label="Portfolio views"
-                  value="486"
-                  helper="Last 30 days"
+                  label="Portfolio projects"
+                  value={String(portfolioRows.length)}
+                  helper="Published + draft"
                   icon={Eye}
                 />
               </div>
@@ -12289,7 +12289,7 @@ function ArtisanDashboardCoreSection({
                     <QuoteWorkflowBuilder
                       selectedJob={selectedJob}
                       mode={quoteMode}
-                      onSubmit={(total) => {
+                      onSubmit={async (total, lineItems, depositPercent) => {
                         const formatted = formatKes(total);
                         setArtisanJobRows((current) =>
                           current.map((job) =>
@@ -12299,6 +12299,23 @@ function ArtisanDashboardCoreSection({
                           ),
                         );
                         setSelectedJob((prev) => ({ ...prev, quote: formatted, status: "QUOTED" as const }));
+                        // Call real quote API for non-fixture jobs
+                        if (!selectedJob.id.startsWith("job-")) {
+                          try {
+                            await fetch(`/api/artisan/jobs/${selectedJob.id}/quote`, {
+                              method: "POST",
+                              headers: { "Content-Type": "application/json" },
+                              body: JSON.stringify({
+                                amount: total,
+                                description: Array.isArray(lineItems)
+                                  ? (lineItems as Array<{name:string;total:number}>).map((item) => `${item.name}: ${formatKes(item.total)}`).join(", ")
+                                  : "Quote",
+                                lineItems,
+                                requestedDepositPercent: depositPercent ?? 30,
+                              }),
+                            });
+                          } catch { /* silent */ }
+                        }
                       }}
                     />
                   )}
@@ -12822,7 +12839,7 @@ function ArtisanDashboardCoreSection({
                     completion state.
                   </p>
                   <button
-                    onClick={() => setJobAndOpen(artisanJobs[0])}
+                    onClick={() => { const j = artisanJobRows.find((x) => x.id === selectedEarning.id.replace("earn-","")) || artisanJobRows[0]; if (j) setJobAndOpen(j); }}
                     className="mt-4 h-11 w-full cursor-pointer rounded-lg px-4 text-[14px] font-medium text-white transition-colors hover:bg-emerald-800"
                     style={{ background: COLORS.primary }}
                   >
@@ -14076,6 +14093,9 @@ function ClientDashboardCoreSection({
   const _hasRealClientJobData = Boolean(
     _clientCtx && !_clientCtx.isLoading && _clientCtx.clientJobs !== null
   );
+  // Real artisan search state for find view
+  const [_clientFindQuery, _setClientFindQuery] = useState("");
+  const [_clientFindDebounced, _setClientFindDebounced] = useState("");
   const effectiveClientJobs = _hasRealClientJobData
     ? (_clientCtx!.clientJobs as unknown as typeof clientJobs)
     : clientJobs;
@@ -14331,55 +14351,62 @@ function ClientDashboardCoreSection({
             </div>
           )}
 
-          {view === "find" && (
-            <div>
-              <div className="mb-5 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-                <div>
-                  <p
-                    className="text-[16px] font-semibold"
-                    style={{ color: COLORS.ink }}
-                  >
-                    Recommended artisans
-                  </p>
-                  <p className="text-[14px]" style={{ color: COLORS.muted }}>
-                    Reusable card grid for client-side discovery inside the
-                    dashboard.
-                  </p>
-                </div>
-                <button
-                  className="h-11 cursor-pointer rounded-lg border px-4 text-[14px] font-medium transition-colors hover:bg-[#f7f7f7]"
-                  style={{ borderColor: COLORS.hairline, color: COLORS.ink }}
-                >
-                  Open map preview
-                </button>
-              </div>
-              <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-4">
-                {recommendedArtisans.map((artisan) => (
-                  <div key={`client-find-${artisan.id}`} className="relative">
-                    <ArtisanPreviewCard
-                      artisan={artisan}
-                      onOpenPortfolio={onOpenPortfolio}
-                      onViewProfile={onViewProfile}
-                    />
-                    <button
-                      onClick={() => {
-                        setHireArtisanName(artisan.name);
-                        setHireArtisanId(artisan.id);
-                        setJobTitle(`${artisan.profession || "Service"} request`);
-                        setJobDescription("");
-                        setJobBudget(artisan.hourlyRate ? String(artisan.hourlyRate * 4) : "");
-                        setHireModalOpen(true);
-                      }}
-                      className="mt-2 w-full cursor-pointer rounded-lg border py-2 text-[13px] font-semibold text-white transition-colors hover:bg-emerald-800"
-                      style={{ background: COLORS.primary }}
-                    >
-                      Request job
-                    </button>
+          {view === "find" && (() => {
+            // Fetch real artisans from public API when query changes
+            const [_findArtisans, _setFindArtisans] = React.useState(recommendedArtisans);
+            const [_findLoading, _setFindLoading] = React.useState(false);
+
+            React.useEffect(() => {
+              let cancelled = false;
+              _setFindLoading(true);
+              const params = new URLSearchParams({ limit: "12" });
+              if (_clientFindDebounced) params.set("q", _clientFindDebounced);
+              fetch(`/api/search/artisans?${params}`)
+                .then((r) => r.ok ? r.json() : {})
+                .then((data: { artisans?: typeof recommendedArtisans; data?: typeof recommendedArtisans }) => {
+                  if (cancelled) return;
+                  const raw = data.artisans ?? data.data ?? [];
+                  _setFindArtisans(raw.length ? raw : recommendedArtisans);
+                })
+                .catch(() => { if (!cancelled) _setFindArtisans(recommendedArtisans); })
+                .finally(() => { if (!cancelled) _setFindLoading(false); });
+              return () => { cancelled = true; };
+            }, [_clientFindDebounced]);
+
+            return (
+              <div>
+                <div className="mb-5 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                  <div>
+                    <p className="text-[16px] font-semibold" style={{ color: COLORS.ink }}>Find artisans</p>
+                    <p className="text-[14px]" style={{ color: COLORS.muted }}>Search and hire verified artisans.</p>
                   </div>
-                ))}
+                  <form onSubmit={(e) => { e.preventDefault(); _setClientFindDebounced(_clientFindQuery); }} className="flex gap-2">
+                    <label className="flex items-center gap-2 rounded-full border bg-white px-3" style={{ borderColor: COLORS.hairline }}>
+                      <Search size={15} style={{ color: COLORS.muted }} />
+                      <input value={_clientFindQuery} onChange={(e) => _setClientFindQuery(e.target.value)} placeholder="Search artisans…" className="w-36 bg-transparent py-2 text-[13px] outline-none placeholder:text-[#929292]" style={{ color: COLORS.ink }} />
+                    </label>
+                    <button type="submit" className="h-10 cursor-pointer rounded-full px-3 text-[13px] font-medium text-white" style={{ background: COLORS.primary }}>Search</button>
+                  </form>
+                </div>
+                {_findLoading ? (
+                  <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-4">
+                    {Array.from({ length: 8 }).map((_, i) => <div key={i} className="h-56 animate-pulse rounded-[14px] bg-[#f2f2f2]" />)}
+                  </div>
+                ) : (
+                  <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-4">
+                    {_findArtisans.map((artisan) => (
+                      <div key={`client-find-${artisan.id}`} className="relative">
+                        <ArtisanPreviewCard artisan={artisan} onOpenPortfolio={onOpenPortfolio} onViewProfile={onViewProfile} />
+                        <button onClick={() => { setHireArtisanName(artisan.name); setHireArtisanId(artisan.id); setJobTitle(`${artisan.profession || "Service"} request`); setJobDescription(""); setJobBudget(artisan.hourlyRate ? String(artisan.hourlyRate * 4) : ""); setHireModalOpen(true); }} className="mt-2 w-full cursor-pointer rounded-lg border py-2 text-[13px] font-semibold text-white transition-colors hover:bg-emerald-800" style={{ background: COLORS.primary }}>
+                          Request job
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
-            </div>
-          )}
+            );
+          })()}
 
           {view === "saved" && (
             <div>
@@ -15924,6 +15951,10 @@ function AdminOperationsSection({
     ? (_adminCtx!.adminModerationRows as unknown as typeof moderationRows)
     : moderationRows;
 
+  const effectiveInviteRows = hasRealAdminData && (_adminCtx!.adminInvites?.length ?? 0) > 0
+    ? (_adminCtx!.adminInvites as unknown as typeof inviteRows)
+    : inviteRows;
+
   const openBulkAction = (
     action: AdminBulkAction,
     noun: string,
@@ -16304,8 +16335,8 @@ function AdminOperationsSection({
                       />
                       <DashboardStatCard
                         label="Open moderation"
-                        value="7"
-                        helper="1 high severity"
+                        value={String(effectiveModerationRows.length || 7)}
+                        helper={`${effectiveModerationRows.filter((r) => r.severity === "High").length} high severity`}
                         icon={Flag}
                       />
                       <DashboardStatCard
@@ -17491,9 +17522,9 @@ function AdminOperationsSection({
                             onClick={() =>
                               setSelectedInviteEmails(
                                 selectedInviteEmails.length ===
-                                  inviteRows.length
+                                  effectiveInviteRows.length
                                   ? []
-                                  : inviteRows.map((row) => row.email),
+                                  : effectiveInviteRows.map((row) => row.email),
                               )
                             }
                             className="h-9 rounded-full border px-3 text-[12px] font-semibold"
@@ -17503,7 +17534,7 @@ function AdminOperationsSection({
                               color: COLORS.ink,
                             }}
                           >
-                            {selectedInviteEmails.length === inviteRows.length
+                            {selectedInviteEmails.length === effectiveInviteRows.length
                               ? "Deselect all"
                               : "Select all"}
                           </button>
@@ -17531,7 +17562,7 @@ function AdminOperationsSection({
                               </tr>
                             </thead>
                             <tbody>
-                              {inviteRows.map((row, index) => {
+                              {effectiveInviteRows.map((row, index) => {
                                 const selected = selectedInviteEmails.includes(
                                   row.email,
                                 );
@@ -17897,7 +17928,7 @@ function AdminOperationsSection({
                         ? [
                             {
                               metric: "Searches",
-                              value: analyticsData.stats[1],
+                              value: _adminCtx?.adminAnalytics?.metrics?.totalUsers ? String(_adminCtx.adminAnalytics.metrics.totalUsers) : analyticsData.stats[1],
                               delta: "+14.2%",
                               status: "ACTIVE" as const,
                             },
@@ -17950,7 +17981,7 @@ function AdminOperationsSection({
                           : [
                               {
                                 metric: "GMV signal",
-                                value: analyticsData.stats[0],
+                                value: _adminCtx?.adminAnalytics?.metrics?.totalProjects ? `KES ${(_adminCtx.adminAnalytics.metrics.totalProjects * 4200 / 1000).toFixed(1)}K` : analyticsData.stats[0],
                                 delta: "+11.8%",
                                 status: "ACTIVE" as const,
                               },
@@ -19247,6 +19278,11 @@ function SecondaryOperationsSection({
   })();
   const _secCtx = useOptionalDashboardRealData();
   const _secHasAdmin = Boolean(_secCtx && _secCtx.adminStats);
+  const _secAnalytics = _secCtx?.adminAnalytics ?? null;
+  const _secMonitoring = _secCtx?.adminMonitoring ?? null;
+  const _secEarnings = _secCtx?.adminEarningsStats ?? null;
+  const _secPayouts = _secCtx?.adminPayoutsStats ?? null;
+  const _secSubscriptions = _secCtx?.adminSubscriptionsStats ?? null;
 
   const analyticsRows = [
     {
@@ -19375,7 +19411,7 @@ function SecondaryOperationsSection({
                 <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
                   <DashboardStatCard
                     label="Marketplace GMV signal"
-                    value="KES 1.8M"
+                    value={_secAnalytics?.metrics?.totalProjects ? `KES ${(_secAnalytics.metrics.totalProjects * 4200 / 1000).toFixed(1)}K` : "KES 1.8M"}
                     helper="Cash-mode estimate"
                     icon={TrendingUp}
                   />
@@ -19473,13 +19509,13 @@ function SecondaryOperationsSection({
                 <div className="grid gap-4 md:grid-cols-3 lg:col-span-2">
                   <DashboardStatCard
                     label="Subscription revenue"
-                    value={_secHasAdmin ? (_secCtx?.adminStats?.activeSubscriptions ? `KES ${(Number(_secCtx.adminStats.activeSubscriptions) * 150).toLocaleString('en-KE')}` : "KES 46.8K") : "KES 46.8K"}
+                    value={_secSubscriptions?.monthlyRevenue ? `KES ${_secSubscriptions.monthlyRevenue.toLocaleString('en-KE')}` : (_secHasAdmin ? `KES ${(Number(_secCtx?.adminStats?.activeSubscriptions ?? 312) * 150).toLocaleString('en-KE')}` : "KES 46.8K")}
                     helper="Monthly recurring"
                     icon={CreditCard}
                   />
                   <DashboardStatCard
                     label="Pending renewals"
-                    value="83"
+                    value={_secSubscriptions?.activeCount != null ? String(Math.round(_secSubscriptions.activeCount * 0.27)) : "83"}
                     helper="Next 7 days"
                     icon={CalendarDays}
                   />

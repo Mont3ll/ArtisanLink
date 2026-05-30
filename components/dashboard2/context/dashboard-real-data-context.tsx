@@ -27,7 +27,10 @@ import type {
   SourceAdminStats,
   SourceUserRow,
   SourceModerationRow,
+  SourceAdminInviteRow,
 } from "@/lib/hooks/use-admin-data-adapter";
+import type { AdminAnalyticsData } from "@/lib/hooks/use-admin-analytics";
+import type { MonitoringData } from "@/lib/hooks/use-admin-monitoring";
 import type { SourceClientJob, SourceClientStats } from "@/lib/hooks/use-client-data-adapter";
 
 export type DashboardRole = "artisan" | "client" | "admin";
@@ -76,6 +79,12 @@ export interface DashboardRealData {
   adminStats: SourceAdminStats | null;
   adminUsers: SourceUserRow[] | null;
   adminModerationRows: SourceModerationRow[] | null;
+  adminInvites: SourceAdminInviteRow[] | null;
+  adminAnalytics: AdminAnalyticsData | null;
+  adminMonitoring: MonitoringData | null;
+  adminEarningsStats: { totalRevenue: number; totalCommissions: number } | null;
+  adminPayoutsStats: { pendingAmount: number; pendingCount: number } | null;
+  adminSubscriptionsStats: { activeCount: number; monthlyRevenue: number } | null;
   /** Client-only: real jobs adapted to source-preview format. null when not client/not loaded. */
   clientJobs: SourceClientJob[] | null;
   /** Client-only: overview dashboard stats. null when not client/not loaded. */
@@ -102,7 +111,7 @@ function ArtisanProvider({
   dbUserId,
 }: {
   children: React.ReactNode;
-  base: Omit<DashboardRealData, "verificationStatus" | "rejectionReason" | "artisanJobs" | "artisanPortfolio" | "artisanEarnings" | "artisanCompletionPct" | "artisanProfile" | "conversations" | "currentUserId" | "adminVerificationQueue" | "adminArtisans" | "adminStats" | "adminUsers" | "adminModerationRows" | "clientJobs" | "clientStats" | "artisanSubscription" | "artisanSubscriptionActive" | "artisanTotalEarned" | "artisanTotalCommission" | "artisanPendingPayout">;
+  base: Omit<DashboardRealData, "verificationStatus" | "rejectionReason" | "artisanJobs" | "artisanPortfolio" | "artisanEarnings" | "artisanCompletionPct" | "artisanProfile" | "conversations" | "currentUserId" | "adminVerificationQueue" | "adminArtisans" | "adminStats" | "adminUsers" | "adminModerationRows" | "adminInvites" | "adminAnalytics" | "adminMonitoring" | "adminEarningsStats" | "adminPayoutsStats" | "adminSubscriptionsStats" | "clientJobs" | "clientStats" | "artisanSubscription" | "artisanSubscriptionActive" | "artisanTotalEarned" | "artisanTotalCommission" | "artisanPendingPayout">;
   dbUserId: string | null;
 }) {
   const { data: dashData } = useArtisanDashboard();
@@ -146,6 +155,12 @@ function ArtisanProvider({
     adminStats: null,
     adminUsers: null,
     adminModerationRows: null,
+    adminInvites: null,
+    adminAnalytics: null,
+    adminMonitoring: null,
+    adminEarningsStats: null,
+    adminPayoutsStats: null,
+    adminSubscriptionsStats: null,
     clientJobs: null,
     clientStats: null,
     artisanSubscription: subData?.subscription ?? null,
@@ -169,7 +184,7 @@ function NonArtisanProvider({
   dbUserId,
 }: {
   children: React.ReactNode;
-  base: Omit<DashboardRealData, "verificationStatus" | "rejectionReason" | "artisanJobs" | "artisanPortfolio" | "artisanEarnings" | "artisanCompletionPct" | "artisanProfile" | "conversations" | "currentUserId" | "adminVerificationQueue" | "adminArtisans" | "adminStats" | "adminUsers" | "adminModerationRows" | "clientJobs" | "clientStats" | "artisanSubscription" | "artisanSubscriptionActive" | "artisanTotalEarned" | "artisanTotalCommission" | "artisanPendingPayout">;
+  base: Omit<DashboardRealData, "verificationStatus" | "rejectionReason" | "artisanJobs" | "artisanPortfolio" | "artisanEarnings" | "artisanCompletionPct" | "artisanProfile" | "conversations" | "currentUserId" | "adminVerificationQueue" | "adminArtisans" | "adminStats" | "adminUsers" | "adminModerationRows" | "adminInvites" | "adminAnalytics" | "adminMonitoring" | "adminEarningsStats" | "adminPayoutsStats" | "adminSubscriptionsStats" | "clientJobs" | "clientStats" | "artisanSubscription" | "artisanSubscriptionActive" | "artisanTotalEarned" | "artisanTotalCommission" | "artisanPendingPayout">;
   role: DashboardRole;
   dbUserId: string | null;
 }) {
@@ -181,7 +196,7 @@ function NonArtisanProvider({
   useArtisanSettingsAdapter();
   useArtisanSubscription();
   const { threads } = useConversationsAdapter(dbUserId);
-  const { verificationQueue, adminArtisans, stats, users: adminUsersList, moderationRows: adminModerationList } = useAdminDataAdapter();
+  const { verificationQueue, adminArtisans, stats, users: adminUsersList, moderationRows: adminModerationList, adminInvites: adminInvitesList, analytics: adminAnalyticsData, monitoring: adminMonitoringData, earnings: adminEarningsData, payouts: adminPayoutsData, subscriptions: adminSubscriptionsData } = useAdminDataAdapter();
   const { clientJobs: realClientJobs, stats: realClientStats } = useClientDataAdapter();
 
   const value: DashboardRealData = {
@@ -200,6 +215,21 @@ function NonArtisanProvider({
     adminStats: role === "admin" ? stats : null,
     adminUsers: role === "admin" ? (adminUsersList.length > 0 ? adminUsersList : null) : null,
     adminModerationRows: role === "admin" ? (adminModerationList.length > 0 ? adminModerationList : null) : null,
+    adminInvites: role === "admin" ? (adminInvitesList.length > 0 ? adminInvitesList : null) : null,
+    adminAnalytics: role === "admin" ? (adminAnalyticsData ?? null) : null,
+    adminMonitoring: role === "admin" ? (adminMonitoringData ?? null) : null,
+    adminEarningsStats: role === "admin" && adminEarningsData ? {
+      totalRevenue: (adminEarningsData as { statistics?: { totalEarnings?: { amount?: number } } }).statistics?.totalEarnings?.amount ?? 0,
+      totalCommissions: (adminEarningsData as { statistics?: { totalCommissions?: { amount?: number } } }).statistics?.totalCommissions?.amount ?? 0,
+    } : null,
+    adminPayoutsStats: role === "admin" && adminPayoutsData ? {
+      pendingAmount: (adminPayoutsData as { statistics?: { pendingAmount?: number } }).statistics?.pendingAmount ?? 0,
+      pendingCount: (adminPayoutsData as { statistics?: { pendingCount?: number } }).statistics?.pendingCount ?? 0,
+    } : null,
+    adminSubscriptionsStats: role === "admin" && adminSubscriptionsData ? {
+      activeCount: (adminSubscriptionsData as { metrics?: { totalActive?: number } }).metrics?.totalActive ?? 0,
+      monthlyRevenue: (adminSubscriptionsData as { metrics?: { monthlyRevenue?: number } }).metrics?.monthlyRevenue ?? 0,
+    } : null,
     clientJobs: role === "client" ? (realClientJobs.length > 0 ? realClientJobs : null) : null,
     clientStats: role === "client" ? realClientStats : null,
     artisanSubscription: null,
@@ -234,7 +264,7 @@ export function DashboardRealDataProvider({
   const { data: currentUserData, isLoading: userLoading } = useCurrentUser();
   const { data: unreadData } = useUnreadMessages();
 
-  const base: Omit<DashboardRealData, "verificationStatus" | "rejectionReason" | "artisanJobs" | "artisanPortfolio" | "artisanEarnings" | "artisanCompletionPct" | "artisanProfile" | "conversations" | "currentUserId" | "adminVerificationQueue" | "adminArtisans" | "adminStats" | "adminUsers" | "adminModerationRows" | "clientJobs" | "clientStats" | "artisanSubscription" | "artisanSubscriptionActive" | "artisanTotalEarned" | "artisanTotalCommission" | "artisanPendingPayout"> = {
+  const base: Omit<DashboardRealData, "verificationStatus" | "rejectionReason" | "artisanJobs" | "artisanPortfolio" | "artisanEarnings" | "artisanCompletionPct" | "artisanProfile" | "conversations" | "currentUserId" | "adminVerificationQueue" | "adminArtisans" | "adminStats" | "adminUsers" | "adminModerationRows" | "adminInvites" | "adminAnalytics" | "adminMonitoring" | "adminEarningsStats" | "adminPayoutsStats" | "adminSubscriptionsStats" | "clientJobs" | "clientStats" | "artisanSubscription" | "artisanSubscriptionActive" | "artisanTotalEarned" | "artisanTotalCommission" | "artisanPendingPayout"> = {
     isLoading: !isLoaded || userLoading,
     displayName: clerkUser
       ? `${clerkUser.firstName ?? ""} ${clerkUser.lastName ?? ""}`.trim() || null

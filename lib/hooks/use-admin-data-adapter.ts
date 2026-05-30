@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react'
 /**
  * Admin Data Adapter
  * Maps real API types from admin hooks → simplified types used
@@ -18,6 +19,19 @@ import { useUsers, useUserStats } from './use-users'
 import type { User } from './use-users'
 import { useAdminModeration } from './use-admin-moderation'
 import type { ModerationItem } from './use-admin-moderation'
+import { useAdminAnalytics } from './use-admin-analytics'
+import type { AdminAnalyticsData } from './use-admin-analytics'
+import { useAdminMonitoring } from './use-admin-monitoring'
+import type { MonitoringData } from './use-admin-monitoring'
+import { useAdminLocations } from './use-admin-locations'
+import type { LocationData } from './use-admin-locations'
+import { useAdminEarnings } from './use-admin-earnings'
+import type { EarningsResponse } from './use-admin-earnings'
+import { useAdminPayouts } from './use-admin-payouts'
+import type { PayoutsResponse } from './use-admin-payouts'
+import { useAdminSubscriptions } from './use-admin-subscriptions'
+import type { AdminSubscriptionsData } from './use-admin-subscriptions'
+
 
 // ─── Helper ──────────────────────────────────────────────────────────────────
 
@@ -213,6 +227,41 @@ export function mapModerationItemToRow(item: ModerationItem): SourceModerationRo
 }
 
 
+// Invite row type for admin invites list
+export interface SourceAdminInviteRow {
+  id: string
+  email: string
+  role: string
+  status: 'PENDING' | 'ACTIVE' | 'COMPLETED' | 'REVIEW'
+  sent: string
+  token?: string
+}
+
+export function mapAdminInviteToRow(invite: {
+  id: string; email: string; role?: string; status: string;
+  createdAt: string; token?: string
+}): SourceAdminInviteRow {
+  const statusMap: Record<string, SourceAdminInviteRow['status']> = {
+    PENDING: 'PENDING', ACCEPTED: 'COMPLETED', EXPIRED: 'REVIEW', REVOKED: 'REVIEW', ACTIVE: 'ACTIVE',
+  }
+  return {
+    id: invite.id,
+    email: invite.email,
+    role: invite.role ?? 'Artisan',
+    status: statusMap[invite.status] ?? 'PENDING',
+    sent: (() => {
+      const ms = Date.now() - new Date(invite.createdAt).getTime()
+      const h = Math.floor(ms / 3600000)
+      if (h < 1) return 'Just now'
+      if (h < 24) return `${h}h ago`
+      const d = Math.floor(h / 24)
+      if (d < 7) return `${d}d ago`
+      return new Date(invite.createdAt).toLocaleDateString('en-KE', { month: 'short', day: 'numeric' })
+    })(),
+    token: invite.token,
+  }
+}
+
 export function useAdminDataAdapter() {
   // useAdminVerification returns fields directly (not data.*)
   const {
@@ -245,6 +294,24 @@ export function useAdminDataAdapter() {
   const moderationRows: SourceModerationRow[] = (moderationData?.items ?? []).map(mapModerationItemToRow)
   const moderationStats = moderationData?.stats ?? null
 
+  // Real admin invites via plain fetch (avoids circular hook dependency)
+  const [adminInvitesList, setAdminInvitesList] = useState<SourceAdminInviteRow[]>([])
+  useEffect(() => {
+    fetch('/api/admin/invites')
+      .then((r) => r.ok ? r.json() : { invites: [] })
+      .then((d: { invites?: Array<{ id: string; email: string; role?: string; status: string; createdAt: string; token?: string }> }) => {
+        setAdminInvitesList((d.invites ?? []).map(mapAdminInviteToRow))
+      })
+      .catch(() => {})
+  }, [])
+
+  const { data: analyticsData } = useAdminAnalytics()
+  const { data: monitoringData } = useAdminMonitoring(false)
+  const { data: locationsData } = useAdminLocations()
+  const { data: earningsData } = useAdminEarnings({ limit: 20 })
+  const { data: payoutsData } = useAdminPayouts({ limit: 20 })
+  const { data: subscriptionsData } = useAdminSubscriptions()
+
   return {
     verificationQueue,
     adminArtisans,
@@ -253,6 +320,13 @@ export function useAdminDataAdapter() {
     moderationRows,
     moderationStats,
     stats,
+    adminInvites: adminInvitesList,
+    analytics: analyticsData ?? null,
+    monitoring: (monitoringData as MonitoringData | undefined) ?? null,
+    locations: (locationsData as LocationData | undefined) ?? null,
+    earnings: (earningsData as EarningsResponse | undefined) ?? null,
+    payouts: (payoutsData as PayoutsResponse | undefined) ?? null,
+    subscriptions: (subscriptionsData as AdminSubscriptionsData | undefined) ?? null,
     isLoading: verLoading || artLoading || statsLoading || usersLoading || modLoading,
   }
 }

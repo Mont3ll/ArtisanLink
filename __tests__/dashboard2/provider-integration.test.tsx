@@ -74,6 +74,12 @@ vi.mock('@/lib/hooks/use-admin-data-adapter', () => ({
     moderationRows: [],
     moderationStats: null,
     stats: null,
+    adminInvites: [],
+    analytics: null,
+    monitoring: null,
+    earnings: null,
+    payouts: null,
+    subscriptions: null,
     isLoading: false,
   }),
 }))
