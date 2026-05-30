@@ -7396,7 +7396,7 @@ function DashboardFilterPopover<Row>({
     <div ref={ref} className="relative">
       <button
         onClick={() => setOpen((value) => !value)}
-        className="flex h-11 cursor-pointer items-center gap-2 rounded-full border bg-white px-3.5 text-[14px] font-medium transition-colors hover:bg-[#f7f7f7]"
+        className="flex h-9 cursor-pointer items-center gap-1.5 rounded-full border bg-white px-3 text-[13px] font-medium transition-colors hover:bg-[#f7f7f7]"
         style={{
           borderColor: selectedValues.length ? COLORS.ink : COLORS.hairline,
           color: COLORS.ink,
@@ -7620,9 +7620,9 @@ function DashboardDataList<Row>({
             </p>
           </div>
         )}
-        <div className="grid gap-3 lg:grid-cols-[1fr_auto_auto]">
+        <div className="flex flex-wrap items-center gap-2">
           <label
-            className="flex h-11 items-center gap-2 rounded-full border px-4"
+            className="flex h-9 min-w-[180px] flex-1 items-center gap-2 rounded-full border px-3 md:max-w-[300px]"
             style={{ borderColor: COLORS.hairline }}
           >
             <Search size={16} style={{ color: COLORS.muted }} />
@@ -7630,7 +7630,7 @@ function DashboardDataList<Row>({
               value={query}
               onChange={(event) => setQuery(event.target.value)}
               placeholder="Search list"
-              className="min-w-0 flex-1 bg-transparent text-[14px] outline-none placeholder:text-[#929292]"
+              className="min-w-0 flex-1 bg-transparent text-[13px] outline-none placeholder:text-[#929292]"
               style={{ color: COLORS.ink }}
             />
           </label>
@@ -7649,7 +7649,7 @@ function DashboardDataList<Row>({
             <select
               value={sortId}
               onChange={(event) => setSortId(event.target.value)}
-              className="h-11 cursor-pointer rounded-full border bg-white px-3 text-[14px] outline-none"
+              className="h-9 w-fit cursor-pointer rounded-full border bg-white px-3 text-[13px] outline-none"
               style={{ borderColor: COLORS.hairline, color: COLORS.ink }}
             >
               {sortOptions.map((option) => (

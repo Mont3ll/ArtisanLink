@@ -215,17 +215,17 @@ export function BrowseDirectorySection({
           className="rounded-[28px] border bg-white p-3 md:p-4"
           style={{ borderColor: COLORS.hairlineSoft, boxShadow: SHADOWS.card }}
         >
-          <div className="grid grid-cols-1 gap-2 md:grid-cols-[1fr_0.8fr_0.8fr_0.7fr_auto_auto] md:items-center">
+          <div className="flex flex-wrap items-center gap-2">
             <label
-              className="flex h-10 items-center gap-3 rounded-full border bg-white px-4"
+              className="flex h-10 min-w-[220px] flex-1 items-center gap-3 rounded-full border bg-white px-4 md:max-w-[340px]"
               style={{ borderColor: COLORS.hairline }}
             >
-              <Search size={18} strokeWidth={2.5} style={{ color: COLORS.ink }} />
+              <Search size={16} strokeWidth={2.5} style={{ color: COLORS.ink }} />
               <input
                 value={query}
                 onChange={(event) => setQuery(event.target.value)}
                 placeholder="Search skill, artisan, or location"
-                className="min-w-0 flex-1 bg-transparent text-[14px] leading-[1.43] outline-none placeholder:text-[#929292]"
+                className="min-w-0 flex-1 bg-transparent text-[13px] leading-[1.43] outline-none placeholder:text-[#929292]"
                 style={{ color: COLORS.ink }}
               />
             </label>
@@ -233,7 +233,7 @@ export function BrowseDirectorySection({
             <select
               value={profession}
               onChange={(event) => setProfession(event.target.value)}
-              className="h-10 cursor-pointer rounded-full border bg-white px-4 text-[13px] outline-none"
+              className="h-10 w-fit cursor-pointer rounded-full border bg-white px-3 text-[13px] outline-none"
               style={{ borderColor: COLORS.hairline, color: COLORS.ink }}
             >
               {professions.map((item) => (
@@ -244,7 +244,7 @@ export function BrowseDirectorySection({
             <select
               value={county}
               onChange={(event) => setCounty(event.target.value)}
-              className="h-10 cursor-pointer rounded-full border bg-white px-4 text-[13px] outline-none"
+              className="h-10 w-fit cursor-pointer rounded-full border bg-white px-3 text-[13px] outline-none"
               style={{ borderColor: COLORS.hairline, color: COLORS.ink }}
             >
               {counties.map((item) => (
@@ -255,7 +255,7 @@ export function BrowseDirectorySection({
             <select
               value={sortBy}
               onChange={(event) => setSortBy(event.target.value as SortBy)}
-              className="h-10 cursor-pointer rounded-full border bg-white px-4 text-[13px] outline-none"
+              className="h-10 w-fit cursor-pointer rounded-full border bg-white px-3 text-[13px] outline-none"
               style={{ borderColor: COLORS.hairline, color: COLORS.ink }}
             >
               <option value="rating">Sort: Rating</option>
@@ -267,27 +267,27 @@ export function BrowseDirectorySection({
             <button
               type="button"
               onClick={() => setAvailableOnly((value) => !value)}
-              className="flex h-10 cursor-pointer items-center justify-center gap-2 rounded-full border px-3 text-[13px] font-medium transition-colors hover:bg-[#f7f7f7]"
+              className="flex h-10 cursor-pointer items-center justify-center gap-1.5 rounded-full border px-3 text-[13px] font-medium transition-colors hover:bg-[#f7f7f7]"
               style={{
                 borderColor: availableOnly ? COLORS.ink : COLORS.hairline,
                 color: COLORS.ink,
                 background: availableOnly ? COLORS.surfaceSoft : COLORS.canvas,
               }}
             >
-              <ListFilter size={16} />
+              <ListFilter size={14} />
               Available
             </button>
             <button
               type="button"
               onClick={() => setVerifiedOnly((value) => !value)}
-              className="flex h-10 cursor-pointer items-center justify-center gap-2 rounded-full border px-3 text-[13px] font-medium transition-colors hover:bg-[#f7f7f7]"
+              className="flex h-10 cursor-pointer items-center justify-center gap-1.5 rounded-full border px-3 text-[13px] font-medium transition-colors hover:bg-[#f7f7f7]"
               style={{
                 borderColor: verifiedOnly ? COLORS.ink : COLORS.hairline,
                 color: COLORS.ink,
                 background: verifiedOnly ? COLORS.surfaceSoft : COLORS.canvas,
               }}
             >
-              <BadgeCheck size={16} />
+              <BadgeCheck size={14} />
               Verified
             </button>
           </div>
