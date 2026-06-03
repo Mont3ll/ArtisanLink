@@ -125,6 +125,9 @@ function normalizeArtisan(raw: RawArtisan, index: number): ArtisanCardData {
     rating: { average: ratingAverage || 4.7, total: ratingTotal },
     specializations: specializations.length ? specializations : [{ name: profession }],
     gradient: asString(raw.gradient, FALLBACK_GRADIENTS[index % FALLBACK_GRADIENTS.length]),
+    portfolioImages: Array.isArray(raw.portfolioImages)
+      ? (raw.portfolioImages as unknown[]).filter((u): u is string => typeof u === 'string')
+      : [],
   };
 }
 
@@ -234,7 +237,7 @@ export default function HomePage() {
             {loading ? (
               Array.from({ length: 8 }).map((_, index) => <ArtisanCardSkeleton key={index} />)
             ) : visibleArtisans.length > 0 ? (
-              visibleArtisans.slice(0, 8).map((artisan) => (
+              visibleArtisans.slice(0, 8).map((artisan, index) => (
                 <motion.div
                   key={artisan.id}
                   layout
@@ -243,7 +246,7 @@ export default function HomePage() {
                   exit={{ opacity: 0, y: -8 }}
                   transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
                 >
-                  <ArtisanPreviewCard artisan={artisan} onOpenPortfolio={setSelectedPortfolioArtisan} />
+                  <ArtisanPreviewCard artisan={artisan} onOpenPortfolio={setSelectedPortfolioArtisan} priority={index < 4} />
                 </motion.div>
               ))
             ) : (

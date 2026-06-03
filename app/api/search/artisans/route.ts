@@ -155,8 +155,8 @@ export async function GET(request: Request) {
           portfolioItems: {
             where: { isPublic: true },
             orderBy: { createdAt: 'desc' as const },
-            take: 1,
-            select: { imageUrl: true }
+            take: 6,
+            select: { imageUrl: true, imageUrls: true }
           },
           subscription: {
             select: {
@@ -203,7 +203,10 @@ export async function GET(request: Request) {
           total: profile.totalReviews
         },
         specializations: profile.specializations,
-        portfolioThumbnail: (profile as { portfolioItems?: Array<{ imageUrl: string }> }).portfolioItems?.[0]?.imageUrl ?? null,
+        portfolioThumbnail: (profile as { portfolioItems?: Array<{ imageUrl: string; imageUrls?: string[] }> }).portfolioItems?.[0]?.imageUrl ?? null,
+        portfolioImages: (profile as { portfolioItems?: Array<{ imageUrl: string; imageUrls?: string[] }> }).portfolioItems
+          ?.flatMap((item) => [item.imageUrl, ...(item.imageUrls ?? [])].filter((url): url is string => Boolean(url)))
+          ?? [],
         memberSince: profile.user.createdAt,
         distance: null as number | null
       }

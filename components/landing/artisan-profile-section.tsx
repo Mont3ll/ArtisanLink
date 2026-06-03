@@ -1,11 +1,13 @@
 "use client";
 
+import Image from "next/image";
 import { useAuth } from "@clerk/nextjs";
 import { useSavedArtisanIds, useToggleSaveArtisan } from "@/lib/hooks/use-artisan-search";
 
 import { useState } from "react";
 
 import Link from "next/link";
+import { SHIMMER_4_3, SHIMMER_SQUARE, SHIMMER_16_9, ARTISAN_CARD_SIZES } from "@/lib/image-utils";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   BadgeCheck,
@@ -99,7 +101,7 @@ export function ArtisanProfileSection({ artisan }: { artisan: FullArtisanProfile
         <div className="flex flex-col gap-5 border-b pb-6 md:flex-row md:items-center md:justify-between" style={{ borderColor: COLORS.hairlineSoft }}>
           <div className="flex items-start gap-4">
             <div className="relative grid h-20 w-20 shrink-0 place-items-center overflow-hidden rounded-full border-4 border-white shadow-sm" style={{ background: artisan.gradient }}>
-              {artisan.profileImage ? <img src={artisan.profileImage} alt={artisan.name} className="h-full w-full object-cover" /> : <span className="text-[24px] font-bold" style={{ color: COLORS.primary }}>{initials(artisan.name)}</span>}
+              {artisan.profileImage ? <Image src={artisan.profileImage} alt={artisan.name} fill className="object-cover" sizes="80px" placeholder="blur" blurDataURL={SHIMMER_SQUARE} /> : <span className="text-[24px] font-bold" style={{ color: COLORS.primary }}>{initials(artisan.name)}</span>}
               {artisan.isVerified && <BadgeCheck className="absolute bottom-1 right-1 h-5 w-5 rounded-full bg-white text-emerald-600" />}
             </div>
             <div>
@@ -157,7 +159,7 @@ export function ArtisanProfileSection({ artisan }: { artisan: FullArtisanProfile
                       className="group relative aspect-[4/3] w-full cursor-pointer overflow-hidden rounded-[14px] text-left"
                       style={{ background: frame }}
                     >
-                      {item?.imageUrl ? <img src={item.imageUrl} alt={item.title} className="absolute inset-0 h-full w-full object-cover transition-transform duration-300 group-hover:scale-105" /> : <div className="absolute inset-0 transition-transform duration-300 group-hover:scale-105" style={{ background: frame }} />}
+                      {item?.imageUrl ? <Image src={item.imageUrl} alt={item.title} fill className="object-cover transition-transform duration-300 group-hover:scale-105" sizes={ARTISAN_CARD_SIZES} placeholder="blur" blurDataURL={SHIMMER_4_3} /> : <div className="absolute inset-0 transition-transform duration-300 group-hover:scale-105" style={{ background: frame }} />}
                       <div className="absolute bottom-3 left-3 rounded-full bg-white px-3 py-1 text-[11px] font-semibold shadow-sm" style={{ color: COLORS.ink }}>{item?.title || `Project ${index + 1}`}</div>
                       {item && <div className="absolute inset-0 flex items-center justify-center bg-black/0 transition-colors group-hover:bg-black/20"><span className="scale-75 rounded-full bg-white/90 px-3 py-1.5 text-[12px] font-semibold opacity-0 transition-all group-hover:scale-100 group-hover:opacity-100" style={{ color: COLORS.ink }}>View details</span></div>}
                     </button>
@@ -225,7 +227,7 @@ export function ArtisanProfileSection({ artisan }: { artisan: FullArtisanProfile
             >
               {modalItem.imageUrl && (
                 <div className="relative aspect-video w-full bg-[#f7f7f7]">
-                  <img src={modalItem.imageUrl} alt={modalItem.title} className="h-full w-full object-cover" />
+                  <Image src={modalItem.imageUrl} alt={modalItem.title} fill className="object-cover" sizes="(max-width: 768px) 100vw, 680px" placeholder="blur" blurDataURL={SHIMMER_16_9} />
                 </div>
               )}
               <div className="p-5">

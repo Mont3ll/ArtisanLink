@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { cachedJsonResponse, CACHE_DURATIONS, STALE_DURATIONS } from '@/lib/cache'
 import { auth } from '@clerk/nextjs/server'
 import { prisma } from '@/lib/prisma'
 import { z } from 'zod'
@@ -77,7 +78,7 @@ export async function GET(request: Request) {
       prisma.portfolioItem.count({ where })
     ])
 
-    return NextResponse.json({
+    return cachedJsonResponse({
       items,
       pagination: {
         page: clampedPage,
@@ -85,7 +86,7 @@ export async function GET(request: Request) {
         total,
         totalPages: Math.ceil(total / clampedLimit)
       }
-    })
+    }, { maxAge: CACHE_DURATIONS.SHORT, staleWhileRevalidate: STALE_DURATIONS.SHORT })
   } catch (error) {
     console.error('Error fetching portfolio items:', error)
     return NextResponse.json(

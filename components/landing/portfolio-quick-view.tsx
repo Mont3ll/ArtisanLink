@@ -1,16 +1,19 @@
 "use client";
 
+import Image from "next/image";
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { BadgeCheck, Images, MessageCircle, X } from "lucide-react";
+import Link from "next/link";
 
 import type { ArtisanCardData } from "./artisan-preview-card";
 import { COLORS, SHADOWS } from "@/lib/design-tokens";
+import { SHIMMER_4_3, ARTISAN_CARD_SIZES } from "@/lib/image-utils";
 
-const portfolioFramesFor = (artisan: ArtisanCardData) => [
-  artisan.gradient ?? "linear-gradient(135deg, #ecfdf5 0%, #a7f3d0 45%, #047857 100%)",
-  `linear-gradient(135deg, ${COLORS.primaryTint} 0%, #ffffff 42%, ${COLORS.primarySoft} 100%)`,
-  `linear-gradient(135deg, #f7f7f7 0%, #d9f99d 44%, ${COLORS.primaryActive} 100%)`,
+const FALLBACK_GRADIENTS = [
+  "linear-gradient(135deg, #ecfdf5 0%, #a7f3d0 45%, #047857 100%)",
+  `linear-gradient(135deg, #ecfdf5 0%, #ffffff 42%, #d1fae5 100%)`,
+  `linear-gradient(135deg, #f7f7f7 0%, #d9f99d 44%, #059669 100%)`,
 ];
 
 function initials(name: string) {
@@ -31,6 +34,10 @@ export function PortfolioQuickView({
 }) {
   const [activeImage, setActiveImage] = useState(0);
 
+  const realImages = artisan?.portfolioImages?.filter(Boolean) ?? [];
+  const frames = realImages.length > 0 ? realImages : FALLBACK_GRADIENTS;
+  const hasRealImages = realImages.length > 0;
+
   useEffect(() => {
     if (!artisan) return;
     setActiveImage(0);
@@ -43,7 +50,6 @@ export function PortfolioQuickView({
 
   if (!artisan) return null;
 
-  const frames = portfolioFramesFor(artisan);
   const locationStr =
     [artisan.location.city, artisan.location.county].filter(Boolean).join(", ") || "Kenya";
   const abbr = initials(artisan.name);
@@ -84,14 +90,27 @@ export function PortfolioQuickView({
               exit={{ opacity: 0, x: -16, scale: 0.995 }}
               transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
               className="absolute inset-0 flex items-center justify-center"
-              style={{ background: frames[activeImage] }}
+              style={!hasRealImages ? { background: frames[activeImage] } : undefined}
             >
-              <span
-                className="text-[72px] font-bold opacity-90"
-                style={{ color: COLORS.primary }}
-              >
-                {abbr}
-              </span>
+              {hasRealImages ? (
+                <Image
+                  src={frames[activeImage]}
+                  alt={`${artisan.name} portfolio work`}
+                  fill
+                  className="object-cover"
+                  sizes="(max-width: 768px) 100vw, 460px"
+                  priority
+                  placeholder="blur"
+                  blurDataURL={SHIMMER_4_3}
+                />
+              ) : (
+                <span
+                  className="text-[72px] font-bold opacity-90"
+                  style={{ color: COLORS.primary }}
+                >
+                  {abbr}
+                </span>
+              )}
             </motion.div>
           </AnimatePresence>
           <div
@@ -181,30 +200,33 @@ export function PortfolioQuickView({
           {/* Image switcher + CTA */}
           <div className="mt-auto">
             <div className="mb-4 grid grid-cols-3 gap-2">
-              {frames.map((frame, index) => (
+              {frames.slice(0, 3).map((frame, index) => (
                 <button
                   key={index}
                   onClick={() => setActiveImage(index)}
-                  className="aspect-[4/3] cursor-pointer overflow-hidden rounded-[14px] border transition-transform hover:scale-[1.02]"
+                  className="relative aspect-[4/3] cursor-pointer overflow-hidden rounded-[14px] border transition-transform hover:scale-[1.02]"
                   style={{
-                    background: frame,
                     borderColor: activeImage === index ? COLORS.ink : COLORS.hairlineSoft,
                   }}
                   aria-label={`View portfolio image ${index + 1}`}
-                />
+                >
+                  {hasRealImages ? (
+                    <Image src={frame} alt="" fill className="object-cover" sizes={ARTISAN_CARD_SIZES} placeholder="blur" blurDataURL={SHIMMER_4_3} />
+                  ) : (
+                    <div className="h-full w-full" style={{ background: frame }} />
+                  )}
+                </button>
               ))}
             </div>
-            <button
-              onClick={() => {
-                onClose();
-                window.location.href = "/sign-in";
-              }}
+            <Link
+              href={`/artisans/${artisan.id}`}
+              onClick={onClose}
               className="flex h-12 w-full cursor-pointer items-center justify-center gap-2 rounded-lg text-[16px] font-medium text-white transition-colors hover:bg-emerald-800"
               style={{ background: COLORS.primary }}
             >
               <MessageCircle size={18} />
               Message artisan
-            </button>
+            </Link>
           </div>
         </div>
       </motion.div>

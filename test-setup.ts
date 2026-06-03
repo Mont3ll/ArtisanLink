@@ -1,5 +1,16 @@
 import '@testing-library/jest-dom'
 import { vi } from 'vitest'
+import React from 'react'
+
+// Mock next/image to render a plain <img> in tests (avoids jsdom canvas errors)
+vi.mock('next/image', () => ({
+  default: vi.fn().mockImplementation(
+    ({ src, alt, fill: _fill, sizes: _sizes, priority: _priority, placeholder: _ph, blurDataURL: _blur, ...props }: {
+      src: string; alt: string; fill?: boolean; sizes?: string; priority?: boolean;
+      placeholder?: string; blurDataURL?: string; [key: string]: unknown
+    }) => React.createElement('img', { src, alt, ...props })
+  ),
+}))
 
 // Mock window.matchMedia for GSAP's ScrollTrigger and matchMedia
 Object.defineProperty(window, 'matchMedia', {

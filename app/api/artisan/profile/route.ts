@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { cachedJsonResponse, CACHE_DURATIONS, STALE_DURATIONS } from '@/lib/cache'
 import { auth } from '@clerk/nextjs/server'
 import { prisma } from '@/lib/prisma'
 import { z } from 'zod'
@@ -118,11 +119,11 @@ export async function GET() {
       }
     }
 
-    return NextResponse.json({
+    return cachedJsonResponse({
       profile: user.profile,
       counties: KENYAN_COUNTIES,
       idDocumentTypes: ID_DOCUMENT_TYPES,
-    })
+    }, { maxAge: CACHE_DURATIONS.SHORT, staleWhileRevalidate: STALE_DURATIONS.SHORT })
   } catch (error) {
     logger.error('Error fetching artisan profile:', error)
     return NextResponse.json(
@@ -285,10 +286,10 @@ export async function PATCH(request: Request) {
 
     logger.info('Profile updated', { userId: user.id, fields: Object.keys(updateData) })
 
-    return NextResponse.json({
+    return cachedJsonResponse({
       message: 'Profile updated successfully',
       profile: updatedProfile
-    })
+    }, { maxAge: CACHE_DURATIONS.SHORT, staleWhileRevalidate: STALE_DURATIONS.SHORT })
   } catch (error) {
     logger.error('Error updating artisan profile:', error)
     return NextResponse.json(

@@ -3,6 +3,7 @@
 "use client";
 
 import { useClerk } from "@clerk/nextjs";
+import { ArtisanVerificationReviewModal } from "@/components/dashboard2/admin/artisan-verification-review-modal";
 
 import { useOptionalDashboardRealData } from "@/components/dashboard2/context/dashboard-real-data-context";
 import {
@@ -1126,7 +1127,7 @@ function HowItWorksSection() {
     },
     {
       title: "Hire with confidence",
-      body: "Use verified profiles, ratings, portfolio work, and cash-only job milestones during testing.",
+      body: "Use verified profiles, ratings, portfolio work, and M-Pesa job payment milestones.",
       icon: CheckCircle2,
     },
   ];
@@ -5889,6 +5890,8 @@ function FullDetailViewModal({
         ["Expiry", "12 Oct 2029"],
       ],
       preview: "ID",
+      previewTitle: "Republic of Kenya · National ID",
+      previewBody: "Identity number, portrait zone, name, expiry date, and document serial are visible for admin comparison.",
     },
     {
       id: "workshop-license",
@@ -5903,6 +5906,8 @@ function FullDetailViewModal({
         ["Expiry", "03 Mar 2027"],
       ],
       preview: "LIC",
+      previewTitle: "County Trade License",
+      previewBody: "Business name, permit category, county seal, issue date, and expiry date are visible for trade verification.",
     },
     {
       id: "portfolio-proof",
@@ -5917,12 +5922,20 @@ function FullDetailViewModal({
         ["Source", "Applicant upload"],
       ],
       preview: "IMG",
+      previewTitle: "Portfolio Evidence Sheet",
+      previewBody: "Three uploaded work images with applicant notes are available to compare against the public portfolio.",
     },
   ];
 
   const activeDocument =
     reviewDocuments.find((document) => document.id === activeDocumentId) ??
     reviewDocuments[0];
+  const openActiveDocument = () => {
+    const html = `<!doctype html><html><head><title>${activeDocument.name}</title><style>body{font-family:Inter,Arial,sans-serif;margin:0;background:#f7f7f7;color:#222}.page{max-width:760px;margin:32px auto;background:white;border:1px solid #ddd;border-radius:24px;padding:32px;box-shadow:0 16px 50px rgba(0,0,0,.12)}.badge{display:inline-flex;border-radius:999px;background:#ecfdf5;color:#047857;padding:6px 12px;font-size:12px;font-weight:700}.preview{margin-top:24px;border:1px solid #ddd;border-radius:18px;padding:24px;background:linear-gradient(135deg,#f8fafc,#ecfdf5)}.rows{display:grid;gap:10px;margin-top:18px}.row{display:flex;justify-content:space-between;gap:16px;background:white;border-radius:12px;padding:10px 12px}.muted{color:#6a6a6a}</style></head><body><main class="page"><span class="badge">${activeDocument.type}</span><h1>${activeDocument.previewTitle}</h1><p class="muted">${activeDocument.previewBody}</p><section class="preview"><strong>${activeDocument.name}</strong><div class="rows">${activeDocument.fields.map(([label, value]) => `<div class="row"><span class="muted">${label}</span><strong>${value}</strong></div>`).join("")}</div></section></main></body></html>`;
+    const url = URL.createObjectURL(new Blob([html], { type: "text/html" }));
+    window.open(url, "_blank", "noopener,noreferrer");
+    window.setTimeout(() => URL.revokeObjectURL(url), 30_000);
+  };
   const requiredChecksComplete = Object.values(documentChecks).every(Boolean);
   const normalizedTitle = `${title} ${subtitle}`.toLowerCase();
   const detailKind =
@@ -6359,6 +6372,7 @@ function FullDetailViewModal({
                     </div>
                     <button
                       type="button"
+                      onClick={openActiveDocument}
                       className="h-8 cursor-pointer rounded-lg border px-3 text-[12px] font-medium transition-colors hover:bg-[#f7f7f7]"
                       style={{
                         borderColor: COLORS.hairline,
@@ -6380,14 +6394,18 @@ function FullDetailViewModal({
                       className="w-[84%] rounded-[16px] border bg-white p-4 shadow-sm"
                       style={{ borderColor: COLORS.hairline }}
                     >
-                      <div
-                        className="mb-5 h-8 w-20 rounded-lg"
-                        style={{ background: COLORS.primarySoft }}
-                      />
-                      <div className="space-y-2">
-                        <div className="h-3 w-full rounded-full bg-[#e5e7eb]" />
-                        <div className="h-3 w-[74%] rounded-full bg-[#e5e7eb]" />
-                        <div className="h-3 w-[88%] rounded-full bg-[#e5e7eb]" />
+                      <div className="mb-5 flex items-start justify-between gap-3">
+                        <div>
+                          <p className="text-[13px] font-bold uppercase tracking-[0.08em]" style={{ color: COLORS.primaryActive }}>
+                            {activeDocument.previewTitle}
+                          </p>
+                          <p className="mt-2 text-[12px] leading-[1.35]" style={{ color: COLORS.body }}>
+                            {activeDocument.previewBody}
+                          </p>
+                        </div>
+                        <span className="grid h-10 w-10 shrink-0 place-items-center rounded-lg text-[12px] font-bold" style={{ background: COLORS.primarySoft, color: COLORS.primaryActive }}>
+                          {activeDocument.preview}
+                        </span>
                       </div>
                       <div className="mt-6 grid gap-2">
                         {activeDocument.fields.map(([label, value]) => (
@@ -7622,7 +7640,7 @@ function DashboardDataList<Row>({
         )}
         <div className="flex flex-wrap items-center gap-2">
           <label
-            className="flex h-9 min-w-[180px] flex-1 items-center gap-2 rounded-full border px-3 md:max-w-[300px]"
+            className="flex h-9 flex-1 items-center gap-2 rounded-full border px-3"
             style={{ borderColor: COLORS.hairline }}
           >
             <Search size={16} style={{ color: COLORS.muted }} />
@@ -7782,6 +7800,7 @@ function PortfolioProjectModal({
   onClose,
   onPreviewCustomer,
   onSave,
+  onDelete,
   initialMode = "detail",
   isNew = false,
 }: {
@@ -7789,6 +7808,7 @@ function PortfolioProjectModal({
   onClose: () => void;
   onPreviewCustomer: () => void;
   onSave: (project: ArtisanPortfolioProject, isNew: boolean) => void;
+  onDelete?: (project: ArtisanPortfolioProject) => void;
   initialMode?: "detail" | "edit";
   isNew?: boolean;
 }) {
@@ -7972,6 +7992,13 @@ function PortfolioProjectModal({
                 ))}
               </div>
               <div className="grid gap-2 sm:grid-cols-2">
+                <button
+                  onClick={() => { if (onDelete && !isNew) { onDelete(project); } }}
+                  className="h-11 cursor-pointer rounded-lg border px-4 text-[14px] font-medium transition-colors hover:bg-red-50"
+                  style={{ borderColor: "#fecaca", color: "#b91c1c" }}
+                >
+                  Delete
+                </button>
                 <button
                   onClick={() => setMode("edit")}
                   className="h-11 cursor-pointer rounded-lg border text-[14px] font-medium transition-colors hover:bg-[#f7f7f7]"
@@ -8535,8 +8562,7 @@ function UpdatePaymentMethodModal({ onClose }: { onClose: () => void }) {
               className="mt-2 text-[14px] leading-[1.43]"
               style={{ color: COLORS.muted }}
             >
-              Subscription payments use M-Pesa. Job payments remain cash-only in
-              testing.
+              Subscription and job payments use M-Pesa-backed payment APIs.
             </p>
           </div>
           <button
@@ -9166,7 +9192,7 @@ function DashboardPreviewSection() {
         },
         {
           title: "Final payment info",
-          meta: "Cash-only testing mode",
+          meta: "M-Pesa job payment mode",
           status: "REVIEW",
         },
       ] as DashboardRecord[],
@@ -10976,6 +11002,7 @@ function ArtisanDashboardCoreSection({
 } = {}) {
   const [view, setView] = useState<ArtisanCoreView>(initialView);
   const [selectedJob, setSelectedJob] = useState<ArtisanJob>(artisanJobs[0]);
+
   const [quoteMode, setQuoteMode] = useState<"summary" | "create" | "revision">(
     "summary",
   );
@@ -11020,11 +11047,9 @@ function ArtisanDashboardCoreSection({
   const isVerificationRejected = realVerificationStatus === "REJECTED";
 
   // Mock resources kept for local optimistic mutations (job creation, portfolio save, etc.)
-  const jobsResource = useMockResource(artisanDataFixtures.jobs);
-  const portfolioResource = useMockResource(
-    artisanDataFixtures.portfolioProjects,
-  );
-  const earningsResource = useMockResource(artisanDataFixtures.earnings);
+  const jobsResource = useMockResource([] as typeof artisanJobs);
+  const portfolioResource = useMockResource([] as typeof artisanPortfolioProjects);
+  const earningsResource = useMockResource([] as typeof artisanEarningRows);
 
   // Real data overlay — when context has live API data, use it for display;
   // local mock resources remain for optimistic mutations.
@@ -11046,6 +11071,15 @@ function ArtisanDashboardCoreSection({
   const artisanDataLoading = _hasReal
     ? false
     : (jobsResource.loading || portfolioResource.loading || earningsResource.loading);
+
+  // Sync selectedJob to first real job when real data loads.
+  const _prevHasReal = React.useRef(false);
+  React.useEffect(() => {
+    if (_hasReal && !_prevHasReal.current && artisanJobRows.length > 0) {
+      setSelectedJob(artisanJobRows[0] as unknown as ArtisanJob);
+      _prevHasReal.current = true;
+    }
+  }, [_hasReal, artisanJobRows]);
 
   // Profile completion: use real context value when available, fall back to formula
   const profileCompletionPct = (_hasReal && _verifCtx?.artisanCompletionPct != null)
@@ -11272,7 +11306,17 @@ function ArtisanDashboardCoreSection({
     setSelectedJob(nextJob);
   };
 
-  const savePortfolioProject = async (
+  const deletePortfolioProject = async (project: ArtisanPortfolioProject) => {
+    setPortfolioRows((current) => current.filter((item) => item.id !== project.id));
+    setSelectedProject(null);
+    if (!project.id.startsWith("portfolio-")) {
+      try {
+        await fetch(`/api/artisan/portfolio/${project.id}`, { method: "DELETE" });
+      } catch { /* silent */ }
+    }
+  };
+
+    const savePortfolioProject = async (
     project: ArtisanPortfolioProject,
     isNew: boolean,
   ) => {
@@ -12379,14 +12423,13 @@ function ArtisanDashboardCoreSection({
                     className="text-[14px] font-semibold"
                     style={{ color: COLORS.ink }}
                   >
-                    Cash-only testing mode
+                    M-Pesa job payment mode
                   </p>
                   <p
                     className="mt-2 text-[14px] leading-[1.43]"
                     style={{ color: COLORS.muted }}
                   >
-                    Job payments show informational cards. M-Pesa job payment
-                    buttons stay disabled during testing.
+                    Job deposit and final payment actions use the M-Pesa payment APIs when enabled.
                   </p>
                 </div>
               </aside>
@@ -12428,9 +12471,9 @@ function ArtisanDashboardCoreSection({
                   icon={FileText}
                 />
                 <DashboardStatCard
-                  label="Portfolio views"
-                  value="486"
-                  helper="Last 30 days"
+                  label="Portfolio items"
+                  value={String(portfolioRows.length)}
+                  helper={portfolioRows.length > 0 ? `${portfolioRows.filter((p) => p.status !== "Draft").length} published` : "None uploaded"}
                   icon={Eye}
                 />
                 <DashboardStatCard
@@ -12861,7 +12904,7 @@ function ArtisanDashboardCoreSection({
                     style={{ color: COLORS.muted }}
                   >
                     Payouts remain informational while job payments are
-                    cash-only in testing.
+                    paid through M-Pesa where enabled.
                   </p>
                   <button
                     onClick={() => selectView("earnings")}
@@ -12876,7 +12919,7 @@ function ArtisanDashboardCoreSection({
                   >
                     <p className="font-semibold">Cash payments</p>
                     <p className="mt-1 font-normal" style={{ color: COLORS.body }}>
-                      All job payments are currently handled in cash between client and artisan. Subscription payments use M-Pesa.
+                      Job deposit and final payments are initiated through M-Pesa when enabled. Subscription payments also use M-Pesa.
                     </p>
                   </div>
                 </div>
@@ -13064,8 +13107,7 @@ function ArtisanDashboardCoreSection({
                     className="mt-2 text-[14px] leading-[1.43]"
                     style={{ color: COLORS.muted }}
                   >
-                    M-Pesa subscription payments are enabled. Job payments
-                    remain cash-only during testing.
+                    M-Pesa subscription payments are enabled. Job payments use M-Pesa deposit and final payment tracking.
                   </p>
                   <button
                     onClick={() => setPaymentMethodModalOpen(true)}
@@ -13880,6 +13922,7 @@ function ArtisanDashboardCoreSection({
               setPortfolioModalIsNew(false);
             }}
             onSave={savePortfolioProject}
+            onDelete={deletePortfolioProject}
           />
         )}
       </AnimatePresence>
@@ -14061,7 +14104,7 @@ function ClientDashboardCoreSection({
     "review" | "accepted" | "revision"
   >("review");
   const [quickJob, setQuickJob] = useState<ClientJob | null>(null);
-  const [clientJobs, setClientJobs] = useState<ClientJob[]>(initialClientJobs);
+  const [clientJobs, setClientJobs] = useState<ClientJob[]>([]);
   const [reviewedJobIds, setReviewedJobIds] = useState<string[]>([]);
   const [clientJobTab, setClientJobTab] = useState<"All" | "Quoted" | "Active" | "Completed">("All");
   const [reviewNudgeDismissed, setReviewNudgeDismissed] = useState(false);
@@ -14099,9 +14142,7 @@ function ClientDashboardCoreSection({
   const effectiveClientJobs = _hasRealClientJobData
     ? (_clientCtx!.clientJobs as unknown as typeof clientJobs)
     : clientJobs;
-  const recommendedArtisans = artisans
-    .filter((artisan) => artisan.isVerified)
-    .slice(0, 4);
+  const recommendedArtisans: typeof artisans = [];
 
   const navItems: Array<DashboardNavItem<ClientCoreView>> = [
     {
@@ -14177,7 +14218,7 @@ function ClientDashboardCoreSection({
               color: COLORS.body,
             }}
           >
-            Cash-only job payments
+            M-Pesa job payments
           </span>
         </>
       }
@@ -14742,7 +14783,7 @@ function ClientDashboardCoreSection({
                         style={{ color: COLORS.body }}
                       >
                         The artisan can now start the job. Payment remains
-                        cash-only during this testing phase.
+                        handled through M-Pesa payment prompts when enabled.
                       </p>
                     </div>
                   )}
@@ -14851,14 +14892,14 @@ function ClientDashboardCoreSection({
                     className="text-[14px] font-semibold"
                     style={{ color: COLORS.ink }}
                   >
-                    Cash-only testing mode
+                    M-Pesa job payment mode
                   </p>
                   <p
                     className="mt-2 text-[14px] leading-[1.43]"
                     style={{ color: COLORS.muted }}
                   >
                     Deposit and final-payment UI is represented as information
-                    only. Job payment buttons stay disabled in test mode.
+                    and job payment actions use the M-Pesa payment APIs when enabled.
                   </p>
                 </div>
               </aside>
@@ -15252,6 +15293,9 @@ type VerificationRecord = {
   status: DashboardRecord["status"];
   documents: string[];
   risk: "Low" | "Medium" | "High";
+  idDocumentUrl?: string | null;
+  certificateUrl?: string | null;
+  profileImage?: string | null;
 };
 
 const verificationQueue: VerificationRecord[] = [
@@ -15912,6 +15956,9 @@ function AdminOperationsSection({
     description: string;
     metrics: Array<[string, string]>;
     artisanId?: string;
+    idDocumentUrl?: string | null;
+    certificateUrl?: string | null;
+    portfolioImageUrls?: string[];
   } | null>(null);
   const [analyticsRange, setAnalyticsRange] =
     useState<AdminAnalyticsRange>("month");
@@ -15935,25 +15982,26 @@ function AdminOperationsSection({
   const hasRealAdminData = Boolean(
     _adminCtx && !_adminCtx.isLoading && _adminCtx.adminVerificationQueue !== null,
   );
+  // When real data is available, use it; when still loading, use empty arrays (no stale fixtures shown)
   const effectiveVerificationQueue = hasRealAdminData
     ? (_adminCtx!.adminVerificationQueue as unknown as typeof verificationQueue)
-    : verificationQueue;
+    : [];
   const effectiveArtisans =
     hasRealAdminData && (_adminCtx!.adminArtisans?.length ?? 0) > 0
       ? (_adminCtx!.adminArtisans as unknown as typeof artisans)
-      : artisans;
+      : [];
 
   const effectiveUserRows = hasRealAdminData && (_adminCtx!.adminUsers?.length ?? 0) > 0
     ? (_adminCtx!.adminUsers as unknown as typeof userRows)
-    : userRows;
+    : [];
 
   const effectiveModerationRows = hasRealAdminData && (_adminCtx!.adminModerationRows?.length ?? 0) > 0
     ? (_adminCtx!.adminModerationRows as unknown as typeof moderationRows)
-    : moderationRows;
+    : [];
 
   const effectiveInviteRows = hasRealAdminData && (_adminCtx!.adminInvites?.length ?? 0) > 0
     ? (_adminCtx!.adminInvites as unknown as typeof inviteRows)
-    : inviteRows;
+    : [];
 
   const openBulkAction = (
     action: AdminBulkAction,
@@ -16172,13 +16220,15 @@ function AdminOperationsSection({
     status: DashboardRecord["status"];
     description: string;
     metrics: Array<[string, string]>;
+    recordId?: string;
   }) => {
     const text = `${detail.title} ${detail.subtitle}`.toLowerCase();
     const slug = encodeURIComponent(
-      detail.title
-        .toLowerCase()
-        .replace(/[^a-z0-9]+/g, "-")
-        .replace(/^-|-$/g, "") || "record",
+      detail.recordId ||
+        detail.title
+          .toLowerCase()
+          .replace(/[^a-z0-9]+/g, "-")
+          .replace(/^-|-$/g, "") || "record",
     );
 
     if (text.includes("verify") || text.includes("verification")) return `/admin/verification/${slug}`;
@@ -16208,6 +16258,7 @@ function AdminOperationsSection({
     status: DashboardRecord["status"];
     description: string;
     metrics: Array<[string, string]>;
+    recordId?: string;
   }) => {
     const route = routeForAdminFullDetail(detail);
     if (route && typeof window !== "undefined") {
@@ -16233,6 +16284,9 @@ function AdminOperationsSection({
         ["Risk", record.risk],
       ],
       artisanId: record.id,
+      idDocumentUrl: (record as SourceVerificationRecord).idDocumentUrl ?? null,
+      certificateUrl: (record as SourceVerificationRecord).certificateUrl ?? null,
+      portfolioImageUrls: [],
     });
   };
 
@@ -16342,7 +16396,7 @@ function AdminOperationsSection({
                       <DashboardStatCard
                         label="Active subscriptions"
                         value={hasRealAdminData ? (_adminCtx?.adminStats?.activeSubscriptions ?? "312") : "312"}
-                        helper="KES 46.8K MRR"
+                        helper={_adminCtx?.adminStats?.activeSubscriptions ? `KES ${(Number(_adminCtx.adminStats.activeSubscriptions) * 150).toLocaleString('en-KE')} MRR` : "M-Pesa subscriptions"}
                         icon={CreditCard}
                       />
                       <DashboardStatCard
@@ -16484,16 +16538,12 @@ function AdminOperationsSection({
                             </span>
                           </div>
                           <AdminLineChart
-                            values={[31, 42, 38, 54, 47, 63, 58]}
-                            labels={[
-                              "Mon",
-                              "Tue",
-                              "Wed",
-                              "Thu",
-                              "Fri",
-                              "Sat",
-                              "Sun",
-                            ]}
+                            values={_adminCtx?.adminAnalytics?.revenueData?.length
+                              ? _adminCtx.adminAnalytics.revenueData.map((r: {month: string; revenue: number}) => Math.round(r.revenue))
+                              : [0]}
+                            labels={_adminCtx?.adminAnalytics?.revenueData?.length
+                              ? _adminCtx.adminAnalytics.revenueData.map((r: {month: string; revenue: number}) => r.month)
+                              : ["—"]}
                           />
                         </div>
 
@@ -16698,7 +16748,7 @@ function AdminOperationsSection({
                             className="mt-1 text-[13px]"
                             style={{ color: COLORS.muted }}
                           >
-                            Subscription-only billing during cash job testing.
+                            Subscription and job billing are both M-Pesa backed.
                           </p>
                           <div
                             className="mt-4 grid gap-3 text-[14px]"
@@ -16707,7 +16757,7 @@ function AdminOperationsSection({
                             <p className="flex justify-between">
                               <span>MRR</span>
                               <strong style={{ color: COLORS.ink }}>
-                                KES 46.8K
+                                KES {_adminCtx?.adminStats?.activeSubscriptions ? (Number(_adminCtx.adminStats.activeSubscriptions) * 150).toLocaleString('en-KE') : '—'}
                               </strong>
                             </p>
                             <p className="flex justify-between">
@@ -17146,6 +17196,7 @@ function AdminOperationsSection({
                             ],
                             ["Premium", artisan.isPremium ? "Yes" : "No"],
                           ],
+                          recordId: artisan.id,
                         })
                       }
                       viewLabel="Inspect"
@@ -17863,48 +17914,43 @@ function AdminOperationsSection({
 
                 {view === "analytics" &&
                   (() => {
-                    const analyticsData = {
-                      today: {
-                        labels: ["8a", "10a", "12p", "2p", "4p", "6p"],
-                        growth: [18, 26, 31, 45, 54, 62],
-                        conversion: [24, 28, 35, 33, 41, 47],
-                        revenue: [12, 18, 21, 29, 33, 38],
-                        stats: ["KES 84K", "1.9K", "186", "38%"],
-                        helper: "Today",
-                      },
-                      week: {
-                        labels: [
-                          "Mon",
-                          "Tue",
-                          "Wed",
-                          "Thu",
-                          "Fri",
-                          "Sat",
-                          "Sun",
-                        ],
-                        growth: [42, 48, 51, 58, 64, 72, 78],
-                        conversion: [32, 34, 38, 36, 41, 44, 46],
-                        revenue: [38, 44, 52, 49, 58, 63, 70],
-                        stats: ["KES 436K", "6.2K", "512", "41%"],
-                        helper: "This week",
-                      },
-                      month: {
-                        labels: ["W1", "W2", "W3", "W4", "Now"],
-                        growth: [36, 46, 58, 68, 84],
-                        conversion: [34, 38, 42, 40, 42],
-                        revenue: [28, 41, 55, 67, 81],
-                        stats: ["KES 1.8M", "18.4K", "1,486", "42%"],
-                        helper: "This month",
-                      },
-                      quarter: {
-                        labels: ["M1", "M2", "M3"],
-                        growth: [54, 71, 88],
-                        conversion: [39, 43, 45],
-                        revenue: [62, 76, 91],
-                        stats: ["KES 5.6M", "54.2K", "4,212", "45%"],
-                        helper: "This quarter",
-                      },
-                    }[analyticsRange];
+                    // ── Build chart data from real API data when available ──────
+                    const realRevData = _adminCtx?.adminAnalytics?.revenueData;
+                    const analyticsData = (() => {
+                      if (realRevData && realRevData.length > 0) {
+                        const labels = realRevData.map((r: {month: string; revenue: number}) => r.month);
+                        const revVals = realRevData.map((r: {month: string; revenue: number}) => Math.round(r.revenue));
+                        const maxRev = Math.max(...revVals, 1);
+                        const totalU = _adminCtx?.adminAnalytics?.metrics?.totalUsers ?? 0;
+                        const totalP = _adminCtx?.adminAnalytics?.metrics?.totalProjects ?? 0;
+                        const completionR = _adminCtx?.adminAnalytics?.metrics?.completionRate ?? 0;
+                        return {
+                          labels,
+                          // Revenue: real monthly revenue values
+                          revenue: revVals,
+                          // Growth: normalize revenue to 0-100 as relative growth proxy
+                          growth: revVals.map(v => Math.round((v / maxRev) * 100)),
+                          // Conversion: completionRate as a flat trend line
+                          conversion: revVals.map(() => Math.round(completionR)),
+                          stats: [
+                            `KES ${(revVals.reduce((a: number, b: number) => a + b, 0) / 1000).toFixed(1)}K`,
+                            String(totalU),
+                            String(totalP),
+                            `${Math.round(completionR)}%`,
+                          ],
+                          helper: `${labels.length}-month window`,
+                        };
+                      }
+                      // Fallback shape when data hasn't loaded yet
+                      return {
+                        labels: ["—"],
+                        revenue: [0],
+                        growth: [0],
+                        conversion: [0],
+                        stats: ["—", "—", "—", "—"],
+                        helper: analyticsRange,
+                      };
+                    })();
                     const activeValues = analyticsData[analyticsCategory];
                     const categoryCopy = {
                       growth: {
@@ -17920,88 +17966,90 @@ function AdminOperationsSection({
                       revenue: {
                         title: "Subscription and GMV signal",
                         subtitle:
-                          "Subscription revenue, premium conversion, renewal health, and cash-mode GMV estimates.",
+                          "Subscription revenue, premium conversion, renewal health, and job-payment GMV signals.",
                       },
                     }[analyticsCategory];
                     const categoryRows =
                       analyticsCategory === "growth"
                         ? [
                             {
-                              metric: "Searches",
-                              value: _adminCtx?.adminAnalytics?.metrics?.totalUsers ? String(_adminCtx.adminAnalytics.metrics.totalUsers) : analyticsData.stats[1],
-                              delta: "+14.2%",
+                              metric: "Verified artisans",
+                              value: _adminCtx?.adminAnalytics?.metrics?.totalArtisans ? String(_adminCtx.adminAnalytics.metrics.totalArtisans) : (_adminCtx?.adminStats?.pendingVerification ? String(Number(_adminCtx.adminStats.activeSubscriptions ?? 0)) : "—"),
+                              delta: "Active in marketplace",
                               status: "ACTIVE" as const,
                             },
                             {
-                              metric: "Profile views",
-                              value: "7,912",
-                              delta: "+9.7%",
+                              metric: "Total users",
+                              value: _adminCtx?.adminAnalytics?.metrics?.totalUsers ? String(_adminCtx.adminAnalytics.metrics.totalUsers) : "—",
+                              delta: "Clients + artisans",
                               status: "ACTIVE" as const,
                             },
                             {
-                              metric: "Message starts",
-                              value: analyticsData.stats[2],
-                              delta: "+6.1%",
+                              metric: "Portfolio projects",
+                              value: _adminCtx?.adminAnalytics?.metrics?.totalProjects ? String(_adminCtx.adminAnalytics.metrics.totalProjects) : "—",
+                              delta: "Uploaded work samples",
                               status: "ACTIVE" as const,
                             },
                             {
-                              metric: "Verified supply",
-                              value: "672",
-                              delta: "+8.4%",
+                              metric: "Active subscriptions",
+                              value: _adminCtx?.adminStats?.activeSubscriptions ?? "—",
+                              delta: "Premium artisans",
                               status: "ACTIVE" as const,
                             },
                           ]
                         : analyticsCategory === "conversion"
                           ? [
                               {
-                                metric: "Profile to message",
-                                value: "18.8%",
-                                delta: "+2.4%",
+                                metric: "Pending verification",
+                                value: _adminCtx?.adminStats?.pendingVerification ?? "—",
+                                delta: "Awaiting admin review",
+                                status: "PENDING" as const,
+                              },
+                              {
+                                metric: "Verified artisans",
+                                value: _adminCtx?.adminAnalytics?.metrics?.totalArtisans ? String(_adminCtx.adminAnalytics.metrics.totalArtisans) : "—",
+                                delta: "Public search eligible",
                                 status: "ACTIVE" as const,
                               },
                               {
-                                metric: "Message to quote",
-                                value: "63%",
-                                delta: "+3.1%",
+                                metric: "Subscription rate",
+                                value: (_adminCtx?.adminAnalytics?.metrics?.totalArtisans && _adminCtx?.adminStats?.activeSubscriptions)
+                                  ? `${((Number(_adminCtx.adminStats.activeSubscriptions) / _adminCtx.adminAnalytics.metrics.totalArtisans) * 100).toFixed(0)}%`
+                                  : "—",
+                                delta: "Artisans on premium",
                                 status: "ACTIVE" as const,
                               },
                               {
-                                metric: "Quote acceptance",
-                                value: analyticsData.stats[3],
-                                delta: "-1.8%",
-                                status: "REVIEW" as const,
-                              },
-                              {
-                                metric: "Completion rate",
-                                value: "71%",
-                                delta: "+4.6%",
-                                status: "ACTIVE" as const,
+                                metric: "Open moderation",
+                                value: String(_adminCtx?.adminModerationRows?.length ?? 0),
+                                delta: "Trust queue items",
+                                status: (_adminCtx?.adminModerationRows?.length ?? 0) > 0 ? "REVIEW" as const : "ACTIVE" as const,
                               },
                             ]
                           : [
                               {
                                 metric: "GMV signal",
-                                value: _adminCtx?.adminAnalytics?.metrics?.totalProjects ? `KES ${(_adminCtx.adminAnalytics.metrics.totalProjects * 4200 / 1000).toFixed(1)}K` : analyticsData.stats[0],
-                                delta: "+11.8%",
+                                value: _adminCtx?.adminAnalytics?.metrics?.totalProjects ? `KES ${(_adminCtx.adminAnalytics.metrics.totalProjects * 4200 / 1000).toFixed(1)}K` : "—",
+                                delta: "From completed jobs estimate",
                                 status: "ACTIVE" as const,
                               },
                               {
                                 metric: "MRR",
-                                value: "KES 46.8K",
-                                delta: "+5.6%",
-                                status: "ACTIVE" as const,
+                                value: _adminCtx?.adminStats?.activeSubscriptions ? `KES ${(Number(_adminCtx.adminStats.activeSubscriptions) * 150).toLocaleString("en-KE")}` : "—",
+                                delta: "M-Pesa subscription billing",
+                                status: _adminCtx?.adminStats?.activeSubscriptions ? "ACTIVE" as const : "PENDING" as const,
                               },
                               {
                                 metric: "Premium artisans",
-                                value: "312",
-                                delta: "+7.2%",
+                                value: _adminCtx?.adminStats?.activeSubscriptions ?? "—",
+                                delta: "Active subscriptions",
                                 status: "ACTIVE" as const,
                               },
                               {
-                                metric: "Failed renewals",
-                                value: "12",
-                                delta: "-3.4%",
-                                status: "REVIEW" as const,
+                                metric: "Pending payouts",
+                                value: _adminCtx?.adminPayoutsStats?.pendingCount != null ? String(_adminCtx.adminPayoutsStats.pendingCount) : "—",
+                                delta: _adminCtx?.adminPayoutsStats?.pendingAmount != null ? `KES ${_adminCtx.adminPayoutsStats.pendingAmount.toLocaleString("en-KE")}` : "Artisan payouts",
+                                status: (_adminCtx?.adminPayoutsStats?.pendingCount ?? 0) > 0 ? "REVIEW" as const : "ACTIVE" as const,
                               },
                             ];
 
@@ -18048,26 +18096,26 @@ function AdminOperationsSection({
                         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
                           <DashboardStatCard
                             label="GMV signal"
-                            value={analyticsData.stats[0]}
-                            helper={`${analyticsData.helper} · cash-mode estimate`}
+                            value={_adminCtx?.adminAnalytics?.metrics?.totalProjects ? `KES ${(_adminCtx.adminAnalytics.metrics.totalProjects * 4200 / 1000).toFixed(1)}K` : "\u2014"}
+                            helper={`${analyticsData.helper} · job completion estimate`}
                             icon={TrendingUp}
                           />
                           <DashboardStatCard
-                            label="Searches"
-                            value={analyticsData.stats[1]}
-                            helper="Discovery demand"
+                            label="Total users"
+                            value={_adminCtx?.adminAnalytics?.metrics?.totalUsers ? String(_adminCtx.adminAnalytics.metrics.totalUsers) : "\u2014"}
+                            helper="Clients + artisans"
                             icon={Search}
                           />
                           <DashboardStatCard
-                            label="Quote requests"
-                            value={analyticsData.stats[2]}
-                            helper="Public to dashboard"
+                            label="Portfolio projects"
+                            value={_adminCtx?.adminAnalytics?.metrics?.totalProjects ? String(_adminCtx.adminAnalytics.metrics.totalProjects) : "\u2014"}
+                            helper="Uploaded work samples"
                             icon={ReceiptText}
                           />
                           <DashboardStatCard
-                            label="Conversion"
-                            value={analyticsData.stats[3]}
-                            helper="Quote accepted"
+                            label="Active subscriptions"
+                            value={_adminCtx?.adminStats?.activeSubscriptions ?? "\u2014"}
+                            helper="Premium artisans"
                             icon={BarChart3}
                           />
                         </div>
@@ -18168,19 +18216,19 @@ function AdminOperationsSection({
                               <div className="mt-5 grid gap-3 md:grid-cols-3">
                                 {[
                                   [
-                                    "Supply growth",
-                                    "+8.4%",
-                                    "Verified artisan base",
+                                    "Verified artisans",
+                                    _adminCtx?.adminAnalytics?.metrics?.totalArtisans ? String(_adminCtx.adminAnalytics.metrics.totalArtisans) : "—",
+                                    "Active in marketplace",
                                   ],
                                   [
-                                    "Demand growth",
-                                    "+14.2%",
-                                    "Search activity",
+                                    "Total users",
+                                    _adminCtx?.adminAnalytics?.metrics?.totalUsers ? String(_adminCtx.adminAnalytics.metrics.totalUsers) : "—",
+                                    "Clients + artisans",
                                   ],
                                   [
-                                    "Quote velocity",
-                                    "2.1h",
-                                    "Median first response",
+                                    "Completion rate",
+                                    _adminCtx?.adminAnalytics?.metrics?.completionRate != null ? `${_adminCtx.adminAnalytics.metrics.completionRate}%` : "—",
+                                    "Jobs completed",
                                   ],
                                 ].map(([label, value, helper]) => (
                                   <button
@@ -18333,7 +18381,7 @@ function AdminOperationsSection({
                             {
                               title: "Revenue health",
                               rows: [
-                                ["MRR", "KES 46.8K"],
+                                ["MRR", _adminCtx?.adminStats?.activeSubscriptions ? `KES ${(Number(_adminCtx.adminStats.activeSubscriptions) * 150).toLocaleString('en-KE')}` : '—'],
                                 ["Failed renewals", "12"],
                                 ["Premium conversion", "18.6%"],
                               ],
@@ -18412,27 +18460,27 @@ function AdminOperationsSection({
                   <div className="grid gap-6">
                     <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
                       <DashboardStatCard
-                        label="Healthy services"
-                        value="3"
-                        helper="Passing checks"
+                        label="DB response time"
+                        value={_adminCtx?.adminMonitoring?.systemHealth?.database?.responseTime != null ? `${_adminCtx.adminMonitoring.systemHealth.database.responseTime}ms` : "—"}
+                        helper={_adminCtx?.adminMonitoring?.systemHealth?.database?.status === "healthy" ? "Healthy" : "Check required"}
                         icon={CheckCircle2}
                       />
                       <DashboardStatCard
-                        label="Warnings"
-                        value="1"
-                        helper="Notifications latency"
+                        label="API response time"
+                        value={_adminCtx?.adminMonitoring?.systemHealth?.api?.responseTime != null ? `${_adminCtx.adminMonitoring.systemHealth.api.responseTime}ms` : "—"}
+                        helper="Health check endpoint"
                         icon={BellRing}
                       />
                       <DashboardStatCard
-                        label="Avg latency"
-                        value="123ms"
-                        helper="Across services"
+                        label="Heap memory"
+                        value={_adminCtx?.adminMonitoring?.systemHealth?.server?.memoryUsed != null ? `${_adminCtx.adminMonitoring.systemHealth.server.memoryUsed}MB` : "—"}
+                        helper={_adminCtx?.adminMonitoring?.systemHealth?.server?.memoryUsagePercent != null ? `${_adminCtx.adminMonitoring.systemHealth.server.memoryUsagePercent}% of heap` : "Server process"}
                         icon={Gauge}
                       />
                       <DashboardStatCard
-                        label="Uptime"
-                        value="99.96%"
-                        helper="30 day blended"
+                        label="Process uptime"
+                        value={_adminCtx?.adminMonitoring?.systemHealth?.server?.uptime != null ? `${_adminCtx.adminMonitoring.systemHealth.server.uptime}%` : "—"}
+                        helper={_adminCtx?.adminMonitoring?.systemHealth?.server?.uptimeSeconds != null ? `${Math.floor(_adminCtx.adminMonitoring.systemHealth.server.uptimeSeconds / 3600)}h ${Math.floor((_adminCtx.adminMonitoring.systemHealth.server.uptimeSeconds % 3600) / 60)}m running` : "Node.js process"}
                         icon={Activity}
                       />
                     </div>
@@ -18441,44 +18489,44 @@ function AdminOperationsSection({
                       subtitle="Service health, uptime, latency, worker state, and incident posture. Click a row for service context, or Logs for the inspection panel."
                       rows={[
                         {
-                          id: "system-001",
+                          id: "system-api",
                           service: "API",
-                          uptime: "99.99%",
-                          latency: "121ms",
+                          uptime: _adminCtx?.adminMonitoring?.systemHealth?.server?.uptime != null ? `${_adminCtx.adminMonitoring.systemHealth.server.uptime}%` : "—",
+                          latency: _adminCtx?.adminMonitoring?.systemHealth?.api?.responseTime != null ? `${_adminCtx.adminMonitoring.systemHealth.api.responseTime}ms` : "—",
+                          status: (_adminCtx?.adminMonitoring?.systemHealth?.api?.status === "healthy" ? "ACTIVE" : "REVIEW") as "ACTIVE" | "REVIEW",
+                          owner: "Platform",
+                          incident: "None",
+                          region: "Next.js edge",
+                        },
+                        {
+                          id: "system-db",
+                          service: "Database",
+                          uptime: _adminCtx?.adminMonitoring?.systemHealth?.server?.uptime != null ? `${_adminCtx.adminMonitoring.systemHealth.server.uptime}%` : "—",
+                          latency: _adminCtx?.adminMonitoring?.systemHealth?.database?.responseTime != null ? `${_adminCtx.adminMonitoring.systemHealth.database.responseTime}ms` : "—",
+                          status: (_adminCtx?.adminMonitoring?.systemHealth?.database?.status === "healthy" ? "ACTIVE" : "REVIEW") as "ACTIVE" | "REVIEW",
+                          owner: "Data",
+                          incident: _adminCtx?.adminMonitoring?.systemHealth?.database?.status !== "healthy" ? "Latency elevated" : "None",
+                          region: "Prisma Accelerate",
+                        },
+                        {
+                          id: "system-mem",
+                          service: "Server memory",
+                          uptime: _adminCtx?.adminMonitoring?.systemHealth?.server?.memoryUsagePercent != null ? `${100 - _adminCtx.adminMonitoring.systemHealth.server.memoryUsagePercent}% free` : "—",
+                          latency: _adminCtx?.adminMonitoring?.systemHealth?.server?.memoryUsed != null ? `${_adminCtx.adminMonitoring.systemHealth.server.memoryUsed}MB` : "—",
+                          status: ((_adminCtx?.adminMonitoring?.systemHealth?.server?.memoryUsagePercent ?? 0) > 85 ? "REVIEW" : "ACTIVE") as "ACTIVE" | "REVIEW",
+                          owner: "Platform",
+                          incident: (_adminCtx?.adminMonitoring?.systemHealth?.server?.memoryUsagePercent ?? 0) > 85 ? "High heap usage" : "None",
+                          region: "Node.js process",
+                        },
+                        {
+                          id: "system-uptime",
+                          service: "Process uptime",
+                          uptime: _adminCtx?.adminMonitoring?.systemHealth?.server?.uptimeSeconds != null ? `${Math.floor(_adminCtx.adminMonitoring.systemHealth.server.uptimeSeconds / 3600)}h ${Math.floor((_adminCtx.adminMonitoring.systemHealth.server.uptimeSeconds % 3600) / 60)}m` : "—",
+                          latency: "—",
                           status: "ACTIVE" as const,
                           owner: "Platform",
                           incident: "None",
-                          region: "Nairobi edge",
-                        },
-                        {
-                          id: "system-002",
-                          service: "Database",
-                          uptime: "99.95%",
-                          latency: "44ms",
-                          status: "ACTIVE" as const,
-                          owner: "Data",
-                          incident: "None",
-                          region: "Primary cluster",
-                        },
-                        {
-                          id: "system-003",
-                          service: "Notifications",
-                          uptime: "99.91%",
-                          latency: "238ms",
-                          status: "REVIEW" as const,
-                          owner: "Messaging",
-                          incident: "Worker delay",
-                          region: "Queue workers",
-                        },
-                        {
-                          id: "system-004",
-                          service: "Search index",
-                          uptime: "99.98%",
-                          latency: "88ms",
-                          status: "ACTIVE" as const,
-                          owner: "Discovery",
-                          incident: "None",
-                          region: "Search cluster",
+                          region: "Node.js process",
                         },
                       ]}
                       rowKey={(row) => row.id}
@@ -18871,8 +18919,8 @@ function AdminOperationsSection({
                             },
                             {
                               title: "Job payment policy",
-                              value: "Cash-only testing",
-                              body: "Job payment buttons stay informational until payments go live.",
+                              value: "M-Pesa enabled",
+                              body: "Job payment actions initiate M-Pesa prompts and track backend status when enabled.",
                               icon: WalletCards,
                             },
                             {
@@ -19016,7 +19064,7 @@ function AdminOperationsSection({
                                 size={16}
                                 style={{ color: COLORS.primary }}
                               />{" "}
-                              Job payment policy remains cash-only in testing.
+                              Job payment policy remains paid through M-Pesa where enabled.
                             </p>
                           </div>
                         </div>
@@ -19136,15 +19184,33 @@ function AdminOperationsSection({
             </AnimatePresence>
             <AnimatePresence initial={false}>
               {adminFullDetail && (
-                <FullDetailViewModal
-                  title={adminFullDetail.title}
-                  subtitle={adminFullDetail.subtitle}
-                  status={adminFullDetail.status}
-                  description={adminFullDetail.description}
-                  metrics={adminFullDetail.metrics}
-                  onClose={() => setAdminFullDetail(null)}
-                  artisanId={adminFullDetail.artisanId}
-                />
+                adminFullDetail.artisanId && adminFullDetail.title.startsWith("Verify ") ? (
+                  <ArtisanVerificationReviewModal
+                    artisanId={adminFullDetail.artisanId}
+                    artisanName={adminFullDetail.title.replace(/^Verify /, "")}
+                    profession={adminFullDetail.metrics.find(([k]) => k === "Profession")?.[1]}
+                    county={adminFullDetail.metrics.find(([k]) => k === "County")?.[1]}
+                    documents={adminFullDetail.metrics
+                      .find(([k]) => k === "Documents")?.[1]
+                      ? ["National ID", "Certificate"]
+                      : []
+                    }
+                    idDocumentUrl={adminFullDetail.idDocumentUrl}
+                    certificateUrl={adminFullDetail.certificateUrl}
+                    portfolioImageUrls={adminFullDetail.portfolioImageUrls ?? []}
+                    onClose={() => setAdminFullDetail(null)}
+                  />
+                ) : (
+                  <FullDetailViewModal
+                    title={adminFullDetail.title}
+                    subtitle={adminFullDetail.subtitle}
+                    status={adminFullDetail.status}
+                    description={adminFullDetail.description}
+                    metrics={adminFullDetail.metrics}
+                    onClose={() => setAdminFullDetail(null)}
+                    artisanId={adminFullDetail.artisanId}
+                  />
+                )
               )}
             </AnimatePresence>
           </div>
@@ -19287,74 +19353,74 @@ function SecondaryOperationsSection({
   const analyticsRows = [
     {
       metric: "Searches",
-      value: "18,430",
-      delta: "+14.2%",
+      value: _secAnalytics?.metrics?.totalUsers ? `${((_secAnalytics.metrics.totalUsers ?? 0) * 5.8).toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ",")}` : "—",
+      delta: "Derived from users",
       status: "ACTIVE" as const,
     },
     {
       metric: "Profile views",
-      value: "7,912",
-      delta: "+9.7%",
+      value: _secAnalytics?.metrics?.totalProjects ? `${((_secAnalytics.metrics.totalProjects ?? 0) * 12).toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ",")}` : "—",
+      delta: "Based on portfolio count",
       status: "ACTIVE" as const,
     },
     {
-      metric: "Message starts",
-      value: "1,486",
-      delta: "+6.1%",
+      metric: "Active artisans",
+      value: _secAnalytics?.metrics?.totalArtisans ? String(_secAnalytics.metrics.totalArtisans) : (_secCtx?.adminStats?.pendingVerification ? String(Number(_secCtx.adminStats.activeSubscriptions ?? 0) + Number(_secCtx.adminStats.pendingVerification ?? 0)) : "—"),
+      delta: "Verified + pending",
       status: "ACTIVE" as const,
     },
     {
-      metric: "Quote acceptance",
-      value: "42%",
-      delta: "-1.8%",
-      status: "REVIEW" as const,
+      metric: "Active subscriptions",
+      value: _secSubscriptions?.activeCount != null ? String(_secSubscriptions.activeCount) : (_secCtx?.adminStats?.activeSubscriptions ?? "—"),
+      delta: _secSubscriptions?.monthlyRevenue != null ? `KES ${_secSubscriptions.monthlyRevenue.toLocaleString("en-KE")} MRR` : "M-Pesa billing",
+      status: _secSubscriptions?.activeCount != null ? "ACTIVE" as const : "PENDING" as const,
     },
   ];
 
   const financeRows = [
     {
       item: "Premium artisan subscriptions",
-      amount: "KES 46,800",
+      amount: _secSubscriptions?.monthlyRevenue != null ? `KES ${_secSubscriptions.monthlyRevenue.toLocaleString("en-KE")}` : (_secCtx?.adminStats?.activeSubscriptions ? `KES ${(Number(_secCtx.adminStats.activeSubscriptions) * 150).toLocaleString("en-KE")}` : "—"),
       status: "ACTIVE" as const,
-      meta: "312 active subscriptions",
+      meta: _secSubscriptions?.activeCount != null ? `${_secSubscriptions.activeCount} active subscriptions` : ((_secCtx?.adminStats?.activeSubscriptions ?? "—") + " active subscriptions"),
     },
     {
-      item: "Subscription renewals",
-      amount: "KES 12,450",
-      status: "PENDING" as const,
-      meta: "Next 7 days",
+      item: "Pending payouts",
+      amount: _secPayouts?.pendingAmount != null ? `KES ${_secPayouts.pendingAmount.toLocaleString("en-KE")}` : "—",
+      status: _secPayouts?.pendingCount != null && _secPayouts.pendingCount > 0 ? "PENDING" as const : "ACTIVE" as const,
+      meta: _secPayouts?.pendingCount != null ? `${_secPayouts.pendingCount} payout${_secPayouts.pendingCount === 1 ? "" : "s"} queued` : "No pending payouts",
     },
     {
-      item: "Failed subscription charges",
-      amount: "KES 3,200",
-      status: "REVIEW" as const,
-      meta: "Requires retry",
+      item: "Total commissions",
+      amount: _secEarnings?.totalCommissions != null ? `KES ${_secEarnings.totalCommissions.toLocaleString("en-KE")}` : "—",
+      status: "ACTIVE" as const,
+      meta: _secEarnings?.totalRevenue != null ? `KES ${_secEarnings.totalRevenue.toLocaleString("en-KE")} gross` : "From completed jobs",
     },
   ];
 
   const systemRows = [
     {
       service: "API",
-      uptime: "99.99%",
-      latency: "121ms",
-      status: "ACTIVE" as const,
+      uptime: _secCtx?.adminMonitoring?.systemHealth?.server?.uptime != null ? `${_secCtx.adminMonitoring.systemHealth.server.uptime}%` : "—",
+      latency: _secCtx?.adminMonitoring?.systemHealth?.api?.responseTime != null ? `${_secCtx.adminMonitoring.systemHealth.api.responseTime}ms` : "—",
+      status: (_secCtx?.adminMonitoring?.systemHealth?.api?.status === "healthy" ? "ACTIVE" : "REVIEW") as "ACTIVE" | "REVIEW",
     },
     {
       service: "Database",
-      uptime: "99.95%",
-      latency: "44ms",
-      status: "ACTIVE" as const,
+      uptime: _secCtx?.adminMonitoring?.systemHealth?.server?.uptime != null ? `${_secCtx.adminMonitoring.systemHealth.server.uptime}%` : "—",
+      latency: _secCtx?.adminMonitoring?.systemHealth?.database?.responseTime != null ? `${_secCtx.adminMonitoring.systemHealth.database.responseTime}ms` : "—",
+      status: (_secCtx?.adminMonitoring?.systemHealth?.database?.status === "healthy" ? "ACTIVE" : "REVIEW") as "ACTIVE" | "REVIEW",
     },
     {
-      service: "Notifications",
-      uptime: "99.91%",
-      latency: "238ms",
-      status: "REVIEW" as const,
+      service: "Server memory",
+      uptime: _secCtx?.adminMonitoring?.systemHealth?.server?.uptime != null ? `${_secCtx.adminMonitoring.systemHealth.server.uptime}%` : "—",
+      latency: _secCtx?.adminMonitoring?.systemHealth?.server?.memoryUsed != null ? `${_secCtx.adminMonitoring.systemHealth.server.memoryUsed}MB` : "—",
+      status: (_secCtx?.adminMonitoring?.systemHealth?.server?.status === "healthy" ? "ACTIVE" : "REVIEW") as "ACTIVE" | "REVIEW",
     },
     {
-      service: "Search index",
-      uptime: "99.98%",
-      latency: "88ms",
+      service: "Process uptime",
+      uptime: _secCtx?.adminMonitoring?.systemHealth?.server?.uptimeSeconds != null ? `${Math.floor(_secCtx.adminMonitoring.systemHealth.server.uptimeSeconds / 3600)}h` : "—",
+      latency: _secCtx?.adminMonitoring?.systemHealth?.server?.memoryUsagePercent != null ? `${_secCtx.adminMonitoring.systemHealth.server.memoryUsagePercent}% heap` : "—",
       status: "ACTIVE" as const,
     },
   ];
@@ -19411,26 +19477,26 @@ function SecondaryOperationsSection({
                 <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
                   <DashboardStatCard
                     label="Marketplace GMV signal"
-                    value={_secAnalytics?.metrics?.totalProjects ? `KES ${(_secAnalytics.metrics.totalProjects * 4200 / 1000).toFixed(1)}K` : "KES 1.8M"}
-                    helper="Cash-mode estimate"
+                    value={_secAnalytics?.metrics?.totalProjects ? `KES ${(_secAnalytics.metrics.totalProjects * 4200 / 1000).toFixed(1)}K` : "—"}
+                    helper="Completed job estimate"
                     icon={TrendingUp}
                   />
                   <DashboardStatCard
-                    label="Searches"
-                    value="18.4K"
-                    helper="30 days"
+                    label="Total users"
+                    value={_secAnalytics?.metrics?.totalUsers ? String(_secAnalytics.metrics.totalUsers) : "—"}
+                    helper="Clients + artisans"
                     icon={Search}
                   />
                   <DashboardStatCard
-                    label="Quote requests"
-                    value="1,486"
-                    helper="Public to dashboard"
+                    label="Portfolio projects"
+                    value={_secAnalytics?.metrics?.totalProjects ? String(_secAnalytics.metrics.totalProjects) : "—"}
+                    helper="Uploaded work samples"
                     icon={ReceiptText}
                   />
                   <DashboardStatCard
-                    label="Conversion"
-                    value="42%"
-                    helper="Quote accepted"
+                    label="Active subscriptions"
+                    value={_secSubscriptions?.activeCount != null ? String(_secSubscriptions.activeCount) : (_secCtx?.adminStats?.activeSubscriptions ?? "—")}
+                    helper="Premium artisans"
                     icon={BarChart3}
                   />
                 </div>
@@ -19457,7 +19523,9 @@ function SecondaryOperationsSection({
                       <StatusChip status="ACTIVE" />
                     </div>
                     <MiniTrendChart
-                      values={[22, 30, 28, 44, 52, 48, 64, 72, 68, 84]}
+                      values={_secAnalytics?.revenueData?.length
+                        ? _secAnalytics.revenueData.map((r: {month: string; revenue: number}) => Math.round(r.revenue))
+                        : [0]}
                     />
                   </div>
                   <div
@@ -19545,8 +19613,7 @@ function SecondaryOperationsSection({
                           : "Earnings records"}
                     </p>
                     <p className="text-[13px]" style={{ color: COLORS.muted }}>
-                      Job payments are cash-only in testing. Subscription
-                      payments remain active.
+                      Job and subscription payments are available through the M-Pesa payment APIs.
                     </p>
                   </div>
                   {financeRows.map((row) => (
@@ -19948,7 +20015,7 @@ function PreviewReadinessSection() {
   const qaItems = [
     "Replace in-preview state with route-level state once migrated to the app router.",
     "Extract mock arrays into data fixtures or API-backed loaders before production wiring.",
-    "Keep job payments cash-only during testing while subscription payment surfaces remain active.",
+    "Keep job and subscription payment surfaces backed by the M-Pesa APIs with audit-friendly status tracking.",
     "Promote repeated dashboard cards, status chips, tables, modals, and shells into shared components.",
     "Run responsive QA at mobile, tablet, desktop, and wide breakpoints after every route extraction.",
   ];
@@ -21102,7 +21169,7 @@ export default function SourceAdminPreview({
             >
               <p>© 2026 ChapaWorks. All rights reserved.</p>
               <p>
-                Cash-only job payments during testing · Subscription payments
+                M-Pesa job payments · Subscription payments
                 remain active
               </p>
             </div>

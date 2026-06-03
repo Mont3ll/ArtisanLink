@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { cachedJsonResponse, CACHE_DURATIONS, STALE_DURATIONS } from '@/lib/cache'
 import { auth } from '@clerk/nextjs/server'
 import { prisma } from '@/lib/prisma'
 
@@ -58,7 +59,7 @@ export async function GET() {
       .filter((stat: SubStat) => stat.status === 'ACTIVE')
       .reduce((sum: number, stat: SubStat) => sum + stat._count.id, 0)
 
-    return NextResponse.json({
+    return cachedJsonResponse({
       stats: subscriptionStats.map((stat: SubStat) => ({
         status: stat.status,
         plan: stat.plan,
@@ -71,7 +72,7 @@ export async function GET() {
         activeSubscriptions,
         totalSubscriptions: subscriptionStats.reduce((sum: number, stat: SubStat) => sum + stat._count.id, 0)
       }
-    })
+    }, { maxAge: CACHE_DURATIONS.SHORT, staleWhileRevalidate: STALE_DURATIONS.SHORT })
   } catch (error) {
     console.error('Error fetching subscription data:', error)
     return NextResponse.json(

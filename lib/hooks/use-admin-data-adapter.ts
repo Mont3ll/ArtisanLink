@@ -56,6 +56,12 @@ export interface SourceVerificationRecord {
   status: 'PENDING' | 'REVIEW' | 'VERIFIED' | 'ACTIVE' | 'QUOTED' | 'COMPLETED'
   documents: string[]
   risk: 'Low' | 'Medium' | 'High'
+  /** Real Cloudinary URL for the uploaded national ID */
+  idDocumentUrl?: string | null
+  /** Real Cloudinary URL for the uploaded certificate */
+  certificateUrl?: string | null
+  /** Artisan's profile image URL */
+  profileImage?: string | null
 }
 
 export function mapPendingArtisanToVerificationRecord(
@@ -77,6 +83,9 @@ export function mapPendingArtisanToVerificationRecord(
     status: st === 'REJECTED' ? 'REVIEW' : st === 'VERIFIED' ? 'VERIFIED' : 'PENDING',
     documents: displayDocs,
     risk: docs.length >= 2 ? 'Low' : docs.length === 1 ? 'Medium' : 'High',
+    idDocumentUrl: artisan.profile?.idDocumentUrl ?? null,
+    certificateUrl: artisan.profile?.certificateUrl ?? null,
+    profileImage: artisan.profile?.profileImage ?? null,
   }
 }
 

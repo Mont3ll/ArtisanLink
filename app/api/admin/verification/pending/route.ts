@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { cachedJsonResponse, CACHE_DURATIONS, STALE_DURATIONS } from '@/lib/cache'
 import { auth } from '@clerk/nextjs/server'
 import { prisma } from '@/lib/prisma'
 
@@ -87,7 +88,7 @@ export async function GET() {
       avgProcessingTime = Math.round((totalDays / recentHistory.length) * 10) / 10
     }
 
-    return NextResponse.json({
+    return cachedJsonResponse({
       pendingArtisans,
       stats: {
         totalPending: pendingArtisans.length,
@@ -97,7 +98,7 @@ export async function GET() {
         verifiedThisWeek,
         avgProcessingTime,
       }
-    })
+    }, { maxAge: CACHE_DURATIONS.SHORT, staleWhileRevalidate: STALE_DURATIONS.SHORT })
   } catch (error) {
     console.error('Error fetching pending verifications:', error)
     return NextResponse.json(

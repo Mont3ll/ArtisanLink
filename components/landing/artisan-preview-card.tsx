@@ -1,11 +1,13 @@
 "use client";
 
-import { BadgeCheck, Bookmark, BookmarkCheck, Eye, Images, MessageCircle, Star } from "lucide-react";
+import Image from "next/image";
+import { BadgeCheck, Eye, Images, MessageCircle, Star } from "lucide-react";
 import { useAuth } from "@clerk/nextjs";
 import { useSavedArtisanIds, useToggleSaveArtisan } from "@/lib/hooks/use-artisan-search";
 import { useRouter } from "next/navigation";
 
 import { COLORS } from "@/lib/design-tokens";
+import { SHIMMER_4_3, SHIMMER_SQUARE, ARTISAN_CARD_SIZES } from "@/lib/image-utils";
 
 export type ArtisanCardData = {
   id: string;
@@ -15,6 +17,8 @@ export type ArtisanCardData = {
   profession: string;
   profileImage: string | null;
   portfolioThumbnail: string | null;
+  /** Full list of portfolio images for the quick-view modal */
+  portfolioImages?: string[];
   location: { city: string; county: string };
   hourlyRate: number | null;
   isAvailable: boolean;
@@ -62,9 +66,12 @@ export function ArtisanCardSkeleton() {
 export function ArtisanPreviewCard({
   artisan,
   onOpenPortfolio,
+  priority = false,
 }: {
   artisan: ArtisanCardData;
   onOpenPortfolio?: (artisan: ArtisanCardData) => void;
+  /** Set true for the first few visible cards to eagerly load the hero image (LCP). */
+  priority?: boolean;
 }) {
   const router = useRouter();
   const { isSignedIn } = useAuth();
@@ -97,11 +104,15 @@ export function ArtisanPreviewCard({
         aria-label={`View ${artisan.name}'s portfolio`}
       >
         {heroImg ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
+          <Image
             src={heroImg}
             alt={artisan.profession ?? artisan.name}
-            className="h-full w-full object-cover transition-transform duration-300 ease-out group-hover:scale-105"
+            fill
+            className="object-cover transition-transform duration-300 ease-out group-hover:scale-105"
+            sizes={ARTISAN_CARD_SIZES}
+            priority={priority}
+            placeholder="blur"
+            blurDataURL={SHIMMER_4_3}
           />
         ) : (
           <div
@@ -151,11 +162,14 @@ export function ArtisanPreviewCard({
       <div className="mb-2 flex items-start gap-3">
         <div className="relative mt-0.5 flex-shrink-0">
           {artisan.profileImage ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
+            <Image
               src={artisan.profileImage}
               alt={artisan.name}
+              width={40}
+              height={40}
               className="h-10 w-10 rounded-full border-2 border-white object-cover shadow-sm"
+              placeholder="blur"
+              blurDataURL={SHIMMER_SQUARE}
             />
           ) : (
             <div className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-white bg-emerald-100 shadow-sm">
@@ -246,17 +260,6 @@ export function ArtisanPreviewCard({
           <Eye className="h-4 w-4" />
           View Profile
         </button>
-        {isSignedIn ? (
-          <button
-            type="button"
-            onClick={() => toggleSave.mutate({ profileId, isSaved })}
-            className="flex min-h-10 cursor-pointer items-center justify-center gap-1.5 rounded-lg border px-3 py-2 text-[14px] font-medium leading-[1.29] transition-colors hover:border-emerald-600"
-            style={{ borderColor: isSaved ? COLORS.primary : COLORS.hairline, color: isSaved ? COLORS.primary : COLORS.body, background: isSaved ? COLORS.primaryTint : COLORS.canvas }}
-            aria-label={isSaved ? "Unsave artisan" : "Save artisan"}
-          >
-            {isSaved ? <BookmarkCheck className="h-4 w-4" /> : <Bookmark className="h-4 w-4" />}
-          </button>
-        ) : null}
         <button
           type="button"
           onClick={() => {

@@ -1,3 +1,4 @@
+import { createHmac, timingSafeEqual } from 'crypto'
 import { NextResponse } from 'next/server'
 import { headers } from 'next/headers'
 import { prisma } from '@/lib/prisma'
@@ -44,6 +45,25 @@ function isValidMpesaIP(ip: string | null): boolean {
   return MPESA_IP_WHITELIST.some(prefix => ip.startsWith(prefix))
 }
 
+function verifyCallbackSignature(body: string, signatureHeader: string | null): boolean {
+  const secret = process.env.MPESA_CALLBACK_SECRET
+  if (!secret) return true
+  if (!signatureHeader) return false
+
+  const provided = signatureHeader.startsWith('sha256=')
+    ? signatureHeader.slice('sha256='.length)
+    : signatureHeader
+  const expected = createHmac('sha256', secret).update(body).digest('hex')
+
+  try {
+    const providedBuffer = Buffer.from(provided, 'hex')
+    const expectedBuffer = Buffer.from(expected, 'hex')
+    return providedBuffer.length === expectedBuffer.length && timingSafeEqual(providedBuffer, expectedBuffer)
+  } catch {
+    return false
+  }
+}
+
 /**
  * POST - M-Pesa STK Push callback handler
  * 
@@ -81,8 +101,18 @@ export async function POST(request: Request) {
       }
     }
 
+    const rawBody = await request.text()
+    const signature = request.headers.get('x-chapaworks-signature') ?? request.headers.get('x-mpesa-signature')
+    if (!verifyCallbackSignature(rawBody, signature)) {
+      logger.warn('M-Pesa callback with invalid signature')
+      return NextResponse.json(
+        { ResultCode: 1, ResultDesc: 'Invalid signature' },
+        { status: 401 },
+      )
+    }
+
     // Parse callback data
-    const callbackData: STKCallbackData = await request.json()
+    const callbackData: STKCallbackData = JSON.parse(rawBody)
     
     logger.info('Received M-Pesa callback', {
       merchantRequestId: callbackData.Body?.stkCallback?.MerchantRequestID,

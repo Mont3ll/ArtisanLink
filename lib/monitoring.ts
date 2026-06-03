@@ -23,12 +23,15 @@ interface SentryLike {
 // Check if Sentry is available (installed and configured)
 let Sentry: SentryLike | null = null
 
-try {
-  // Dynamic import to avoid errors if Sentry is not installed
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  Sentry = require('@sentry/nextjs') as SentryLike
-} catch {
-  // Sentry not installed - will use fallback logging
+// Only attempt to load Sentry in environments where it is installed.
+// Using a conditional expression prevents webpack from including it in the bundle.
+if (process.env.SENTRY_DSN) {
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    Sentry = require('@sentry/nextjs') as SentryLike
+  } catch {
+    // Sentry not installed - error tracking disabled
+  }
 }
 
 interface SentryEvent {

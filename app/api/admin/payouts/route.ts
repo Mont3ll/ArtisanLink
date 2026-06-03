@@ -88,8 +88,8 @@ export async function GET(request: Request) {
               lastName: true,
               email: true,
               phone: true,
-              artisanProfile: {
-                select: { businessName: true },
+              profile: {
+                select: { profession: true },
               },
             },
           },

@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { cachedJsonResponse, CACHE_DURATIONS, STALE_DURATIONS } from '@/lib/cache'
 import { auth } from '@clerk/nextjs/server'
 import { prisma } from '@/lib/prisma'
 import type { ArtisanStatus, SubscriptionStatus, SubscriptionPlan } from '@/app/generated/prisma'
@@ -181,7 +182,7 @@ export async function GET(request: Request) {
       prisma.subscription.count({ where: { status: 'ACTIVE' } }),
     ])
 
-    return NextResponse.json({
+    return cachedJsonResponse({
       artisans: transformedArtisans,
       pagination: {
         page: clampedPage,
@@ -195,7 +196,7 @@ export async function GET(request: Request) {
         pendingCount,
         activeSubscriptions,
       },
-    })
+    }, { maxAge: CACHE_DURATIONS.SHORT, staleWhileRevalidate: STALE_DURATIONS.SHORT })
   } catch (error) {
     console.error('Error fetching artisans:', error)
     return NextResponse.json(

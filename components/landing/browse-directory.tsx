@@ -149,8 +149,9 @@ export function BrowseDirectorySection({
       const matchesCounty =
         county === "All counties" || artisan.location.county === county;
       const matchesAvailability = !availableOnly || artisan.isAvailable;
+      const matchesVerified = !verifiedOnly || artisan.isVerified;
 
-      return matchesQuery && matchesProfession && matchesCounty && matchesAvailability;
+      return matchesQuery && matchesProfession && matchesCounty && matchesAvailability && matchesVerified;
     });
 
     return [...result].sort((a, b) => {
@@ -166,7 +167,7 @@ export function BrowseDirectorySection({
 
   useEffect(() => {
     setPage(1);
-  }, [availableOnly, county, profession, query, sortBy]);
+  }, [availableOnly, county, profession, query, sortBy, verifiedOnly]);
 
   useEffect(() => {
     setPage((current) => Math.min(current, totalPages));
@@ -217,7 +218,7 @@ export function BrowseDirectorySection({
         >
           <div className="flex flex-wrap items-center gap-2">
             <label
-              className="flex h-10 min-w-[220px] flex-1 items-center gap-3 rounded-full border bg-white px-4 md:max-w-[340px]"
+              className="flex h-10 flex-1 items-center gap-3 rounded-full border bg-white px-4"
               style={{ borderColor: COLORS.hairline }}
             >
               <Search size={16} strokeWidth={2.5} style={{ color: COLORS.ink }} />
@@ -335,7 +336,7 @@ export function BrowseDirectorySection({
                 onReset={resetFilters}
               />
             ) : (
-              visible.map((artisan) => (
+              visible.map((artisan, index) => (
                 <motion.div
                   key={`browse-${artisan.id}`}
                   layout
@@ -344,7 +345,7 @@ export function BrowseDirectorySection({
                   exit={{ opacity: 0, y: -8, scale: 0.985 }}
                   transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
                 >
-                  <ArtisanPreviewCard artisan={artisan} onOpenPortfolio={setSelectedPortfolioArtisan} />
+                  <ArtisanPreviewCard artisan={artisan} onOpenPortfolio={setSelectedPortfolioArtisan} priority={index < 4} />
                 </motion.div>
               ))
             )}

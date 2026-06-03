@@ -6,20 +6,25 @@ import { useQuery } from '@tanstack/react-query'
 export interface DatabaseHealth {
   status: string
   responseTime: number
-  connections: number
+  totalUsers?: number
 }
 
 export interface ApiHealth {
   status: string
   responseTime: number
-  requestsPerMinute: number
 }
 
 export interface ServerHealth {
   status: string
-  cpuUsage: number
-  memoryUsage: number
+  memoryUsed?: number
+  memoryTotal?: number
+  memoryUsagePercent?: number
   uptime: number
+  uptimeSeconds?: number
+  /** @deprecated use memoryUsed */
+  cpuUsage?: number
+  /** @deprecated use memoryUsagePercent */
+  memoryUsage?: number
 }
 
 export interface SystemHealth {

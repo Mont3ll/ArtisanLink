@@ -53,8 +53,8 @@ export async function GET(request: Request, { params }: RouteParams) {
             email: true,
             phone: true,
             completedJobCount: true,
-            artisanProfile: {
-              select: { businessName: true },
+            profile: {
+              select: { profession: true },
             },
           },
         },

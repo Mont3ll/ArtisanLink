@@ -98,6 +98,9 @@ function normalizeArtisan(raw: RawArtisan, index: number): ArtisanCardData {
     rating: { average: ratingAverage || 4.7, total: ratingTotal },
     specializations: specializations.length ? specializations : [{ name: profession }],
     gradient: asString(raw.gradient, FALLBACK_GRADIENTS[index % FALLBACK_GRADIENTS.length]),
+    portfolioImages: Array.isArray(raw.portfolioImages)
+      ? (raw.portfolioImages as unknown[]).filter((u): u is string => typeof u === 'string')
+      : [],
   };
 }
 

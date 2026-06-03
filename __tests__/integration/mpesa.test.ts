@@ -6,7 +6,8 @@
  * - Callback handling
  * - Payment status queries
  */
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { createHmac } from 'crypto';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 
 // Mock M-Pesa library
 vi.mock('@/lib/mpesa', () => ({
@@ -106,6 +107,11 @@ import { GET as statusGET } from '@/app/api/payments/mpesa/status/route';
 describe('M-Pesa Payment Integration Tests', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    delete process.env.MPESA_CALLBACK_SECRET;
+  });
+
+  afterEach(() => {
+    delete process.env.MPESA_CALLBACK_SECRET;
   });
 
   describe('POST /api/payments/mpesa/initiate', () => {
@@ -360,6 +366,41 @@ describe('M-Pesa Payment Integration Tests', () => {
       const request = new Request('http://localhost:3000/api/payments/mpesa/callback', {
         method: 'POST',
         body: JSON.stringify({ invalid: 'data' }),
+      });
+
+      const response = await callbackPOST(request);
+      const data = await response.json();
+
+      expect(response.status).toBe(400);
+      expect(data.error).toBe('Invalid callback data');
+    });
+
+    it('rejects callbacks with an invalid HMAC signature when a callback secret is configured', async () => {
+      process.env.MPESA_CALLBACK_SECRET = 'callback-secret';
+      const body = JSON.stringify({ invalid: 'data' });
+
+      const request = new Request('http://localhost:3000/api/payments/mpesa/callback', {
+        method: 'POST',
+        body,
+        headers: { 'x-chapaworks-signature': 'sha256=invalid' },
+      });
+
+      const response = await callbackPOST(request);
+      const data = await response.json();
+
+      expect(response.status).toBe(401);
+      expect(data.ResultDesc).toBe('Invalid signature');
+    });
+
+    it('accepts callbacks with a valid HMAC signature when a callback secret is configured', async () => {
+      process.env.MPESA_CALLBACK_SECRET = 'callback-secret';
+      const body = JSON.stringify({ invalid: 'data' });
+      const signature = `sha256=${createHmac('sha256', 'callback-secret').update(body).digest('hex')}`;
+
+      const request = new Request('http://localhost:3000/api/payments/mpesa/callback', {
+        method: 'POST',
+        body,
+        headers: { 'x-chapaworks-signature': signature },
       });
 
       const response = await callbackPOST(request);

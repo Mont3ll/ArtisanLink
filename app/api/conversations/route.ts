@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { cachedJsonResponse, CACHE_DURATIONS, STALE_DURATIONS } from '@/lib/cache'
 import { auth } from '@clerk/nextjs/server'
 import { prisma } from '@/lib/prisma'
 import { z } from 'zod'
@@ -104,7 +105,7 @@ export async function GET(request: Request) {
       }
     })
 
-    return NextResponse.json({
+    return cachedJsonResponse({
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       conversations: conversations.map((conv: any) => ({
         ...conv,
@@ -118,7 +119,7 @@ export async function GET(request: Request) {
         total,
         totalPages: Math.ceil(total / clampedLimit)
       }
-    })
+    }, { maxAge: CACHE_DURATIONS.SHORT, staleWhileRevalidate: STALE_DURATIONS.SHORT })
   } catch (error) {
     console.error('Error fetching conversations:', error)
     return NextResponse.json(
@@ -202,7 +203,7 @@ export async function POST(request: Request) {
           data: { status: 'ACTIVE' }
         })
       }
-      return NextResponse.json(existingConversation)
+      return cachedJsonResponse(existingConversation, { maxAge: CACHE_DURATIONS.SHORT, staleWhileRevalidate: STALE_DURATIONS.SHORT })
     }
 
     // Create conversation with optional initial message

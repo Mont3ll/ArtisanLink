@@ -311,7 +311,7 @@ function AccountMenuPopover({
       animate={{ opacity: 1, y: 0, scale: 1 }}
       exit={{ opacity: 0, y: -8, scale: 0.92 }}
       transition={{ type: "spring", stiffness: 360, damping: 32, mass: 0.62 }}
-      className="absolute right-0 top-[calc(100%+10px)] z-50 w-[286px] overflow-hidden rounded-[18px] border bg-white p-3"
+      className="absolute right-0 top-[calc(100%+10px)] z-50 w-[286px] overflow-hidden rounded-[18px] border bg-white p-2"
       style={{ borderColor: COLORS.hairlineSoft, boxShadow: SHADOWS.card }}
     >
       <motion.div
@@ -329,7 +329,7 @@ function AccountMenuPopover({
                 onClick={() =>
                   navigate(item.featured ? "/for-artisans" : "/readiness")
                 }
-                className={`flex w-full cursor-pointer items-center gap-3 rounded-[12px] p-3 text-left transition-colors duration-150 hover:bg-[#f7f7f7] ${item.bordered ? "border" : ""}`}
+                className={`flex w-full cursor-pointer items-center gap-3 rounded-[12px] px-2.5 py-2 text-left transition-colors duration-150 hover:bg-[#f7f7f7] ${item.bordered ? "border" : ""}`}
                 style={{
                   borderColor: item.bordered ? COLORS.ink : "transparent",
                 }}
@@ -368,7 +368,7 @@ function AccountMenuPopover({
         </div>
 
         <div
-          className="my-2 h-px"
+          className="my-1.5 h-px"
           style={{ background: COLORS.hairlineSoft }}
         />
 
@@ -387,7 +387,7 @@ function AccountMenuPopover({
                         : "/sign-in",
                   )
                 }
-                className="flex w-full cursor-pointer items-center gap-3 rounded-[12px] px-3 py-2.5 text-left transition-colors duration-150 hover:bg-[#f7f7f7]"
+                className="flex w-full cursor-pointer items-center gap-3 rounded-[12px] px-2.5 py-2 text-left transition-colors duration-150 hover:bg-[#f7f7f7]"
               >
                 <Icon size={16} style={{ color: COLORS.body }} />
                 <span
@@ -402,13 +402,13 @@ function AccountMenuPopover({
         </div>
 
         <div
-          className="my-2 h-px"
+          className="my-1.5 h-px"
           style={{ background: COLORS.hairlineSoft }}
         />
 
         <button
           onClick={() => navigate(isSignedIn ? "/dashboard" : "/sign-in")}
-          className="flex w-full cursor-pointer items-center gap-3 rounded-[12px] px-3 py-2.5 text-left transition-colors duration-150 hover:bg-[#f7f7f7]"
+          className="flex w-full cursor-pointer items-center gap-3 rounded-[12px] px-2.5 py-2 text-left transition-colors duration-150 hover:bg-[#f7f7f7]"
         >
           <LogIn size={16} style={{ color: COLORS.body }} />
           <span
@@ -502,6 +502,22 @@ function AccountControls() {
 
 type SearchSection = "service" | "location" | "when" | "budget" | null;
 
+type NavPillSection = Exclude<SearchSection, null>;
+
+export function buildNavPillHref(section: NavPillSection, title: string) {
+  const params = new URLSearchParams();
+  if (section === "service") params.set("profession", title);
+  if (section === "location") params.set("county", title === "Nearby" ? "Nairobi" : title);
+  if (section === "when") params.set("available", "true");
+  if (section === "budget") {
+    const match = title.match(/[\d,]+/g);
+    const amount = match?.at(-1)?.replace(/,/g, "");
+    if (amount) params.set("maxRate", amount);
+  }
+  const query = params.toString();
+  return query ? `/artisans?${query}` : "/artisans";
+}
+
 function lerp(start: number, end: number, progress: number) {
   return start + (end - start) * progress;
 }
@@ -515,8 +531,10 @@ const sectionOrder: Record<Exclude<SearchSection, null>, number> = {
 
 function SearchPopover({
   activeSection,
+  onChoose,
 }: {
   activeSection: Exclude<SearchSection, null>;
+  onChoose: (section: NavPillSection, title: string) => void;
 }) {
   const previousSection = useRef<Exclude<SearchSection, null> | null>(null);
   const measureRef = useRef<HTMLDivElement | null>(null);
@@ -728,6 +746,8 @@ function SearchPopover({
                     return (
                       <button
                         key={item.title}
+                        type="button"
+                        onClick={() => onChoose(activeSection, item.title)}
                         className="flex cursor-pointer items-center gap-4 rounded-2xl p-2 text-left transition-colors duration-150 hover:bg-[#f7f7f7]"
                       >
                         <span
@@ -786,6 +806,8 @@ function SearchPopover({
                   {simpleList.map((item) => (
                     <button
                       key={item.title}
+                      type="button"
+                      onClick={() => onChoose(activeSection, item.title)}
                       className="cursor-pointer rounded-[14px] border p-4 text-left transition-colors duration-150 hover:bg-[#f7f7f7]"
                       style={{ borderColor: COLORS.hairlineSoft }}
                     >
@@ -818,11 +840,13 @@ function MorphingSearchBar({
   activeSection,
   onSelectSection,
   onSubmit,
+  onChooseSuggestion,
 }: {
   progress: MotionValue<number>;
   activeSection: SearchSection;
   onSelectSection: (section: Exclude<SearchSection, null>) => void;
   onSubmit: () => void;
+  onChooseSuggestion: (section: NavPillSection, title: string) => void;
 }) {
   const [hoveredSection, setHoveredSection] = useState<SearchSection>(null);
   const fullSegments = [
@@ -1228,7 +1252,7 @@ function MorphingSearchBar({
 
       <AnimatePresence initial={false}>
         {activeSection && (
-          <SearchPopover key="search-popover" activeSection={activeSection} />
+          <SearchPopover key="search-popover" activeSection={activeSection} onChoose={onChooseSuggestion} />
         )}
       </AnimatePresence>
     </motion.div>
@@ -1429,6 +1453,11 @@ export default function Header({ activeTab = "repairs", onTabChange }: HeaderPro
     setActiveSection((current) => (current === section ? null : section));
   };
 
+  const handleChooseSuggestion = (section: NavPillSection, title: string) => {
+    setActiveSection(null);
+    onNavigate(buildNavPillHref(section, title));
+  };
+
   const mobileMenuItems: Array<{
     label: string;
     icon: typeof Search;
@@ -1489,6 +1518,7 @@ export default function Header({ activeTab = "repairs", onTabChange }: HeaderPro
                   setActiveSection(null);
                   onNavigate("/artisans");
                 }}
+                onChooseSuggestion={handleChooseSuggestion}
               />
             </motion.div>
           </div>

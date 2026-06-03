@@ -7,11 +7,15 @@ function makeQueryClient() {
   return new QueryClient({
     defaultOptions: {
       queries: {
-        // With SSR, we usually want to set some default staleTime
-        // above 0 to avoid refetching immediately on the client
-        staleTime: 60 * 1000, // 1 minute
+        // Data stays fresh for 1 minute before a background refetch is triggered
+        staleTime: 60 * 1000,
+        // Keep unused query data in memory for 10 minutes
+        gcTime: 10 * 60 * 1000,
+        // Don't refetch when the user switches tabs — dashboard data is stable
         refetchOnWindowFocus: false,
+        // One retry on transient failures, then surface the error
         retry: 1,
+        retryDelay: (attempt) => Math.min(1000 * 2 ** attempt, 10_000),
       },
     },
   })

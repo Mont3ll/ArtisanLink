@@ -77,8 +77,8 @@ export async function GET(request: Request) {
                 select: {
                   firstName: true,
                   lastName: true,
-                  artisanProfile: {
-                    select: { businessName: true },
+                  profile: {
+                    select: { profession: true },
                   },
                 },
               },

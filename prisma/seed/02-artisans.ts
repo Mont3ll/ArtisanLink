@@ -7,6 +7,7 @@ import {
 } from '../../app/generated/prisma'
 import { prisma, SeedResult, BATCH_SIZE } from './client'
 import { KENYAN_COUNTIES, PROFESSIONS, KENYAN_FIRST_NAMES, KENYAN_LAST_NAMES } from './data'
+import { SEED_IMAGE_URLS } from './seed-image-urls'
 import { 
   randomElement, 
   randomInt,
@@ -139,7 +140,9 @@ export async function seedArtisans(
           lastLoginAt: data.isAvailable ? randomDate(7) : randomDate(30),
           profile: {
             create: {
-              bio: `Experienced ${data.profession.name.toLowerCase()} with ${data.experience} years of expertise. ${randomElement([
+              bio: data.isTestArtisan
+                ? 'Experienced carpenter based in Nairobi specialising in custom furniture, shelving, and home renovations. Verified professional with 8 years of field experience and a portfolio of completed residential and commercial projects.'
+                : `Experienced ${data.profession.name.toLowerCase()} with ${data.experience} years of expertise. ${randomElement([
                 'Committed to quality and customer satisfaction.',
                 'Specializing in both residential and commercial projects.',
                 'Known for attention to detail and timely delivery.',
@@ -151,15 +154,19 @@ export async function seedArtisans(
               hourlyRate: data.hourlyRate,
               isAvailable: data.isAvailable,
               artisanStatus: data.artisanStatus,
-              city: data.city,
-              county: data.county.name,
+              city: data.isTestArtisan ? 'Nairobi' : data.city,
+              county: data.isTestArtisan ? 'Nairobi' : data.county.name,
               country: 'Kenya',
               latitude: data.coords.lat,
               longitude: data.coords.lng,
-              address: `${randomElement(['Plot', 'House', 'Shop', 'Building'])} ${randomInt(1, 500)}, ${data.city}`,
-              averageRating: 0,
-              totalReviews: 0,
-              certificateUrl: data.artisanStatus !== ArtisanStatus.PENDING ? `https://certificates.chapaworks.co.ke/${data.artisanId}.pdf` : null,
+              address: data.isTestArtisan ? 'Westlands, Nairobi' : `${randomElement(['Plot', 'House', 'Shop', 'Building'])} ${randomInt(1, 500)}, ${data.city}`,
+              profileImage: data.isTestArtisan ? SEED_IMAGE_URLS['seed-artisan-profile'] : null,
+              averageRating: data.isTestArtisan ? 4.9 : 0,
+              totalReviews: data.isTestArtisan ? 12 : 0,
+              idDocumentUrl: data.isTestArtisan ? SEED_IMAGE_URLS['seed-artisan-id'] : null,
+              certificateUrl: data.isTestArtisan
+                ? SEED_IMAGE_URLS['seed-artisan-cert']
+                : (data.artisanStatus !== ArtisanStatus.PENDING ? `https://certificates.chapaworks.co.ke/${data.artisanId}.pdf` : null),
               certificateUploadedAt: randomDate(180),
               verifiedAt: data.artisanStatus === ArtisanStatus.VERIFIED ? randomDate(90) : null,
               verifiedBy: data.artisanStatus === ArtisanStatus.VERIFIED ? adminId : null,

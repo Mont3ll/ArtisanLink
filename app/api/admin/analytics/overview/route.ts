@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { cachedJsonResponse, CACHE_DURATIONS, STALE_DURATIONS } from '@/lib/cache'
 import { auth } from '@clerk/nextjs/server'
 import { prisma } from '@/lib/prisma'
 
@@ -118,7 +119,7 @@ export async function GET() {
       where: { status: 'ACTIVE' }
     })
 
-    return NextResponse.json({
+    return cachedJsonResponse({
       userGrowth: userGrowth.map((item: { role: string; _count: { id: number } }) => ({
         role: item.role,
         count: item._count.id
@@ -134,7 +135,7 @@ export async function GET() {
         activeProjects: activeSubscriptions,
         completionRate: Math.round(completionRate * 10) / 10
       }
-    })
+    }, { maxAge: CACHE_DURATIONS.SHORT, staleWhileRevalidate: STALE_DURATIONS.SHORT })
   } catch (error) {
     console.error('Error fetching analytics data:', error)
     return NextResponse.json(

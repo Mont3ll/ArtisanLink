@@ -1,6 +1,7 @@
 import { ArtisanStatus } from '../../app/generated/prisma'
 import { prisma, SeedResult, BATCH_SIZE } from './client'
 import { PROFESSIONS } from './data'
+import { SEED_IMAGE_URLS } from './seed-image-urls'
 import { 
   randomElement, 
   randomInt,
@@ -12,6 +13,7 @@ import {
 
 type ArtisanWithProfile = {
   id: string
+  clerkId?: string
   profile: {
     id: string
     profession: string | null
@@ -133,6 +135,12 @@ export async function seedPortfolioItems(
         `Complete ${category} Installation`,
       ]
       
+const REAL_PORTFOLIO_IMAGES = [
+  { imageUrl: SEED_IMAGE_URLS['seed-portfolio-1'], imageUrls: [SEED_IMAGE_URLS['seed-portfolio-2'], SEED_IMAGE_URLS['seed-portfolio-3']] },
+  { imageUrl: SEED_IMAGE_URLS['seed-portfolio-2'], imageUrls: [SEED_IMAGE_URLS['seed-portfolio-1']] },
+  { imageUrl: SEED_IMAGE_URLS['seed-portfolio-3'], imageUrls: [SEED_IMAGE_URLS['seed-portfolio-1'], SEED_IMAGE_URLS['seed-portfolio-2']] },
+]
+
       return prisma.portfolioItem.create({
         data: {
           profileId: data.profileId,
@@ -144,10 +152,7 @@ export async function seedPortfolioItems(
             'A challenging project that turned out beautifully.',
             'One of our favorite projects to date.',
           ])}`,
-          imageUrl: `https://images.chapaworks.co.ke/portfolio/${data.profileId}/${data.itemIndex + 1}.jpg`,
-          imageUrls: Array.from({ length: randomInt(1, 4) }, (_, j) => 
-            `https://images.chapaworks.co.ke/portfolio/${data.profileId}/${data.itemIndex + 1}_${j + 1}.jpg`
-          ),
+          ...(REAL_PORTFOLIO_IMAGES[data.itemIndex % 3]),
           category,
           tags: [data.profession.name.toLowerCase(), category.toLowerCase(), data.city.toLowerCase(), 'kenya'].filter(Boolean),
           completedAt: randomDate(365),

@@ -194,6 +194,18 @@ describe('useDashboardRealData', () => {
     expect(result.current.verificationStatus).toBeNull()
   })
 
+  it('keeps loaded admin collections as empty arrays instead of null', () => {
+    const { result } = renderHook(() => useDashboardRealData(), {
+      wrapper: makeWrapper('admin'),
+    })
+
+    expect(result.current.adminVerificationQueue).toEqual([])
+    expect(result.current.adminArtisans).toEqual([])
+    expect(result.current.adminUsers).toEqual([])
+    expect(result.current.adminModerationRows).toEqual([])
+    expect(result.current.adminInvites).toEqual([])
+  })
+
   it('returns isLoading=true when Clerk is not loaded', async () => {
     const { useUser } = await import('@clerk/nextjs')
     vi.mocked(useUser).mockReturnValueOnce({

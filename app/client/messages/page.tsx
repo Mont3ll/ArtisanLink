@@ -1,16 +1,15 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import SourceAdminPreview from "@/components/dashboard2/admin/source-admin-preview";
 import { DashboardRealDataProvider } from "@/components/dashboard2/context/dashboard-real-data-context";
 
 /**
- * Client messages page.
- * When arriving with ?artisan=ID&new=1 (e.g. from artisan profile "Message" button),
- * creates a new conversation via the API then shows the messages view.
+ * Inner component that uses useSearchParams — must be inside a Suspense boundary
+ * so the build can produce a static shell without crashing during SSR.
  */
-export default function ClientMessagesPage() {
+function ClientMessagesInner() {
   const searchParams = useSearchParams();
   const artisanId = searchParams.get("artisan");
   const artisanName = searchParams.get("name") ?? "artisan";
@@ -84,5 +83,21 @@ export default function ClientMessagesPage() {
     <DashboardRealDataProvider role="client">
       <SourceAdminPreview initialRoute="/client/messages" />
     </DashboardRealDataProvider>
+  );
+}
+
+/**
+ * Client messages page — wraps the inner component in Suspense so Next.js
+ * can produce a static shell at build time.
+ */
+export default function ClientMessagesPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex min-h-screen items-center justify-center">
+        <div className="mx-auto h-10 w-10 animate-spin rounded-full border-4 border-emerald-600 border-t-transparent" />
+      </div>
+    }>
+      <ClientMessagesInner />
+    </Suspense>
   );
 }

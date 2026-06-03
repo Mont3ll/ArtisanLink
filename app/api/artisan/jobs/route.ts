@@ -5,6 +5,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server'
+import { cachedJsonResponse, CACHE_DURATIONS, STALE_DURATIONS } from '@/lib/cache'
 import { auth } from '@clerk/nextjs/server'
 import { prisma } from '@/lib/prisma'
 import { createLogger } from '@/lib/logger'
@@ -142,7 +143,7 @@ export async function GET(request: NextRequest) {
       return acc
     }, {} as Record<string, number>)
 
-    return NextResponse.json({
+    return cachedJsonResponse({
       jobs: formattedJobs,
       pagination: {
         page,
@@ -162,7 +163,7 @@ export async function GET(request: NextRequest) {
         DECLINED: counts.DECLINED || 0,
         total,
       },
-    })
+    }, { maxAge: CACHE_DURATIONS.SHORT, staleWhileRevalidate: STALE_DURATIONS.SHORT })
   } catch (error) {
     logger.error('Failed to fetch artisan jobs:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })

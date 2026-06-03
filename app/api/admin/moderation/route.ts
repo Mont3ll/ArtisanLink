@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { cachedJsonResponse, CACHE_DURATIONS, STALE_DURATIONS } from '@/lib/cache'
 import { auth } from '@clerk/nextjs/server'
 import { prisma } from '@/lib/prisma'
 
@@ -209,7 +210,7 @@ export async function GET(request: Request) {
       prisma.user.count({ where: { status: 'SUSPENDED' } })
     ])
 
-    return NextResponse.json({
+    return cachedJsonResponse({
       items: type === 'all' ? items.slice(skip, skip + clampedLimit) : items,
       stats: {
         pendingReviews,
@@ -223,7 +224,7 @@ export async function GET(request: Request) {
         total: type === 'all' ? items.length : totalCount,
         totalPages: Math.ceil((type === 'all' ? items.length : totalCount) / clampedLimit)
       }
-    })
+    }, { maxAge: CACHE_DURATIONS.SHORT, staleWhileRevalidate: STALE_DURATIONS.SHORT })
   } catch (error) {
     console.error('Error fetching moderation items:', error)
     return NextResponse.json(
